@@ -1,7 +1,6 @@
 """
 app.py — Plataforma de Governança de Dados
-Banco Meridian | v4.0
-Portal de Conhecimento, Dados e Confiança
+Banco Meridian | v4.1
 """
 import streamlit as st
 import pandas as pd
@@ -16,9 +15,6 @@ st.set_page_config(
     page_icon="🏦", layout="wide"
 )
 
-# ════════════════════════════════════════════════════════════════════
-# DARK THEME
-# ════════════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -67,16 +63,36 @@ section[data-testid="stSidebar"] {
 section[data-testid="stSidebar"] * { color: #E6EDF3 !important; }
 .stDataFrame { background: #161B22 !important; }
 div[data-testid="stRadio"] > div { gap: 0px !important; }
-div[data-testid="stRadio"] label {
-    background: transparent !important; border: none !important;
-    border-radius: 6px !important; padding: 5px 10px 5px 8px !important;
-    color: #8B949E !important; font-size: 0.82rem !important;
-    cursor: pointer !important; width: 100% !important;
-    margin-bottom: 1px !important;
+div[data-testid="stRadio"] > div > label {
+    display: none !important;
 }
-div[data-testid="stRadio"] label:hover {
-    background: #161B22 !important; color: #E6EDF3 !important;
+.nav-item {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    color: #8B949E;
+    cursor: pointer;
+    margin-bottom: 1px;
+    transition: all 0.15s;
 }
+.nav-item:hover { background: #161B22; color: #E6EDF3; }
+.nav-item.active { background: #C9A22722; color: #C9A227; font-weight: 600; }
+.nav-section {
+    font-size: 0.6rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    color: #8B949E; padding: 8px 10px 3px;
+}
+.card-clickable {
+    background: #161B22;
+    border: 1px solid #30363D;
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    margin-bottom: 8px;
+}
+.card-clickable:hover { border-color: #C9A227; }
+.card-clickable.selected { border-color: #C9A227; background: #C9A22708; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -127,7 +143,7 @@ PERFIL_COR   = {"consultante":"#58A6FF","curador":"#C9A227","aprovador":"#3FB950
 PERFIL_LABEL = {"consultante":"👁️ Consultante","curador":"✏️ Curador","aprovador":"✅ Aprovador"}
 
 # ════════════════════════════════════════════════════════════════════
-# CACHE DE DADOS
+# CACHE
 # ════════════════════════════════════════════════════════════════════
 @st.cache_data(ttl=300)
 def load_meta():
@@ -155,11 +171,10 @@ def load_rules():
 # COMPONENTES
 # ════════════════════════════════════════════════════════════════════
 def page_header(icone, titulo, subtitulo=""):
-    cor = PERFIL_COR.get(
-        st.session_state.get("perfil_atual","consultante"),"#58A6FF")
-    nome = st.session_state.get("nome_atual","")
-    label = PERFIL_LABEL.get(
-        st.session_state.get("perfil_atual","consultante"),"")
+    perfil = st.session_state.get("perfil_atual","consultante")
+    cor    = PERFIL_COR.get(perfil,"#58A6FF")
+    nome   = st.session_state.get("nome_atual","")
+    label  = PERFIL_LABEL.get(perfil,"")
     st.markdown(f"""
     <div style="background:linear-gradient(135deg,#161B22,#1C2128);
                 border:1px solid #30363D;border-radius:12px;
@@ -184,8 +199,7 @@ def page_header(icone, titulo, subtitulo=""):
 def kpi(valor, label, cor="#C9A227", icone="", tooltip=""):
     tip = f'title="{tooltip}"' if tooltip else ""
     return f"""<div {tip} style="background:#161B22;border:1px solid #30363D;
-        border-radius:10px;padding:14px 16px;border-top:3px solid {cor};
-        cursor:{'help' if tooltip else 'default'};">
+        border-radius:10px;padding:14px 16px;border-top:3px solid {cor};">
         <div style="font-size:0.62rem;color:#8B949E;font-weight:700;
                     text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
             {icone} {label}</div>
@@ -194,16 +208,31 @@ def kpi(valor, label, cor="#C9A227", icone="", tooltip=""):
 
 def section_divider(titulo):
     st.markdown(f"""
-    <div style="display:flex;align-items:center;gap:10px;margin:20px 0 12px;">
+    <div style="display:flex;align-items:center;gap:10px;margin:18px 0 12px;">
         <div style="height:1px;background:#30363D;flex:1;"></div>
-        <span style="color:#8B949E;font-size:0.7rem;font-weight:700;
+        <span style="color:#8B949E;font-size:0.65rem;font-weight:700;
                      text-transform:uppercase;letter-spacing:1.5px;">{titulo}</span>
         <div style="height:1px;background:#30363D;flex:1;"></div>
     </div>""", unsafe_allow_html=True)
 
+def avatar(nome, cor="#C9A227", size=40):
+    iniciais = "".join([p[0].upper() for p in nome.split()[:2]])
+    return f"""<div style="width:{size}px;height:{size}px;border-radius:50%;
+        background:{cor}22;border:2px solid {cor}44;
+        display:flex;align-items:center;justify-content:center;
+        color:{cor};font-weight:800;font-size:{size//3}px;flex-shrink:0;">
+        {iniciais}</div>"""
+
 # ════════════════════════════════════════════════════════════════════
-# SIDEBAR — LOGIN E NAVEGAÇÃO
+# SIDEBAR — navegação sem bolinhas
 # ════════════════════════════════════════════════════════════════════
+MENU = {
+    "PESSOAL":        ["⚡ Meu Espaço"],
+    "DESCOBERTA":     ["🏠 Início","📋 Catálogo","📖 Glossário","🏛️ Domínios"],
+    "CONFIABILIDADE": ["🛡️ Scorecard"],
+    "OPERAÇÃO":       ["✏️ Curadoria","🕐 Auditoria"],
+}
+
 with st.sidebar:
     st.markdown("""
     <div style="padding:14px 8px 8px;display:flex;align-items:center;gap:8px;">
@@ -223,13 +252,14 @@ with st.sidebar:
         st.session_state["usuario"] = None
 
     if not st.session_state["usuario"]:
-        email = st.selectbox("",list(USUARIOS.keys()),
+        email = st.selectbox("", list(USUARIOS.keys()),
             format_func=lambda x: f"{USUARIOS[x]['nome']} · {USUARIOS[x]['perfil']}",
             label_visibility="collapsed")
         if st.button("Entrar →", key="login", use_container_width=True):
             st.session_state["usuario"]      = email
             st.session_state["perfil_atual"] = USUARIOS[email]["perfil"]
             st.session_state["nome_atual"]   = USUARIOS[email]["nome"]
+            st.session_state["pagina"]       = "🏠 Início"
             st.rerun()
         st.stop()
 
@@ -241,6 +271,7 @@ with st.sidebar:
     is_curador   = perfil in ["curador","aprovador"]
     is_aprovador = perfil == "aprovador"
 
+    # Usuário logado
     st.markdown(f"""
     <div style="background:#161B22;border:1px solid #30363D;border-radius:8px;
                 padding:8px 10px;margin-bottom:10px;">
@@ -251,25 +282,24 @@ with st.sidebar:
             {PERFIL_LABEL[perfil]}</div>
     </div>""", unsafe_allow_html=True)
 
-    # ── INSTITUCIONAL ────────────────────────────────────────────────
-    st.markdown('<div style="color:#8B949E;font-size:0.6rem;font-weight:700;'
-                'text-transform:uppercase;letter-spacing:1.5px;'
-                'padding:6px 10px 2px;">INSTITUCIONAL</div>',
-                unsafe_allow_html=True)
+    # Inicializa página
+    if "pagina" not in st.session_state:
+        st.session_state["pagina"] = "🏠 Início"
 
-    menu_inst = ["🏠 Início","📖 Glossário","📋 Catálogo","🏛️ Domínios","🛡️ Scorecard"]
-
-    # ── OPERACIONAL (só curadores/aprovadores) ───────────────────────
-    menu_op = []
-    if is_curador:
-        st.markdown('<div style="color:#8B949E;font-size:0.6rem;font-weight:700;'
-                    'text-transform:uppercase;letter-spacing:1.5px;'
-                    'padding:10px 10px 2px;">OPERACIONAL</div>',
+    # Renderiza menu sem bolinhas
+    for secao, itens in MENU.items():
+        st.markdown(f'<div class="nav-section">{secao}</div>',
                     unsafe_allow_html=True)
-        menu_op = ["⚡ Meu Espaço","✏️ Curadoria","🕐 Auditoria"]
-
-    todas = menu_inst + menu_op
-    pagina = st.radio("", todas, key="nav", label_visibility="collapsed")
+        for item in itens:
+            is_active = st.session_state["pagina"] == item
+            css_class = "nav-item active" if is_active else "nav-item"
+            st.markdown(f'<div class="{css_class}">{item}</div>',
+                        unsafe_allow_html=True)
+            if st.button(item, key=f"nav_{item}",
+                         use_container_width=True,
+                         help=item):
+                st.session_state["pagina"] = item
+                st.rerun()
 
     st.markdown('<div style="height:1px;background:#30363D;margin:10px 0 8px;"></div>',
                 unsafe_allow_html=True)
@@ -277,23 +307,23 @@ with st.sidebar:
         st.session_state["usuario"] = None
         st.rerun()
 
-usuario = st.session_state["usuario"]
+# Página ativa
+pagina       = st.session_state.get("pagina","🏠 Início")
+usuario      = st.session_state["usuario"]
+u            = USUARIOS[usuario]
+perfil       = u["perfil"]
+is_curador   = perfil in ["curador","aprovador"]
+is_aprovador = perfil == "aprovador"
 
 # ════════════════════════════════════════════════════════════════════
-# 🏠 INÍCIO — Portal de Conhecimento
+# 🏠 INÍCIO
 # ════════════════════════════════════════════════════════════════════
 if pagina == "🏠 Início":
     now_str = datetime.now().strftime("%d/%m/%Y %H:%M")
-
-    # Hero
     st.markdown(f"""
     <div style="background:linear-gradient(135deg,#161B22 0%,#1C2128 100%);
                 border:1px solid #30363D;border-radius:16px;
-                padding:28px 32px;margin-bottom:20px;
-                position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;right:0;width:300px;height:100%;
-                    background:linear-gradient(135deg,transparent,#C9A22708);
-                    border-radius:16px;"></div>
+                padding:28px 32px;margin-bottom:20px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
                 <div style="color:#E6EDF3;font-size:1.5rem;font-weight:800;
@@ -327,18 +357,17 @@ if pagina == "🏠 Início":
         </div>
     </div>""", unsafe_allow_html=True)
 
-    # KPIs com tooltips
     df_meta  = load_meta()
     df_gloss = load_glossario()
     df_links = load_links()
     df_rules = load_rules()
 
-    total_ativos  = len(df_meta)  if not df_meta.empty  else 0
-    total_dom     = df_meta["dominio"].nunique() if not df_meta.empty else 0
-    total_termos  = len(df_gloss) if not df_gloss.empty else 0
-    total_regras  = len(df_rules) if not df_rules.empty else 0
-    ativos_com_link = df_links["table_name"].nunique() if not df_links.empty else 0
-    cobertura = round(ativos_com_link/max(total_ativos,1)*100)
+    total_ativos = len(df_meta)  if not df_meta.empty  else 0
+    total_dom    = df_meta["dominio"].nunique() if not df_meta.empty else 0
+    total_termos = len(df_gloss) if not df_gloss.empty else 0
+    total_regras = len(df_rules) if not df_rules.empty else 0
+    tabs_link    = df_links["table_name"].nunique() if not df_links.empty else 0
+    cobertura    = round(tabs_link/max(total_ativos,1)*100)
 
     k1,k2,k3,k4,k5 = st.columns(5)
     with k1: st.markdown(kpi(total_termos,"Termos de Negócio","#C9A227","📖",
@@ -349,52 +378,40 @@ if pagina == "🏠 Início":
         "Áreas responsáveis pelos dados"), unsafe_allow_html=True)
     with k4: st.markdown(kpi(total_regras,"Regras de Negócio","#3FB950","📏",
         "Critérios para criar, calcular ou validar informações"), unsafe_allow_html=True)
-    with k5: st.markdown(kpi(f"{cobertura}%","Cobertura Semântica","#F85149" if cobertura<40 else "#C9A227" if cobertura<70 else "#3FB950","🔗",
-        "Percentual de ativos conectados a conceitos de negócio"), unsafe_allow_html=True)
+    with k5:
+        cor_cob = "#3FB950" if cobertura>=70 else "#C9A227" if cobertura>=40 else "#F85149"
+        st.markdown(kpi(f"{cobertura}%","Cobertura Semântica",cor_cob,"🔗",
+            "Percentual de ativos conectados a conceitos de negócio"),
+            unsafe_allow_html=True)
 
     section_divider("COMECE POR UMA PERGUNTA")
 
-    # 6 perguntas clicáveis
     perguntas = [
-        ("🤔","O que significa?",
-         "Encontre a definição oficial de qualquer conceito ou indicador.",
-         "#C9A227","📖 Glossário"),
-        ("🧮","Como é calculado?",
-         "Consulte as regras e critérios que definem cada métrica.",
-         "#58A6FF","📖 Glossário"),
-        ("🔍","Onde encontro?",
-         "Descubra em qual tabela ou estrutura o dado está armazenado.",
-         "#BC8CFF","📋 Catálogo"),
-        ("👤","Quem responde?",
-         "Identifique o Owner e Steward responsáveis pelo dado.",
-         "#3FB950","🏛️ Domínios"),
-        ("🔗","Onde é utilizado?",
-         "Veja os relacionamentos entre conceitos, ativos e indicadores.",
-         "#F85149","📖 Glossário"),
-        ("🛡️","Posso confiar?",
-         "Consulte o scorecard de confiabilidade do ativo.",
-         "#FF7B72","🛡️ Scorecard"),
+        ("🤔","O que significa?","Encontre a definição oficial de qualquer conceito.","#C9A227","📖 Glossário"),
+        ("🧮","Como é calculado?","Consulte as regras e critérios de cada métrica.","#58A6FF","📖 Glossário"),
+        ("🔍","Onde encontro?","Descubra em qual tabela o dado está armazenado.","#BC8CFF","📋 Catálogo"),
+        ("👤","Quem responde?","Identifique o Owner e Steward responsáveis.","#3FB950","🏛️ Domínios"),
+        ("🔗","Onde é utilizado?","Veja os relacionamentos entre conceitos e ativos.","#F85149","📖 Glossário"),
+        ("🛡️","Posso confiar?","Consulte o scorecard de confiabilidade.","#FF7B72","🛡️ Scorecard"),
     ]
-
     cols_p = st.columns(3)
-    for i, (ic, titulo_p, desc_p, cor_p, destino_p) in enumerate(perguntas):
-        with cols_p[i % 3]:
-            st.markdown(f"""
-            <div style="background:#161B22;border:1px solid #30363D;border-radius:12px;
-                        padding:16px;margin-bottom:10px;cursor:pointer;
-                        transition:border-color 0.2s;"
-                 onmouseover="this.style.borderColor='{cor_p}'"
-                 onmouseout="this.style.borderColor='#30363D'">
-                <div style="font-size:1.4rem;margin-bottom:6px;">{ic}</div>
-                <div style="color:{cor_p};font-weight:700;font-size:0.88rem;
-                            margin-bottom:4px;">{titulo_p}</div>
-                <div style="color:#8B949E;font-size:0.75rem;line-height:1.4;
-                            margin-bottom:8px;">{desc_p}</div>
-                <div style="color:#8B949E;font-size:0.7rem;">→ {destino_p}</div>
-            </div>""", unsafe_allow_html=True)
+    for i,(ic,tit,desc,cor_p,dest) in enumerate(perguntas):
+        with cols_p[i%3]:
+            if st.button(f"{ic} {tit}", key=f"perg_{i}",
+                         use_container_width=True):
+                destino_map = {
+                    "📖 Glossário":"📖 Glossário",
+                    "📋 Catálogo":"📋 Catálogo",
+                    "🏛️ Domínios":"🏛️ Domínios",
+                    "🛡️ Scorecard":"🛡️ Scorecard",
+                }
+                st.session_state["pagina"] = destino_map.get(dest,"📖 Glossário")
+                st.rerun()
+            st.markdown(f'<div style="color:#8B949E;font-size:0.72rem;'
+                        f'margin:-6px 0 8px;padding:0 4px;">{desc}</div>',
+                        unsafe_allow_html=True)
 
     section_divider("IMPACTO DA GOVERNANÇA")
-
     im1,im2,im3,im4 = st.columns(4)
     impactos = [
         ("🎯","Uma única verdade","Definições unificadas eliminam ambiguidade nas decisões."),
@@ -402,7 +419,7 @@ if pagina == "🏠 Início":
         ("⚡","Decisões mais rápidas","Encontre qualquer informação em segundos, não em dias."),
         ("📋","Compliance embarcado","Rastreabilidade nativa para auditorias e regulatórios."),
     ]
-    for col, (ic, tit, desc) in zip([im1,im2,im3,im4], impactos):
+    for col,(ic,tit,desc) in zip([im1,im2,im3,im4],impactos):
         with col:
             st.markdown(f"""
             <div style="background:#161B22;border:1px solid #30363D;border-radius:10px;
@@ -414,7 +431,7 @@ if pagina == "🏠 Início":
             </div>""", unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════════════════
-# 📖 GLOSSÁRIO
+# 📖 GLOSSÁRIO — clique no card abre detalhe
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "📖 Glossário":
     page_header("📖","Glossário Corporativo",
@@ -425,7 +442,6 @@ elif pagina == "📖 Glossário":
     df_links = load_links()
 
     if not df_g.empty:
-        # Métricas
         m1,m2,m3,m4 = st.columns(4)
         with m1: st.markdown(kpi(len(df_g),"Total de Termos","#C9A227","📖"),
                              unsafe_allow_html=True)
@@ -441,26 +457,22 @@ elif pagina == "📖 Glossário":
 
         st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
-        # Abas — Workflow só para curadores
-        abas_base = ["📋 Termos de Negócio","📏 Regras de Negócio",
-                     "🔗 Relacionamentos","🕐 Histórico"]
-        if is_curador:
-            abas_base.append("⚙️ Workflow")
-        tabs_g = st.tabs(abas_base)
+        abas = ["📋 Termos de Negócio","📏 Regras de Negócio",
+                "🔗 Relacionamentos","🕐 Histórico"]
+        if is_curador: abas.append("⚙️ Workflow")
+        tabs_g = st.tabs(abas)
 
-        # ── ABA 1: TERMOS ────────────────────────────────────────────
+        # ── TERMOS ───────────────────────────────────────────────────
         with tabs_g[0]:
-            col_lista, col_det = st.columns([1, 2])
+            col_lista, col_det = st.columns([1,2])
 
             with col_lista:
                 busca_g = st.text_input("",
                     placeholder="🔍 Buscar termo...", key="g_busca")
                 g_dom = st.selectbox("Domínio",
-                    ["Todos"]+sorted(df_g["dominio"].unique().tolist()),
-                    key="g_dom")
-                g_st = st.selectbox("Status",
-                    ["Todos","homologado","em_revisao","rascunho"],
-                    key="g_st")
+                    ["Todos"]+sorted(df_g["dominio"].unique().tolist()), key="g_dom")
+                g_st  = st.selectbox("Status",
+                    ["Todos","homologado","em_revisao","rascunho"], key="g_st")
 
                 df_gf = df_g.copy()
                 if busca_g:
@@ -471,7 +483,8 @@ elif pagina == "📖 Glossário":
                 if g_st  != "Todos": df_gf = df_gf[df_gf["status"]==g_st]
 
                 if "gid_sel" not in st.session_state:
-                    st.session_state["gid_sel"] = None
+                    st.session_state["gid_sel"] = \
+                        df_gf.iloc[0]["glossary_id"] if not df_gf.empty else None
 
                 st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
 
@@ -479,31 +492,20 @@ elif pagina == "📖 Glossário":
                     cor_st = {"homologado":"#3FB950","em_revisao":"#58A6FF",
                               "rascunho":"#8B949E"}.get(row["status"],"#8B949E")
                     is_sel = st.session_state["gid_sel"] == row["glossary_id"]
-                    bg = f"background:#C9A22711;border-color:#C9A22744;" if is_sel else ""
-                    st.markdown(f"""
-                    <div style="background:#161B22;border:1px solid #30363D;
-                                border-radius:8px;padding:8px 10px;margin-bottom:4px;
-                                {bg}">
-                        <div style="color:#E6EDF3;font-weight:600;font-size:0.82rem;">
-                            {row['termo']}</div>
-                        <div style="display:flex;justify-content:space-between;
-                                    margin-top:2px;">
-                            <span style="color:#8B949E;font-size:0.7rem;">
-                                {row['dominio']}</span>
-                            <span style="color:{cor_st};font-size:0.68rem;
-                                         font-weight:600;">● {row['status']}</span>
-                        </div>
-                    </div>""", unsafe_allow_html=True)
-                    if st.button(f"Ver detalhes",
-                                 key=f"gsel_{row['glossary_id']}",
-                                 use_container_width=True):
+                    brd    = "border-color:#C9A227;background:#C9A22708;" if is_sel else ""
+
+                    # Card clicável sem botão extra
+                    clicked = st.button(
+                        f"**{row['termo']}**\n{row['dominio']} · {row['status']}",
+                        key=f"gcard_{row['glossary_id']}",
+                        use_container_width=True,
+                    )
+                    if clicked:
                         st.session_state["gid_sel"] = row["glossary_id"]
                         st.rerun()
 
-                # Novo termo
                 if is_curador:
-                    st.markdown("<div style='height:8px'></div>",
-                                unsafe_allow_html=True)
+                    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
                     with st.expander("➕ Criar novo termo"):
                         nn  = st.text_input("Termo *", key="nn")
                         nd  = st.text_area("Definição *", key="nd", height=70)
@@ -511,13 +513,13 @@ elif pagina == "📖 Glossário":
                         ndo = st.selectbox("Domínio",
                             ["Crédito","Pagamentos","Clientes",
                              "Compliance","Produtos"], key="ndo")
-                        na  = st.text_input("Área de Negócio", key="na")
+                        na  = st.text_input("Área", key="na")
                         nc  = st.selectbox("Criticidade",
                             ["Crítico","Alto","Médio","Baixo"], key="nc")
-                        if st.button("💾 Criar Termo", key="btn_criar"):
+                        if st.button("💾 Criar", key="btn_criar"):
                             if nn and nd:
                                 gid_new = str(uuid.uuid4())
-                                ok, err = exe(
+                                ok,err = exe(
                                     f"INSERT INTO meridian_governanca.business_glossary "
                                     f"VALUES ('{gid_new}','{esc(nn)}','{esc(nd)}',"
                                     f"'{esc(ns)}','{esc(ndo)}','{esc(na)}',"
@@ -532,17 +534,26 @@ elif pagina == "📖 Glossário":
                                 else: st.error(f"Erro: {err}")
                             else: st.warning("Preencha Termo e Definição.")
 
+            # ── DETALHE DO TERMO ─────────────────────────────────────
             with col_det:
                 gid = st.session_state.get("gid_sel")
                 if gid:
                     row_d = df_g[df_g["glossary_id"]==gid]
                     if not row_d.empty:
                         row = row_d.iloc[0]
-                        cor_st = {"homologado":"#3FB950","em_revisao":"#58A6FF",
-                                  "rascunho":"#8B949E"}.get(row["status"],"#8B949E")
+                        cor_st   = {"homologado":"#3FB950","em_revisao":"#58A6FF",
+                                    "rascunho":"#8B949E"}.get(row["status"],"#8B949E")
                         cor_crit = {"Crítico":"#F85149","Alto":"#FF7B72",
                                     "Médio":"#C9A227","Baixo":"#3FB950"}.get(
                                     row["criticidade"],"#8B949E")
+
+                        links_t = df_links[df_links["glossary_id"]==gid] \
+                                  if not df_links.empty else pd.DataFrame()
+                        rules_t = df_rules[df_rules["glossary_id"]==gid] \
+                                  if not df_rules.empty else pd.DataFrame()
+                        n_tab = links_t["table_name"].nunique() \
+                                if not links_t.empty else 0
+                        n_reg = len(rules_t)
 
                         st.markdown(f"""
                         <div style="background:#161B22;border:1px solid #30363D;
@@ -553,7 +564,7 @@ elif pagina == "📖 Glossário":
                                             font-weight:800;">{row['termo']}</div>
                                 <span style="background:{cor_st}22;color:{cor_st};
                                              border-radius:20px;padding:3px 12px;
-                                             font-size:0.75rem;font-weight:600;
+                                             font-size:0.72rem;font-weight:600;
                                              border:1px solid {cor_st}44;">
                                     {'✅ Homologado' if row['status']=='homologado'
                                      else '🔵 Em Revisão' if row['status']=='em_revisao'
@@ -593,45 +604,36 @@ elif pagina == "📖 Glossário":
                                         {row['steward_email']}</div>
                                 </div>
                             </div>
-                        </div>""", unsafe_allow_html=True)
-
-                        # Impacto do termo
-                        links_t = df_links[df_links["glossary_id"]==gid] \
-                                  if not df_links.empty else pd.DataFrame()
-                        rules_t = df_rules[df_rules["glossary_id"]==gid] \
-                                  if not df_rules.empty else pd.DataFrame()
-                        n_tab = links_t["table_name"].nunique() if not links_t.empty else 0
-                        n_reg = len(rules_t)
-
-                        st.markdown(f"""
-                        <div style="background:#0D1117;border:1px solid #30363D;
-                                    border-radius:10px;padding:12px 16px;margin-top:10px;">
-                            <div style="color:#8B949E;font-size:0.65rem;font-weight:700;
-                                        text-transform:uppercase;letter-spacing:1px;
-                                        margin-bottom:8px;">IMPACTO DO TERMO</div>
-                            <div style="display:flex;gap:16px;flex-wrap:wrap;">
-                                <div>
-                                    <span style="color:#58A6FF;font-size:1.2rem;
-                                                 font-weight:800;">{n_tab}</span>
-                                    <span style="color:#8B949E;font-size:0.72rem;
-                                                 margin-left:4px;">tabelas</span>
-                                </div>
-                                <div>
-                                    <span style="color:#BC8CFF;font-size:1.2rem;
-                                                 font-weight:800;">{n_reg}</span>
-                                    <span style="color:#8B949E;font-size:0.72rem;
-                                                 margin-left:4px;">regras</span>
-                                </div>
-                                <div>
-                                    <span style="color:#C9A227;font-size:1.2rem;
-                                                 font-weight:800;">1</span>
-                                    <span style="color:#8B949E;font-size:0.72rem;
-                                                 margin-left:4px;">domínio</span>
+                            <div style="background:#0D1117;border:1px solid #30363D;
+                                        border-radius:8px;padding:10px 14px;">
+                                <div style="font-size:0.62rem;color:#8B949E;
+                                            font-weight:700;text-transform:uppercase;
+                                            letter-spacing:1px;margin-bottom:8px;">
+                                    IMPACTO DO TERMO</div>
+                                <div style="display:flex;gap:20px;">
+                                    <div>
+                                        <span style="color:#58A6FF;font-size:1.3rem;
+                                                     font-weight:800;">{n_tab}</span>
+                                        <span style="color:#8B949E;font-size:0.7rem;
+                                                     margin-left:4px;">tabelas</span>
+                                    </div>
+                                    <div>
+                                        <span style="color:#BC8CFF;font-size:1.3rem;
+                                                     font-weight:800;">{n_reg}</span>
+                                        <span style="color:#8B949E;font-size:0.7rem;
+                                                     margin-left:4px;">regras</span>
+                                    </div>
+                                    <div>
+                                        <span style="color:#C9A227;font-size:1.3rem;
+                                                     font-weight:800;">1</span>
+                                        <span style="color:#8B949E;font-size:0.7rem;
+                                                     margin-left:4px;">domínio</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>""", unsafe_allow_html=True)
 
-                        # Regras
+                        # Regras vinculadas
                         if not rules_t.empty:
                             st.markdown('<div style="color:#E6EDF3;font-weight:700;'
                                         'font-size:0.82rem;margin:12px 0 6px;">'
@@ -697,136 +699,97 @@ elif pagina == "📖 Glossário":
                                     if ok:
                                         st.warning("↩️ Devolvido.")
                                         st.cache_data.clear(); st.rerun()
-                else:
-                    st.markdown("""
+
+        # ── REGRAS ───────────────────────────────────────────────────
+        with tabs_g[1]:
+            df_rg_view, _ = qry("""
+                SELECT g.termo, r.nome_regra, r.descricao_regra, r.categoria
+                FROM meridian_governanca.business_rules r
+                JOIN meridian_governanca.business_glossary g
+                ON r.glossary_id = g.glossary_id
+                ORDER BY g.termo, r.categoria
+            """)
+            if not df_rg_view.empty:
+                for _, r in df_rg_view.iterrows():
+                    st.markdown(f"""
                     <div style="background:#161B22;border:1px solid #30363D;
-                                border-radius:12px;padding:40px;text-align:center;">
-                        <div style="font-size:2rem;margin-bottom:10px;">📖</div>
-                        <div style="color:#E6EDF3;font-weight:700;margin-bottom:6px;">
-                            Selecione um termo</div>
-                        <div style="color:#8B949E;font-size:0.82rem;">
-                            Clique em "Ver detalhes" para visualizar a definição,
-                            regras e ativos vinculados.</div>
+                                border-radius:8px;padding:10px 14px;margin-bottom:6px;">
+                        <div style="display:flex;justify-content:space-between;
+                                    margin-bottom:3px;">
+                            <span style="color:#C9A227;font-size:0.75rem;
+                                         font-weight:700;">{r['termo']}</span>
+                            <span style="background:#BC8CFF22;color:#BC8CFF;
+                                         border-radius:4px;padding:1px 7px;
+                                         font-size:0.65rem;">{r['categoria']}</span>
+                        </div>
+                        <div style="color:#E6EDF3;font-size:0.82rem;
+                                    font-weight:600;">{r['nome_regra']}</div>
+                        <div style="color:#8B949E;font-size:0.73rem;
+                                    margin-top:2px;">{r['descricao_regra']}</div>
                     </div>""", unsafe_allow_html=True)
 
-        # ── ABA 2: REGRAS ────────────────────────────────────────────
-        with tabs_g[1]:
-            if df_rules.empty:
-                st.info("Nenhuma regra cadastrada.")
-            else:
-                df_rg_view, _ = qry("""
-                    SELECT g.termo, r.nome_regra, r.descricao_regra, r.categoria
-                    FROM meridian_governanca.business_rules r
-                    JOIN meridian_governanca.business_glossary g
-                    ON r.glossary_id = g.glossary_id
-                    ORDER BY g.termo, r.categoria
-                """)
-                if not df_rg_view.empty:
-                    for _, r in df_rg_view.iterrows():
-                        st.markdown(f"""
-                        <div style="background:#161B22;border:1px solid #30363D;
-                                    border-radius:8px;padding:10px 14px;margin-bottom:6px;">
-                            <div style="display:flex;justify-content:space-between;
-                                        align-items:center;margin-bottom:4px;">
-                                <span style="color:#C9A227;font-size:0.78rem;
-                                             font-weight:700;">{r['termo']}</span>
-                                <span style="background:#BC8CFF22;color:#BC8CFF;
-                                             border-radius:4px;padding:1px 7px;
-                                             font-size:0.65rem;">{r['categoria']}</span>
-                            </div>
-                            <div style="color:#E6EDF3;font-size:0.82rem;
-                                        font-weight:600;">{r['nome_regra']}</div>
-                            <div style="color:#8B949E;font-size:0.75rem;
-                                        margin-top:2px;">{r['descricao_regra']}</div>
-                        </div>""", unsafe_allow_html=True)
-
-        # ── ABA 3: RELACIONAMENTOS (grafo interativo) ─────────────────
+        # ── RELACIONAMENTOS (grafo) ───────────────────────────────────
         with tabs_g[2]:
-            if df_links.empty or df_g.empty:
-                st.info("Nenhum relacionamento cadastrado.")
-            else:
-                st.markdown("""
-                <div style="background:#161B22;border:1px solid #30363D;
-                            border-radius:10px;padding:12px 16px;margin-bottom:14px;">
-                    <div style="color:#E6EDF3;font-size:0.82rem;line-height:1.5;">
-                        Visualização da linhagem de negócio: como conceitos se conectam
-                        a ativos técnicos. Cada nó representa um elemento;
-                        cada aresta representa uma dependência.</div>
-                </div>""", unsafe_allow_html=True)
-
-                # Constrói o grafo
+            if not df_links.empty and not df_g.empty:
                 termos_dict = dict(zip(df_g["glossary_id"], df_g["termo"]))
-
-                nodes_x, nodes_y, nodes_text, nodes_color, nodes_size = [], [], [], [], []
-                edge_x, edge_y = [], []
-
-                # Posiciona termos à esquerda e tabelas à direita
-                termos_uniq = df_links["glossary_id"].unique().tolist()
+                termos_uniq  = df_links["glossary_id"].unique().tolist()
                 tabelas_uniq = df_links["table_name"].unique().tolist()
+                t_pos = {gid:(0, i*1.5) for i,gid in enumerate(termos_uniq)}
+                a_pos = {tab:(3, i*1.5 - (len(tabelas_uniq)-len(termos_uniq))*0.75)
+                         for i,tab in enumerate(tabelas_uniq)}
 
-                # Coordenadas
-                t_pos = {gid: (0, i * 1.5) for i, gid in enumerate(termos_uniq)}
-                a_pos = {tab: (3, i * 1.5 - (len(tabelas_uniq)-len(termos_uniq))*0.75)
-                         for i, tab in enumerate(tabelas_uniq)}
+                nodes_x,nodes_y,nodes_text,nodes_color,nodes_size = [],[],[],[],[]
+                edge_x,edge_y = [],[]
 
-                # Nós — termos
-                for gid, (x, y) in t_pos.items():
+                for gid,(x,y) in t_pos.items():
                     nodes_x.append(x); nodes_y.append(y)
-                    nodes_text.append(termos_dict.get(gid, gid[:8]))
+                    nodes_text.append(termos_dict.get(gid,gid[:8]))
                     nodes_color.append("#C9A227"); nodes_size.append(20)
 
-                # Nós — tabelas
-                for tab, (x, y) in a_pos.items():
+                for tab,(x,y) in a_pos.items():
                     nodes_x.append(x); nodes_y.append(y)
                     nodes_text.append(tab)
                     nodes_color.append("#58A6FF"); nodes_size.append(16)
 
-                # Arestas
-                for _, l in df_links.iterrows():
+                for _,l in df_links.iterrows():
                     if l["glossary_id"] in t_pos and l["table_name"] in a_pos:
                         x0,y0 = t_pos[l["glossary_id"]]
                         x1,y1 = a_pos[l["table_name"]]
                         edge_x += [x0,x1,None]; edge_y += [y0,y1,None]
 
                 fig_g = go.Figure()
-                fig_g.add_trace(go.Scatter(
-                    x=edge_x, y=edge_y, mode="lines",
-                    line=dict(color="#30363D", width=1.5),
-                    hoverinfo="none"
-                ))
-                fig_g.add_trace(go.Scatter(
-                    x=nodes_x, y=nodes_y, mode="markers+text",
-                    marker=dict(color=nodes_color, size=nodes_size,
+                fig_g.add_trace(go.Scatter(x=edge_x,y=edge_y,mode="lines",
+                    line=dict(color="#30363D",width=1.5),hoverinfo="none"))
+                fig_g.add_trace(go.Scatter(x=nodes_x,y=nodes_y,
+                    mode="markers+text",
+                    marker=dict(color=nodes_color,size=nodes_size,
                                 line=dict(color="#0D1117",width=2)),
-                    text=nodes_text, textposition="middle right",
-                    textfont=dict(color="#E6EDF3", size=11),
-                    hoverinfo="text"
-                ))
+                    text=nodes_text,textposition="middle right",
+                    textfont=dict(color="#E6EDF3",size=11),hoverinfo="text"))
                 fig_g.update_layout(
-                    paper_bgcolor="#161B22", plot_bgcolor="#161B22",
-                    showlegend=False, height=420,
+                    paper_bgcolor="#161B22",plot_bgcolor="#161B22",
+                    showlegend=False,height=420,
                     margin=dict(t=10,b=10,l=10,r=10),
                     xaxis=dict(showgrid=False,zeroline=False,showticklabels=False),
-                    yaxis=dict(showgrid=False,zeroline=False,showticklabels=False),
-                )
-                st.plotly_chart(fig_g, use_container_width=True)
-
-                # Legenda
+                    yaxis=dict(showgrid=False,zeroline=False,showticklabels=False))
+                st.plotly_chart(fig_g,use_container_width=True)
                 st.markdown("""
                 <div style="display:flex;gap:16px;margin-top:4px;">
                     <div style="display:flex;align-items:center;gap:6px;">
-                        <div style="width:12px;height:12px;border-radius:50%;
+                        <div style="width:10px;height:10px;border-radius:50%;
                                     background:#C9A227;"></div>
-                        <span style="color:#8B949E;font-size:0.72rem;">Termos de Negócio</span>
+                        <span style="color:#8B949E;font-size:0.72rem;">
+                            Termos de Negócio</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:6px;">
-                        <div style="width:12px;height:12px;border-radius:50%;
+                        <div style="width:10px;height:10px;border-radius:50%;
                                     background:#58A6FF;"></div>
-                        <span style="color:#8B949E;font-size:0.72rem;">Ativos Técnicos</span>
+                        <span style="color:#8B949E;font-size:0.72rem;">
+                            Ativos Técnicos</span>
                     </div>
                 </div>""", unsafe_allow_html=True)
 
-        # ── ABA 4: HISTÓRICO ─────────────────────────────────────────
+        # ── HISTÓRICO ────────────────────────────────────────────────
         with tabs_g[3]:
             df_wf, _ = qry("""
                 SELECT g.termo, w.acao, w.status_anterior,
@@ -849,38 +812,31 @@ elif pagina == "📖 Glossário":
                                          font-weight:700;">{r['termo']}</span>
                             <span style="color:#8B949E;font-size:0.72rem;
                                          margin-left:8px;">{r['acao']}</span>
-                            {f'<div style="color:#8B949E;font-size:0.7rem;margin-top:2px;">{r["comentario"]}</div>' if r.get("comentario") else ''}
                         </div>
                         <span style="color:#8B949E;font-size:0.7rem;">{ts}</span>
                     </div>""", unsafe_allow_html=True)
             else:
                 st.info("Nenhum histórico disponível.")
 
-        # ── ABA 5: WORKFLOW (só curadores) ────────────────────────────
+        # ── WORKFLOW (só curadores) ───────────────────────────────────
         if is_curador and len(tabs_g) > 4:
             with tabs_g[4]:
-                st.markdown("""
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;
-                            gap:12px;">""", unsafe_allow_html=True)
-
-                colunas_wf = [
+                wf_cols = st.columns(3)
+                for col,(tit_wf,st_wf,cor_wf) in zip(wf_cols,[
                     ("📄 Rascunho","rascunho","#8B949E"),
                     ("🔵 Em Revisão","em_revisao","#58A6FF"),
                     ("✅ Homologado","homologado","#3FB950"),
-                ]
-                wf_cols = st.columns(3)
-                for col, (titulo_wf, status_wf, cor_wf) in \
-                        zip(wf_cols, colunas_wf):
-                    df_wf_col = df_g[df_g["status"]==status_wf]
+                ]):
+                    df_wfc = df_g[df_g["status"]==st_wf]
                     with col:
                         st.markdown(f"""
                         <div style="background:#161B22;border:1px solid {cor_wf}44;
                                     border-radius:10px;padding:12px;">
                             <div style="color:{cor_wf};font-weight:700;
                                         font-size:0.82rem;margin-bottom:8px;">
-                                {titulo_wf} ({len(df_wf_col)})</div>""",
+                                {tit_wf} ({len(df_wfc)})</div>""",
                                     unsafe_allow_html=True)
-                        for _, r in df_wf_col.iterrows():
+                        for _,r in df_wfc.iterrows():
                             st.markdown(f"""
                             <div style="background:#0D1117;border:1px solid #30363D;
                                         border-radius:6px;padding:7px 9px;
@@ -902,42 +858,39 @@ elif pagina == "📋 Catálogo":
     df_cat = load_meta()
 
     if not df_cat.empty:
-        total = len(df_cat)
         schemas = df_cat["schema_name"].value_counts()
-        ouro   = schemas.get("ouro",0)
-        prata  = schemas.get("prata",0)
-        bronze = schemas.get("bronze",0)
-
         k1,k2,k3 = st.columns(3)
-        with k1: st.markdown(kpi(total,"Tabelas no Catálogo","#C9A227"),
+        with k1: st.markdown(kpi(len(df_cat),"Tabelas no Catálogo","#C9A227"),
                              unsafe_allow_html=True)
-        with k2: st.markdown(kpi(f"{ouro} · {prata} · {bronze}",
-                                 "Ouro · Prata · Bronze","#58A6FF"),
-                             unsafe_allow_html=True)
+        with k2: st.markdown(kpi(
+            f"{schemas.get('ouro',0)} · {schemas.get('prata',0)} · {schemas.get('bronze',0)}",
+            "Ouro · Prata · Bronze","#58A6FF"), unsafe_allow_html=True)
         with k3: st.markdown(kpi(df_cat["dominio"].nunique(),"Domínios","#BC8CFF"),
                              unsafe_allow_html=True)
 
         st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
-        # Busca
         busca_c = st.text_input("",
             placeholder="🔍 O que você procura? Pesquise por conceito, responsável, domínio ou ativo...",
             key="cat_busca")
 
-        # Filtros
         f1,f2,f3,f4,f5 = st.columns(5)
         with f1:
-            doms = ["Todos"]+sorted([d for d in df_cat["dominio"].unique() if d])
-            f_dom = st.selectbox("DOMÍNIO", doms, key="cf_dom")
+            f_dom = st.selectbox("DOMÍNIO",
+                ["Todos"]+sorted([d for d in df_cat["dominio"].unique() if d]),
+                key="cf_dom")
         with f2:
-            cams = ["Todas"]+sorted(df_cat["schema_name"].unique().tolist())
-            f_cam = st.selectbox("CAMADA", cams, key="cf_cam")
+            f_cam = st.selectbox("CAMADA",
+                ["Todas"]+sorted(df_cat["schema_name"].unique().tolist()),
+                key="cf_cam")
         with f3:
-            owns = ["Todos"]+sorted([o for o in df_cat["data_owner"].unique() if o])
-            f_own = st.selectbox("OWNER", owns, key="cf_own")
+            f_own = st.selectbox("OWNER",
+                ["Todos"]+sorted([o for o in df_cat["data_owner"].unique() if o]),
+                key="cf_own")
         with f4:
-            stws = ["Todos"]+sorted([s for s in df_cat["data_steward"].unique() if s])
-            f_stw = st.selectbox("STEWARD", stws, key="cf_stw")
+            f_stw = st.selectbox("STEWARD",
+                ["Todos"]+sorted([s for s in df_cat["data_steward"].unique() if s]),
+                key="cf_stw")
         with f5:
             f_doc = st.selectbox("DOCUMENTAÇÃO",
                 ["Todas","Documentadas","Sem documentação"], key="cf_doc")
@@ -964,59 +917,57 @@ elif pagina == "📋 Catálogo":
                     f'{len(df_f)} ativo(s) encontrado(s)</div>',
                     unsafe_allow_html=True)
 
-        # Cards em grid 3 colunas
         if "cat_sel" not in st.session_state:
             st.session_state["cat_sel"] = None
 
-        rows = [df_f.iloc[i:i+3].reset_index(drop=True)
-                for i in range(0, len(df_f), 3)]
-
-        for row_df in rows:
+        # Grid de cards clicáveis
+        rows_c = [df_f.iloc[i:i+3].reset_index(drop=True)
+                  for i in range(0,len(df_f),3)]
+        for row_df in rows_c:
             cols_c = st.columns(3)
-            for i, (_, item) in enumerate(row_df.iterrows()):
+            for i,(_,item) in enumerate(row_df.iterrows()):
                 cor_c = ("#3FB950" if item["score_completude"]==100 else
                          "#C9A227" if item["score_completude"]>=60 else "#F85149")
                 desc  = (item["descricao"][:75]+"..."
                          if item["descricao"] and len(item["descricao"])>75
                          else item["descricao"] or "Sem descrição")
-                is_sel = (st.session_state["cat_sel"] ==
-                          f"{item['schema_name']}.{item['table_name']}")
-                brd = f"border-color:{cor_c};" if is_sel else ""
+                chave = f"{item['schema_name']}.{item['table_name']}"
+                is_sel = st.session_state["cat_sel"] == chave
+
                 with cols_c[i]:
                     st.markdown(f"""
-                    <div style="background:#161B22;border:1px solid #30363D;
-                                border-radius:10px;padding:14px;margin-bottom:8px;
-                                min-height:130px;{brd}">
+                    <div style="background:#161B22;border:1px solid {'#C9A227' if is_sel else '#30363D'};
+                                border-radius:10px;padding:14px;margin-bottom:4px;
+                                background:{'#C9A22708' if is_sel else '#161B22'};">
                         <div style="display:flex;justify-content:space-between;
                                     align-items:flex-start;margin-bottom:5px;">
-                            <span style="color:#C9A227;font-weight:700;
-                                         font-size:0.83rem;">{item['table_name']}</span>
-                            <span style="color:{cor_c};font-weight:800;
-                                         font-size:0.88rem;">
+                            <span style="color:#C9A227;font-weight:700;font-size:0.83rem;">
+                                {item['table_name']}</span>
+                            <span style="color:{cor_c};font-weight:800;font-size:0.88rem;">
                                 {item['score_completude']}%</span>
                         </div>
                         <div style="color:#8B949E;font-size:0.73rem;line-height:1.4;
                                     margin-bottom:8px;">{desc}</div>
                         <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                            <span style="background:#58A6FF22;color:#58A6FF;
-                                         border-radius:4px;padding:2px 7px;
-                                         font-size:0.67rem;">{item['schema_name']}</span>
+                            <span style="background:#58A6FF22;color:#58A6FF;border-radius:4px;
+                                         padding:2px 7px;font-size:0.67rem;">
+                                {item['schema_name']}</span>
                             {f'<span style="background:#C9A22722;color:#C9A227;border-radius:4px;padding:2px 7px;font-size:0.67rem;">{item["dominio"]}</span>' if item['dominio'] else ''}
                             {f'<span style="background:#F8514922;color:#F85149;border-radius:4px;padding:2px 7px;font-size:0.67rem;">🔒 PII</span>' if item['tem_pii'] else ''}
                         </div>
                     </div>""", unsafe_allow_html=True)
-                    if st.button("ℹ️ Detalhes",
-                                 key=f"csel_{item['schema_name']}_{item['table_name']}",
+
+                    if st.button("▼" if is_sel else "▶",
+                                 key=f"csel_{chave}",
                                  use_container_width=True):
-                        chave = f"{item['schema_name']}.{item['table_name']}"
                         st.session_state["cat_sel"] = \
-                            None if st.session_state["cat_sel"]==chave else chave
+                            None if is_sel else chave
                         st.rerun()
 
-        # Detalhe do ativo selecionado
+        # Detalhe expandido
         if st.session_state.get("cat_sel"):
             chave = st.session_state["cat_sel"]
-            sc, tb = chave.split(".",1)
+            sc,tb = chave.split(".",1)
             row_c = df_cat[(df_cat["schema_name"]==sc)&
                            (df_cat["table_name"]==tb)]
             if not row_c.empty:
@@ -1025,7 +976,7 @@ elif pagina == "📋 Catálogo":
                           "#C9A227" if item["score_completude"]>=60 else "#F85149")
                 st.markdown(f"""
                 <div style="background:#161B22;border:1px solid {cor_c2}44;
-                            border-radius:12px;padding:18px;margin-top:16px;">
+                            border-radius:12px;padding:18px;margin-top:8px;">
                     <div style="display:flex;justify-content:space-between;
                                 align-items:center;margin-bottom:12px;">
                         <div style="color:#E6EDF3;font-size:1.05rem;font-weight:800;">
@@ -1074,7 +1025,7 @@ elif pagina == "📋 Catálogo":
                 </div>""", unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════════════════
-# 🏛️ DOMÍNIOS
+# 🏛️ DOMÍNIOS — clique no card abre detalhe completo
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "🏛️ Domínios":
     page_header("🏛️","Domínios de Dados Corporativos",
@@ -1088,7 +1039,7 @@ elif pagina == "🏛️ Domínios":
         n_owners = df_dom["data_owner"].nunique()
         n_stw    = df_dom["data_steward"].nunique()
         termos_v = len(df_glos) if not df_glos.empty else 0
-        cob      = round(len(df_glos[df_glos["status"]=="homologado"]) /
+        cob      = round(len(df_glos[df_glos["status"]=="homologado"])/
                          max(termos_v,1)*100) if termos_v else 0
 
         k1,k2,k3,k4,k5 = st.columns(5)
@@ -1108,8 +1059,11 @@ elif pagina == "🏛️ Domínios":
         icones_dom = {"Crédito":"💳","Pagamentos":"💸","Clientes":"👥",
                       "Compliance":"🛡️","Produtos":"📦"}
 
-        # Cards 3 colunas
-        rows_d = [dominios[i:i+3] for i in range(0, len(dominios), 3)]
+        if "dom_sel" not in st.session_state:
+            st.session_state["dom_sel"] = None
+
+        # Cards de domínios
+        rows_d = [dominios[i:i+3] for i in range(0,len(dominios),3)]
         for row_d in rows_d:
             cols_d = st.columns(3)
             for col_d, dom in zip(cols_d, row_d):
@@ -1122,11 +1076,13 @@ elif pagina == "🏛️ Domínios":
                 cor_d    = ("#3FB950" if score>=80 else
                             "#C9A227" if score>=60 else "#F85149")
                 ic       = icones_dom.get(dom,"🏛️")
+                is_sel   = st.session_state["dom_sel"] == dom
 
                 with col_d:
                     st.markdown(f"""
-                    <div style="background:#161B22;border:1px solid #30363D;
-                                border-radius:12px;padding:16px;margin-bottom:12px;">
+                    <div style="background:{'#C9A22708' if is_sel else '#161B22'};
+                                border:1px solid {'#C9A227' if is_sel else '#30363D'};
+                                border-radius:12px;padding:16px;margin-bottom:8px;">
                         <div style="display:flex;justify-content:space-between;
                                     align-items:center;margin-bottom:8px;">
                             <div style="display:flex;align-items:center;gap:6px;">
@@ -1142,25 +1098,187 @@ elif pagina == "🏛️ Domínios":
                             <div style="background:{cor_d};border-radius:4px;
                                         height:4px;width:{min(score,100):.0f}%;"></div>
                         </div>
-                        <div style="font-size:0.7rem;color:#8B949E;
-                                    line-height:1.6;margin-bottom:8px;">
+                        <div style="font-size:0.7rem;color:#8B949E;line-height:1.6;">
                             <span style="color:#E6EDF3;">Owner:</span>
-                            {owners_d[0] if owners_d else '—'}<br>
-                            <span style="color:#E6EDF3;">Stewards:</span>
-                            {len(stw_d)} ·
+                            {owners_d[0] if owners_d else '—'} ·
+                            <span style="color:#E6EDF3;">Stewards:</span> {len(stw_d)} ·
                             <span style="color:#E6EDF3;">Termos:</span> {n_t} ·
                             <span style="color:#E6EDF3;">Ativos:</span> {len(df_d)}
                         </div>
-                        <div style="display:flex;gap:4px;flex-wrap:wrap;">""",
-                                unsafe_allow_html=True)
-                    for sc_d in df_d["schema_name"].unique():
-                        n_sc = len(df_d[df_d["schema_name"]==sc_d])
-                        st.markdown(
-                            f'<span style="background:#58A6FF22;color:#58A6FF;'
-                            f'border-radius:4px;padding:2px 7px;font-size:0.65rem;">'
-                            f'{sc_d} ({n_sc})</span>',
+                    </div>""", unsafe_allow_html=True)
+
+                    if st.button(
+                        f"{'▼ Fechar' if is_sel else '▶ Ver detalhes'}",
+                        key=f"domsel_{dom}",
+                        use_container_width=True
+                    ):
+                        st.session_state["dom_sel"] = \
+                            None if is_sel else dom
+                        st.rerun()
+
+        # Detalhe completo do domínio
+        dom_sel = st.session_state.get("dom_sel")
+        if dom_sel:
+            df_d     = df_dom[df_dom["dominio"]==dom_sel]
+            score    = df_d["score_completude"].mean()
+            owners_d = [o for o in df_d["data_owner"].unique() if o]
+            stw_d    = [s for s in df_d["data_steward"].unique() if s]
+            n_t      = len(df_glos[df_glos["dominio"]==dom_sel]) \
+                       if not df_glos.empty else 0
+            cor_d    = ("#3FB950" if score>=80 else
+                        "#C9A227" if score>=60 else "#F85149")
+            ic       = icones_dom.get(dom_sel,"🏛️")
+
+            section_divider(f"DETALHES — {dom_sel.upper()}")
+
+            det1, det2 = st.columns([2,1])
+
+            with det1:
+                # Info principal
+                st.markdown(f"""
+                <div style="background:#161B22;border:1px solid #30363D;
+                            border-radius:12px;padding:18px;margin-bottom:12px;">
+                    <div style="display:flex;align-items:center;gap:10px;
+                                margin-bottom:12px;">
+                        <span style="font-size:1.8rem;">{ic}</span>
+                        <div>
+                            <div style="color:#E6EDF3;font-size:1.1rem;
+                                        font-weight:800;">{dom_sel}</div>
+                            <div style="color:#8B949E;font-size:0.75rem;">
+                                Domínio de dados do Banco Meridian</div>
+                        </div>
+                        <div style="margin-left:auto;text-align:right;">
+                            <div style="color:{cor_d};font-size:2rem;
+                                        font-weight:800;">{score:.0f}%</div>
+                            <div style="color:#8B949E;font-size:0.68rem;">
+                                score de governança</div>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;
+                                gap:8px;">
+                        <div style="background:#0D1117;border-radius:8px;padding:9px;
+                                    text-align:center;">
+                            <div style="color:#C9A227;font-size:1.4rem;
+                                        font-weight:800;">{len(df_d)}</div>
+                            <div style="color:#8B949E;font-size:0.65rem;">Ativos</div>
+                        </div>
+                        <div style="background:#0D1117;border-radius:8px;padding:9px;
+                                    text-align:center;">
+                            <div style="color:#58A6FF;font-size:1.4rem;
+                                        font-weight:800;">{len(owners_d)}</div>
+                            <div style="color:#8B949E;font-size:0.65rem;">Owners</div>
+                        </div>
+                        <div style="background:#0D1117;border-radius:8px;padding:9px;
+                                    text-align:center;">
+                            <div style="color:#BC8CFF;font-size:1.4rem;
+                                        font-weight:800;">{len(stw_d)}</div>
+                            <div style="color:#8B949E;font-size:0.65rem;">Stewards</div>
+                        </div>
+                        <div style="background:#0D1117;border-radius:8px;padding:9px;
+                                    text-align:center;">
+                            <div style="color:#3FB950;font-size:1.4rem;
+                                        font-weight:800;">{n_t}</div>
+                            <div style="color:#8B949E;font-size:0.65rem;">Termos</div>
+                        </div>
+                    </div>
+                </div>""", unsafe_allow_html=True)
+
+                # Tabelas do domínio
+                st.markdown('<div style="color:#E6EDF3;font-weight:700;'
+                            'font-size:0.82rem;margin-bottom:8px;">📋 Ativos do Domínio</div>',
                             unsafe_allow_html=True)
-                    st.markdown("</div></div>", unsafe_allow_html=True)
+                for _, row_t in df_d.iterrows():
+                    cor_t = ("#3FB950" if row_t["score_completude"]==100 else
+                             "#C9A227" if row_t["score_completude"]>=60 else "#F85149")
+                    st.markdown(f"""
+                    <div style="background:#161B22;border:1px solid #30363D;
+                                border-radius:8px;padding:8px 12px;margin-bottom:5px;
+                                display:flex;justify-content:space-between;
+                                align-items:center;">
+                        <div>
+                            <span style="color:#C9A227;font-size:0.8rem;
+                                         font-weight:600;">{row_t['table_name']}</span>
+                            <span style="background:#58A6FF22;color:#58A6FF;
+                                         border-radius:4px;padding:1px 6px;
+                                         font-size:0.65rem;margin-left:6px;">
+                                {row_t['schema_name']}</span>
+                        </div>
+                        <span style="color:{cor_t};font-weight:700;font-size:0.82rem;">
+                            {row_t['score_completude']}%</span>
+                    </div>""", unsafe_allow_html=True)
+
+                # Termos vinculados
+                if not df_glos.empty:
+                    termos_dom = df_glos[df_glos["dominio"]==dom_sel]
+                    if not termos_dom.empty:
+                        st.markdown('<div style="color:#E6EDF3;font-weight:700;'
+                                    'font-size:0.82rem;margin:12px 0 8px;">📖 Termos do Glossário</div>',
+                                    unsafe_allow_html=True)
+                        for _, t in termos_dom.iterrows():
+                            cor_ts = {"homologado":"#3FB950","em_revisao":"#58A6FF",
+                                      "rascunho":"#8B949E"}.get(t["status"],"#8B949E")
+                            st.markdown(f"""
+                            <div style="background:#161B22;border:1px solid #30363D;
+                                        border-radius:6px;padding:7px 10px;
+                                        margin-bottom:4px;display:flex;
+                                        justify-content:space-between;">
+                                <span style="color:#E6EDF3;font-size:0.78rem;">
+                                    {t['termo']}</span>
+                                <span style="color:{cor_ts};font-size:0.7rem;">
+                                    ● {t['status']}</span>
+                            </div>""", unsafe_allow_html=True)
+
+            with det2:
+                # Owners com avatar
+                st.markdown('<div style="background:#161B22;border:1px solid #30363D;'
+                            'border-radius:12px;padding:16px;margin-bottom:12px;">',
+                            unsafe_allow_html=True)
+                st.markdown('<div style="color:#8B949E;font-size:0.62rem;'
+                            'font-weight:700;text-transform:uppercase;'
+                            'letter-spacing:1px;margin-bottom:10px;">DATA OWNERS</div>',
+                            unsafe_allow_html=True)
+                for owner in owners_d:
+                    nome_fmt = owner.replace("@meridian.com","").replace("."," ").title()
+                    st.markdown(f"""
+                    <div style="display:flex;align-items:center;gap:10px;
+                                padding:8px 0;border-bottom:1px solid #21262D;">
+                        {avatar(nome_fmt,"#C9A227",36)}
+                        <div>
+                            <div style="color:#E6EDF3;font-size:0.8rem;
+                                        font-weight:600;">{nome_fmt}</div>
+                            <div style="color:#8B949E;font-size:0.68rem;">
+                                Data Owner · {dom_sel}</div>
+                        </div>
+                    </div>""", unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
+
+                # Stewards com avatar
+                st.markdown('<div style="background:#161B22;border:1px solid #30363D;'
+                            'border-radius:12px;padding:16px;">',
+                            unsafe_allow_html=True)
+                st.markdown('<div style="color:#8B949E;font-size:0.62rem;'
+                            'font-weight:700;text-transform:uppercase;'
+                            'letter-spacing:1px;margin-bottom:10px;">DATA STEWARDS</div>',
+                            unsafe_allow_html=True)
+                for stw in stw_d:
+                    nome_stw = stw.replace("@meridian.com","").replace("."," ").title()
+                    st.markdown(f"""
+                    <div style="display:flex;align-items:center;gap:10px;
+                                padding:8px 0;border-bottom:1px solid #21262D;">
+                        {avatar(nome_stw,"#58A6FF",36)}
+                        <div>
+                            <div style="color:#E6EDF3;font-size:0.8rem;
+                                        font-weight:600;">{nome_stw}</div>
+                            <div style="color:#8B949E;font-size:0.68rem;">
+                                Data Steward · {dom_sel}</div>
+                        </div>
+                    </div>""", unsafe_allow_html=True)
+
+                if not stw_d:
+                    st.markdown('<div style="color:#8B949E;font-size:0.78rem;">'
+                                'Nenhum steward definido.</div>',
+                                unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════════════════
 # 🛡️ SCORECARD
@@ -1175,18 +1293,15 @@ elif pagina == "🛡️ Scorecard":
     if df_sc.empty:
         st.error("Não foi possível carregar os dados.")
     else:
-        # 5 pilares
         doc  = df_sc["descricao"].apply(bool).mean()*100
         own  = df_sc["data_owner"].apply(bool).mean()*100
-        # Relacionamentos: % de tabelas com ao menos 1 vínculo no glossary_asset_link
-        tabs_com_link = df_links["table_name"].nunique() if not df_links.empty else 0
-        rel  = (tabs_com_link / max(len(df_sc),1)) * 100
+        tabs_link = df_links["table_name"].nunique() if not df_links.empty else 0
+        rel  = (tabs_link/max(len(df_sc),1))*100
         qual = df_sc["score_completude"].mean()
         cert = (len(df_sc[df_sc["selo"]=="certificado"])/len(df_sc))*100
         ger  = (doc+own+rel+qual+cert)/5
         cor_g = "#3FB950" if ger>=80 else "#C9A227" if ger>=60 else "#F85149"
 
-        # Score geral
         st.markdown(f"""
         <div style="background:#161B22;border:1px solid #30363D;border-radius:16px;
                     padding:24px;text-align:center;margin-bottom:20px;">
@@ -1200,9 +1315,8 @@ elif pagina == "🛡️ Scorecard":
                 Qualidade e Certificação</div>
         </div>""", unsafe_allow_html=True)
 
-        # 5 pilares
         p1,p2,p3,p4,p5 = st.columns(5)
-        for col, nome, val, ic in [
+        for col,nome,val,ic in [
             (p1,"Documentação",doc,"📝"),
             (p2,"Ownership",own,"👤"),
             (p3,"Relacionamentos",rel,"🔗"),
@@ -1225,30 +1339,26 @@ elif pagina == "🛡️ Scorecard":
                     </div>
                 </div>""", unsafe_allow_html=True)
 
-        # Score por domínio
         section_divider("SCORE POR DOMÍNIO")
         dom_sc = df_sc[df_sc["dominio"].apply(bool)]\
                     .groupby("dominio")["score_completude"].mean()\
                     .reset_index().sort_values("score_completude",ascending=False)
-        fig = px.bar(dom_sc, x="dominio", y="score_completude",
+        fig = px.bar(dom_sc,x="dominio",y="score_completude",
             color="score_completude",
             color_continuous_scale=["#F85149","#C9A227","#3FB950"],
-            range_color=[0,100], template="plotly_dark",
+            range_color=[0,100],template="plotly_dark",
             labels={"dominio":"","score_completude":"Score (%)"})
-        fig.update_layout(
-            paper_bgcolor="#161B22", plot_bgcolor="#161B22",
-            font_family="Inter", showlegend=False,
-            coloraxis_showscale=False, height=260,
-            margin=dict(t=10,b=10,l=0,r=0))
+        fig.update_layout(paper_bgcolor="#161B22",plot_bgcolor="#161B22",
+            font_family="Inter",showlegend=False,coloraxis_showscale=False,
+            height=260,margin=dict(t=10,b=10,l=0,r=0))
         fig.update_traces(marker_line_width=0)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig,use_container_width=True)
 
-        # Ranking owners
         section_divider("RANKING DE OWNERS")
         df_own = df_sc[df_sc["data_owner"].apply(bool)]\
                     .groupby("data_owner")["score_completude"].mean()\
                     .reset_index().sort_values("score_completude",ascending=False)
-        for _, row in df_own.iterrows():
+        for _,row in df_own.iterrows():
             cor_o = ("#3FB950" if row["score_completude"]>=80 else
                      "#C9A227" if row["score_completude"]>=60 else "#F85149")
             st.markdown(f"""
@@ -1268,7 +1378,7 @@ elif pagina == "🛡️ Scorecard":
             </div>""", unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════════════════
-# ⚡ MEU ESPAÇO — Área Operacional
+# ⚡ MEU ESPAÇO
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "⚡ Meu Espaço":
     page_header("⚡",f"Olá, {u['nome']} 👋",
@@ -1277,7 +1387,6 @@ elif pagina == "⚡ Meu Espaço":
     df_meta  = load_meta()
     df_gloss = load_glossario()
 
-    # Contadores de pendências
     pend_aprov  = len(df_gloss[df_gloss["status"]=="em_revisao"]) \
                   if not df_gloss.empty else 0
     sem_desc    = len(df_meta[df_meta["descricao"]==""]) \
@@ -1288,9 +1397,8 @@ elif pagina == "⚡ Meu Espaço":
                   if not df_meta.empty else 0
     sem_dom     = len(df_meta[df_meta["dominio"]==""]) \
                   if not df_meta.empty else 0
-    total_pend  = pend_aprov + sem_desc + sem_owner + sem_steward + sem_dom
+    total_pend  = pend_aprov+sem_desc+sem_owner+sem_steward+sem_dom
 
-    # Header de pendências
     st.markdown(f"""
     <div style="background:linear-gradient(135deg,#1C2128,#21262D);
                 border:1px solid #C9A22733;border-radius:12px;
@@ -1301,27 +1409,22 @@ elif pagina == "⚡ Meu Espaço":
         <div>
             <div style="color:#E6EDF3;font-weight:700;font-size:0.9rem;">
                 Você possui <span style="color:#C9A227;">{total_pend}</span>
-                ações pendentes na sua área de trabalho.</div>
-            <div style="color:#8B949E;font-size:0.75rem;margin-top:2px;">
-                Revise as pendências abaixo e tome as ações necessárias.</div>
+                ações pendentes.</div>
+            <div style="color:#8B949E;font-size:0.72rem;margin-top:2px;">
+                Revise e tome as ações necessárias.</div>
         </div>
     </div>""", unsafe_allow_html=True)
 
     section_divider("O QUE PRECISO FAZER AGORA?")
 
     acoes = [
-        ("APROVAR",     f"{pend_aprov} termos aguardam aprovação",
-         "#C9A227","→ Workflow", pend_aprov),
-        ("DOCUMENTAR",  f"{sem_desc} ativos sem descrição",
-         "#58A6FF","→ Curadoria", sem_desc),
-        ("ATRIBUIR",    f"{sem_owner} ativos sem Owner definido",
-         "#F85149","→ Curadoria", sem_owner),
-        ("ALOCAR",      f"{sem_steward} ativos sem Steward definido",
-         "#FF7B72","→ Curadoria", sem_steward),
-        ("CLASSIFICAR", f"{sem_dom} ativos sem domínio",
-         "#BC8CFF","→ Curadoria", sem_dom),
+        ("APROVAR",f"{pend_aprov} termos aguardam aprovação","#C9A227","→ Workflow",pend_aprov),
+        ("DOCUMENTAR",f"{sem_desc} ativos sem descrição","#58A6FF","→ Curadoria",sem_desc),
+        ("ATRIBUIR",f"{sem_owner} ativos sem Owner definido","#F85149","→ Curadoria",sem_owner),
+        ("ALOCAR",f"{sem_steward} ativos sem Steward definido","#FF7B72","→ Curadoria",sem_steward),
+        ("CLASSIFICAR",f"{sem_dom} ativos sem domínio","#BC8CFF","→ Curadoria",sem_dom),
     ]
-    for tipo, msg, cor_a, destino, qtd in acoes:
+    for tipo,msg,cor_a,dest,qtd in acoes:
         if qtd > 0:
             st.markdown(f"""
             <div style="background:#161B22;border:1px solid #30363D;border-radius:8px;
@@ -1329,21 +1432,19 @@ elif pagina == "⚡ Meu Espaço":
                         display:flex;align-items:center;justify-content:space-between;">
                 <div style="display:flex;align-items:center;gap:10px;">
                     <span style="background:{cor_a}22;color:{cor_a};border-radius:4px;
-                                 padding:2px 8px;font-size:0.68rem;font-weight:700;">
+                                 padding:2px 8px;font-size:0.65rem;font-weight:700;">
                         {tipo}</span>
-                    <span style="color:#E6EDF3;font-size:0.83rem;">{msg}</span>
+                    <span style="color:#E6EDF3;font-size:0.82rem;">{msg}</span>
                 </div>
-                <span style="color:#8B949E;font-size:0.75rem;">{destino}</span>
+                <span style="color:#8B949E;font-size:0.72rem;">{dest}</span>
             </div>""", unsafe_allow_html=True)
 
     section_divider("MINHAS RESPONSABILIDADES")
-
     if not df_meta.empty:
         como_owner   = len(df_meta[df_meta["data_owner"]==usuario])
         como_steward = len(df_meta[df_meta["data_steward"]==usuario])
         doc_media    = df_meta["score_completude"].mean()
         dom_uniq     = df_meta["dominio"].nunique()
-
         k1,k2,k3,k4 = st.columns(4)
         with k1: st.markdown(kpi(como_owner,"Como Owner","#C9A227"),
                              unsafe_allow_html=True)
@@ -1357,11 +1458,10 @@ elif pagina == "⚡ Meu Espaço":
             st.markdown(kpi(f"{doc_media:.0f}%","Documentação Média",cor_d),
                         unsafe_allow_html=True)
 
-    # Fila de aprovação
     if is_aprovador and pend_aprov > 0:
         section_divider("MINHAS APROVAÇÕES")
         df_pend = df_gloss[df_gloss["status"]=="em_revisao"]
-        for _, row in df_pend.iterrows():
+        for _,row in df_pend.iterrows():
             with st.expander(
                 f"📋 **{row['termo']}** · {row['dominio']} · {row['criticidade']}"
             ):
@@ -1369,8 +1469,7 @@ elif pagina == "⚡ Meu Espaço":
                 st.markdown(f"**Steward:** {row['steward_email']}")
                 ca,cr = st.columns(2)
                 with ca:
-                    if st.button("✅ Aprovar",
-                                 key=f"mea_{row['glossary_id']}",
+                    if st.button("✅ Aprovar",key=f"mea_{row['glossary_id']}",
                                  use_container_width=True):
                         ok,_ = exe(
                             f"UPDATE meridian_governanca.business_glossary "
@@ -1383,10 +1482,8 @@ elif pagina == "⚡ Meu Espaço":
                             st.success("✅ Homologado!")
                             st.cache_data.clear(); st.rerun()
                 with cr:
-                    motivo = st.text_input("Motivo",
-                                           key=f"mem_{row['glossary_id']}")
-                    if st.button("❌ Rejeitar",
-                                 key=f"mer_{row['glossary_id']}",
+                    motivo = st.text_input("Motivo",key=f"mem_{row['glossary_id']}")
+                    if st.button("❌ Rejeitar",key=f"mer_{row['glossary_id']}",
                                  use_container_width=True):
                         if motivo:
                             ok,_ = exe(
@@ -1401,12 +1498,11 @@ elif pagina == "⚡ Meu Espaço":
                                 st.cache_data.clear(); st.rerun()
                         else: st.warning("Informe o motivo.")
 
-    # Meus termos
     section_divider("MEUS TERMOS NO GLOSSÁRIO")
     df_meus = df_gloss[df_gloss["steward_email"]==usuario] \
               if not df_gloss.empty else pd.DataFrame()
     if not df_meus.empty:
-        for _, row in df_meus.iterrows():
+        for _,row in df_meus.iterrows():
             cor_s = {"homologado":"#3FB950","em_revisao":"#58A6FF",
                      "rascunho":"#8B949E"}.get(row["status"],"#8B949E")
             st.markdown(f"""
@@ -1419,12 +1515,7 @@ elif pagina == "⚡ Meu Espaço":
                     ● {row['status'].replace('_',' ').title()}</span>
             </div>""", unsafe_allow_html=True)
     else:
-        st.markdown("""
-        <div style="background:#161B22;border:1px solid #30363D;border-radius:8px;
-                    padding:16px;text-align:center;">
-            <div style="color:#8B949E;font-size:0.82rem;">
-                Nenhum termo vinculado ao seu e-mail.</div>
-        </div>""", unsafe_allow_html=True)
+        st.info("Nenhum termo vinculado ao seu e-mail.")
 
 # ════════════════════════════════════════════════════════════════════
 # ✏️ CURADORIA
@@ -1434,18 +1525,15 @@ elif pagina == "✏️ Curadoria":
                 "Enriqueça o entendimento — documente, classifique e atribua responsáveis.")
 
     df_cur = load_meta()
-
     if not df_cur.empty:
-        cur1, cur2 = st.tabs(["📋 Individual","⚡ Em Lote"])
-
+        cur1,cur2 = st.tabs(["📋 Individual","⚡ Em Lote"])
         with cur1:
-            c_left, c_right = st.columns([1,2])
+            c_left,c_right = st.columns([1,2])
             with c_left:
                 schemas = sorted(df_cur["schema_name"].unique().tolist())
-                sel_s = st.selectbox("SCHEMA", schemas, key="cur_s")
+                sel_s = st.selectbox("SCHEMA",schemas,key="cur_s")
                 tabs_s = df_cur[df_cur["schema_name"]==sel_s]["table_name"].tolist()
-                sel_t = st.selectbox("TABELA", tabs_s, key="cur_t")
-
+                sel_t = st.selectbox("TABELA",tabs_s,key="cur_t")
             with c_right:
                 row = df_cur[(df_cur["schema_name"]==sel_s)&
                              (df_cur["table_name"]==sel_t)].iloc[0]
@@ -1453,9 +1541,7 @@ elif pagina == "✏️ Curadoria":
                 own_p  = 100 if row["data_owner"] else 0
                 cert_p = 100 if row["selo"]=="certificado" else 0
                 qual_p = row["score_completude"]
-                rel_p  = 0  # sem dado de relacionamento por tabela ainda
 
-                # Header
                 st.markdown(f"""
                 <div style="background:#161B22;border:1px solid #30363D;border-radius:10px;
                             padding:12px 16px;margin-bottom:12px;">
@@ -1467,12 +1553,10 @@ elif pagina == "✏️ Curadoria":
                     </div>
                 </div>""", unsafe_allow_html=True)
 
-                # 5 pilares
                 pp1,pp2,pp3,pp4,pp5 = st.columns(5)
-                for pcol, pn, pv in [
+                for pcol,pn,pv in [
                     (pp1,"DOCUMENTAÇÃO",doc_p),(pp2,"OWNERSHIP",own_p),
-                    (pp3,"RELACIONAMENTOS",rel_p),(pp4,"QUALIDADE",qual_p),
-                    (pp5,"CERTIFICAÇÃO",cert_p)
+                    (pp3,"RELACION.",0),(pp4,"QUALIDADE",qual_p),(pp5,"CERTIFICAÇÃO",cert_p)
                 ]:
                     cor_pp = ("#3FB950" if pv>=80 else
                               "#C9A227" if pv>0 else "#F85149")
@@ -1481,81 +1565,70 @@ elif pagina == "✏️ Curadoria":
                         <div style="background:#0D1117;border:1px solid #30363D;
                                     border-radius:8px;padding:9px;text-align:center;
                                     margin-bottom:10px;">
-                            <div style="font-size:0.58rem;color:#8B949E;
-                                        text-transform:uppercase;letter-spacing:1px;">
+                            <div style="font-size:0.55rem;color:#8B949E;
+                                        text-transform:uppercase;letter-spacing:0.8px;">
                                 {pn}</div>
-                            <div style="font-size:1.2rem;font-weight:800;color:{cor_pp};">
-                                {f'{pv}%' if pv>0 else 'Não Iniciado'}</div>
+                            <div style="font-size:1.1rem;font-weight:800;color:{cor_pp};">
+                                {f'{pv}%' if pv>0 else '—'}</div>
                         </div>""", unsafe_allow_html=True)
 
-                ed1, ed2 = st.columns(2)
+                ed1,ed2 = st.columns(2)
                 with ed1:
-                    new_desc = st.text_area("DESCRIÇÃO",
-                        value=row["descricao"] or "", height=80, key="c_desc",
+                    new_desc = st.text_area("DESCRIÇÃO",value=row["descricao"] or "",
+                        height=80,key="c_desc",
                         placeholder="Descreva o propósito desta tabela...")
                     doms = ["","Crédito","Pagamentos","Clientes","Compliance","Produtos"]
-                    dom_i = doms.index(row["dominio"]) \
-                            if row["dominio"] in doms else 0
-                    new_dom = st.selectbox("DOMÍNIO", doms, index=dom_i, key="c_dom")
+                    dom_i = doms.index(row["dominio"]) if row["dominio"] in doms else 0
+                    new_dom = st.selectbox("DOMÍNIO",doms,index=dom_i,key="c_dom")
                 with ed2:
-                    new_own = st.text_input("DATA OWNER",
-                        value=row["data_owner"] or "", key="c_own")
-                    new_stw = st.text_input("DATA STEWARD",
-                        value=row["data_steward"] or "", key="c_stw")
+                    new_own = st.text_input("DATA OWNER",value=row["data_owner"] or "",key="c_own")
+                    new_stw = st.text_input("DATA STEWARD",value=row["data_steward"] or "",key="c_stw")
 
                 bc1,bc2 = st.columns(2)
                 with bc1:
-                    if st.button("💾 Salvar Alterações",type="primary",
-                                 key="c_save",use_container_width=True):
-                        filled = sum([bool(new_desc),bool(new_dom),
-                                      bool(new_own),bool(new_stw),
-                                      bool(row["funcao_negocio"])])
+                    if st.button("💾 Salvar",type="primary",key="c_save",use_container_width=True):
+                        filled = sum([bool(new_desc),bool(new_dom),bool(new_own),
+                                      bool(new_stw),bool(row["funcao_negocio"])])
                         ns = filled*20
-                        sl = ("certificado" if ns==100 else
-                              "parcial" if ns>=60 else "pendente")
+                        sl = ("certificado" if ns==100 else "parcial" if ns>=60 else "pendente")
                         ok,err = exe(
                             f"UPDATE meridian_governanca.tabelas_metadata "
-                            f"SET descricao='{esc(new_desc)}',"
-                            f"dominio='{esc(new_dom)}',"
-                            f"data_owner='{esc(new_own)}',"
-                            f"data_steward='{esc(new_stw)}',"
+                            f"SET descricao='{esc(new_desc)}',dominio='{esc(new_dom)}',"
+                            f"data_owner='{esc(new_own)}',data_steward='{esc(new_stw)}',"
                             f"score_completude={ns},selo='{sl}',"
                             f"atualizado_em=current_timestamp() "
                             f"WHERE schema_name='{sel_s}' AND table_name='{sel_t}'"
                         )
                         if ok:
-                            exe(f"INSERT INTO meridian_governanca.metadata_audit "
-                                f"VALUES ('{uuid.uuid4()}',current_timestamp(),"
-                                f"'{sel_s}','{sel_t}','tabela','','metadados',"
-                                f"'{row['score_completude']}','{ns}',"
+                            exe(f"INSERT INTO meridian_governanca.metadata_audit VALUES "
+                                f"('{uuid.uuid4()}',current_timestamp(),'{sel_s}','{sel_t}',"
+                                f"'tabela','','metadados','{row['score_completude']}','{ns}',"
                                 f"'manual','{esc(usuario)}','{esc(usuario[:8])}')")
                             st.success(f"✅ Salvo! Score: {ns}%")
                             st.cache_data.clear(); st.rerun()
                         else: st.error(f"Erro: {err}")
                 with bc2:
-                    if st.button("🤖 Sugerir com IA",key="c_ai",
-                                 use_container_width=True):
+                    if st.button("🤖 Sugerir com IA",key="c_ai",use_container_width=True):
                         sugestoes = {
-                            "clientes_raw":("Dados brutos de clientes ingeridos do sistema core bancário, contendo informações cadastrais e de contato.","Clientes"),
-                            "contas_raw":("Dados brutos de contas correntes e poupança dos clientes do banco.","Clientes"),
-                            "transacoes_raw":("Transações financeiras brutas de todos os canais digitais e físicos.","Pagamentos"),
-                            "propostas_credito_raw":("Propostas de crédito recebidas pelos canais com status de aprovação.","Crédito"),
-                            "pix_raw":("Transações PIX brutas do Sistema de Pagamentos Instantâneos do Banco Central.","Pagamentos"),
-                            "dim_clientes":("Dimensão de clientes tratada e enriquecida com segmentação e score.","Clientes"),
-                            "dim_contas":("Dimensão de contas com dados consolidados e limites.","Clientes"),
-                            "fato_transacoes":("Fato de transações financeiras consolidadas por período e canal.","Pagamentos"),
+                            "clientes_raw":("Dados brutos de clientes ingeridos do sistema core bancário.","Clientes"),
+                            "contas_raw":("Dados brutos de contas correntes e poupança dos clientes.","Clientes"),
+                            "transacoes_raw":("Transações financeiras brutas de todos os canais.","Pagamentos"),
+                            "propostas_credito_raw":("Propostas de crédito com status de aprovação.","Crédito"),
+                            "pix_raw":("Transações PIX brutas do SPI do Banco Central.","Pagamentos"),
+                            "dim_clientes":("Dimensão de clientes tratada e enriquecida.","Clientes"),
+                            "dim_contas":("Dimensão de contas com dados consolidados.","Clientes"),
+                            "fato_transacoes":("Fato de transações financeiras por período e canal.","Pagamentos"),
                             "fato_credito":("Fato de operações de crédito aprovadas e recusadas.","Crédito"),
-                            "fato_inadimplencia":("Fato de inadimplência com dias de atraso e valores.","Crédito"),
-                            "fato_pix":("Fato de transações PIX consolidadas por período.","Pagamentos"),
+                            "fato_inadimplencia":("Fato de inadimplência com dias de atraso.","Crédito"),
+                            "fato_pix":("Fato de transações PIX consolidadas.","Pagamentos"),
                             "dim_produtos":("Dimensão de produtos financeiros do banco.","Produtos"),
                             "indicadores_carteira":("Indicadores consolidados da carteira de crédito.","Crédito"),
-                            "perfil_cliente_360":("Visão 360 do cliente com score e propensão a churn.","Clientes"),
+                            "perfil_cliente_360":("Visão 360 do cliente com score e churn.","Clientes"),
                             "dashboard_inadimplencia":("Base para dashboard executivo de inadimplência.","Crédito"),
                             "indicadores_pix":("Indicadores de volume e performance do PIX.","Pagamentos"),
                             "base_lgpd":("Mapeamento de dados pessoais para conformidade LGPD.","Compliance"),
                         }
-                        sug = sugestoes.get(sel_t,
-                            (f"Tabela {sel_t} do schema {sel_s}.",""))
+                        sug = sugestoes.get(sel_t,(f"Tabela {sel_t} do schema {sel_s}.",""))
                         st.session_state["ai_desc"] = sug[0]
                         st.session_state["ai_dom"]  = sug[1]
                         st.rerun()
@@ -1568,7 +1641,7 @@ elif pagina == "✏️ Curadoria":
                             🤖 Sugestão da IA — revise antes de salvar</div>
                     </div>""", unsafe_allow_html=True)
                     sug_d = st.text_area("Descrição sugerida",
-                        value=st.session_state["ai_desc"], key="sug_d")
+                        value=st.session_state["ai_desc"],key="sug_d")
                     so = ["","Crédito","Pagamentos","Clientes","Compliance","Produtos"]
                     sv = st.session_state["ai_dom"]
                     si = so.index(sv) if sv in so else 0
@@ -1576,25 +1649,21 @@ elif pagina == "✏️ Curadoria":
                     sa1,sa2 = st.columns(2)
                     with sa1:
                         if st.button("✅ Aceitar",key="ai_ac",use_container_width=True):
-                            filled = sum([bool(sug_d),bool(sug_dom),
-                                          bool(new_own),bool(new_stw),
-                                          bool(row["funcao_negocio"])])
+                            filled = sum([bool(sug_d),bool(sug_dom),bool(new_own),
+                                          bool(new_stw),bool(row["funcao_negocio"])])
                             ns = filled*20
-                            sl = ("certificado" if ns==100 else
-                                  "parcial" if ns>=60 else "pendente")
+                            sl = ("certificado" if ns==100 else "parcial" if ns>=60 else "pendente")
                             ok,_ = exe(
                                 f"UPDATE meridian_governanca.tabelas_metadata "
-                                f"SET descricao='{esc(sug_d)}',"
-                                f"dominio='{esc(sug_dom)}',"
+                                f"SET descricao='{esc(sug_d)}',dominio='{esc(sug_dom)}',"
                                 f"score_completude={ns},selo='{sl}',"
                                 f"atualizado_em=current_timestamp() "
                                 f"WHERE schema_name='{sel_s}' AND table_name='{sel_t}'"
                             )
                             if ok:
-                                exe(f"INSERT INTO meridian_governanca.metadata_audit "
-                                    f"VALUES ('{uuid.uuid4()}',current_timestamp(),"
-                                    f"'{sel_s}','{sel_t}','tabela','','metadados',"
-                                    f"'{row['score_completude']}','{ns}',"
+                                exe(f"INSERT INTO meridian_governanca.metadata_audit VALUES "
+                                    f"('{uuid.uuid4()}',current_timestamp(),'{sel_s}','{sel_t}',"
+                                    f"'tabela','','metadados','{row['score_completude']}','{ns}',"
                                     f"'ia','{esc(usuario)}','{esc(usuario[:8])}')")
                                 st.success("✅ Sugestão aplicada!")
                                 del st.session_state["ai_desc"]
@@ -1610,35 +1679,31 @@ elif pagina == "✏️ Curadoria":
             f1c,f2c = st.columns(2)
             with f1c:
                 fl_s = st.selectbox("Schema",
-                    ["Todos"]+sorted(df_cur["schema_name"].unique().tolist()),
-                    key="lote_s")
+                    ["Todos"]+sorted(df_cur["schema_name"].unique().tolist()),key="lote_s")
             with f2c:
                 fl_sl = st.selectbox("Selo",
                     ["Todos","certificado","parcial","pendente"],key="lote_sl")
             df_l = df_cur.copy()
             if fl_s  != "Todos": df_l = df_l[df_l["schema_name"]==fl_s]
             if fl_sl != "Todos": df_l = df_l[df_l["selo"]==fl_sl]
-            df_l_ed = df_l[["schema_name","table_name",
-                             "score_completude","selo"]].copy()
-            df_l_ed.insert(0,"Selecionar",False)
+            df_led = df_l[["schema_name","table_name","score_completude","selo"]].copy()
+            df_led.insert(0,"Selecionar",False)
             edited = st.data_editor(
-                df_l_ed.rename(columns={
-                    "schema_name":"Schema","table_name":"Tabela",
-                    "score_completude":"Score","selo":"Selo"}),
+                df_led.rename(columns={"schema_name":"Schema","table_name":"Tabela",
+                                       "score_completude":"Score","selo":"Selo"}),
                 use_container_width=True,hide_index=True,
                 column_config={"Selecionar":st.column_config.CheckboxColumn()}
             )
             sels = edited[edited["Selecionar"]==True]
             if len(sels)>0:
-                st.markdown(f'<div style="color:#C9A227;font-weight:600;'
-                            f'font-size:0.82rem;margin:6px 0;">'
+                st.markdown(f'<div style="color:#C9A227;font-size:0.82rem;margin:6px 0;">'
                             f'{len(sels)} tabela(s) selecionada(s)</div>',
                             unsafe_allow_html=True)
                 lb1,lb2,lb3 = st.columns(3)
                 with lb1:
                     l_dom = st.selectbox("Domínio",
-                        ["","Crédito","Pagamentos","Clientes",
-                         "Compliance","Produtos"], key="l_dom")
+                        ["","Crédito","Pagamentos","Clientes","Compliance","Produtos"],
+                        key="l_dom")
                 with lb2: l_own = st.text_input("Owner",key="l_own")
                 with lb3: l_stw = st.text_input("Steward",key="l_stw")
                 if st.button(f"🚀 Aplicar em {len(sels)} tabela(s)",
@@ -1672,8 +1737,7 @@ elif pagina == "🕐 Auditoria":
 
     df_aud, err = qry("""
         SELECT timestamp_op, schema_name, table_name, tipo_objeto,
-               campo_alterado, valor_anterior, valor_novo,
-               origem, alterado_por
+               campo_alterado, valor_anterior, valor_novo, origem, alterado_por
         FROM meridian_governanca.metadata_audit
         ORDER BY timestamp_op DESC LIMIT 500
     """)
@@ -1719,42 +1783,41 @@ elif pagina == "🕐 Auditoria":
         if f_or != "Todos": df_af = df_af[df_af["origem"]==f_or]
         df_af = df_af.head(f_lim)
 
-        # Tabela customizada com badges
         st.markdown("""
         <div style="background:#161B22;border:1px solid #30363D;border-radius:10px;
                     overflow:hidden;margin-top:8px;">
         <table style="width:100%;border-collapse:collapse;">
         <thead><tr style="border-bottom:1px solid #30363D;">
-            <th style="color:#8B949E;font-size:0.65rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">DATA/HORA</th>
-            <th style="color:#8B949E;font-size:0.65rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">SCHEMA</th>
-            <th style="color:#8B949E;font-size:0.65rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">TABELA</th>
-            <th style="color:#8B949E;font-size:0.65rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">CAMPO</th>
-            <th style="color:#8B949E;font-size:0.65rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">VALOR ANTERIOR</th>
-            <th style="color:#8B949E;font-size:0.65rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">VALOR NOVO</th>
-            <th style="color:#8B949E;font-size:0.65rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">ORIGEM</th>
+            <th style="color:#8B949E;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">DATA/HORA</th>
+            <th style="color:#8B949E;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">SCHEMA</th>
+            <th style="color:#8B949E;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">TABELA</th>
+            <th style="color:#8B949E;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">CAMPO</th>
+            <th style="color:#8B949E;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">VALOR ANTERIOR</th>
+            <th style="color:#8B949E;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">VALOR NOVO</th>
+            <th style="color:#8B949E;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">ORIGEM</th>
         </tr></thead><tbody>
         """, unsafe_allow_html=True)
 
-        for _, row in df_af.iterrows():
-            ts      = str(row["timestamp_op"])[:16] if row["timestamp_op"] else "—"
-            oc      = "#BC8CFF" if row["origem"]=="ia" else "#58A6FF"
-            ot      = "IA" if row["origem"]=="ia" else "Manual"
-            va      = str(row["valor_anterior"])[:30] if row["valor_anterior"] else "—"
-            vn      = str(row["valor_novo"])[:40] if row["valor_novo"] else "—"
+        for _,row in df_af.iterrows():
+            ts = str(row["timestamp_op"])[:16] if row["timestamp_op"] else "—"
+            oc = "#BC8CFF" if row["origem"]=="ia" else "#58A6FF"
+            ot = "IA" if row["origem"]=="ia" else "Manual"
+            va = str(row["valor_anterior"])[:30] if row["valor_anterior"] else "—"
+            vn = str(row["valor_novo"])[:40] if row["valor_novo"] else "—"
             st.markdown(f"""
             <tr style="border-bottom:1px solid #21262D;">
-                <td style="color:#8B949E;font-size:0.75rem;padding:8px 12px;">{ts}</td>
-                <td style="color:#58A6FF;font-size:0.75rem;padding:8px 12px;">
+                <td style="color:#8B949E;font-size:0.73rem;padding:8px 12px;">{ts}</td>
+                <td style="color:#58A6FF;font-size:0.73rem;padding:8px 12px;">
                     {row['schema_name'] or '—'}</td>
-                <td style="color:#E6EDF3;font-size:0.75rem;padding:8px 12px;
+                <td style="color:#E6EDF3;font-size:0.73rem;padding:8px 12px;
                            font-weight:600;">{row['table_name'] or '—'}</td>
-                <td style="color:#8B949E;font-size:0.75rem;padding:8px 12px;">
+                <td style="color:#8B949E;font-size:0.73rem;padding:8px 12px;">
                     {row['campo_alterado'] or '—'}</td>
-                <td style="color:#8B949E;font-size:0.75rem;padding:8px 12px;">{va}</td>
-                <td style="color:#E6EDF3;font-size:0.75rem;padding:8px 12px;">{vn}</td>
+                <td style="color:#8B949E;font-size:0.73rem;padding:8px 12px;">{va}</td>
+                <td style="color:#E6EDF3;font-size:0.73rem;padding:8px 12px;">{vn}</td>
                 <td style="padding:8px 12px;">
                     <span style="background:{oc}22;color:{oc};border-radius:4px;
-                                 padding:2px 8px;font-size:0.68rem;font-weight:700;">
+                                 padding:2px 8px;font-size:0.65rem;font-weight:700;">
                         {ot}</span></td>
             </tr>""", unsafe_allow_html=True)
 
