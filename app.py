@@ -90,11 +90,10 @@ def get_conn():
     conn = sql.connect(
         server_hostname = st.secrets["DATABRICKS_HOST"],
         http_path       = st.secrets["DATABRICKS_HTTP_PATH"],
-        access_token    = st.secrets["DATABRICKS_TOKEN"]
+        access_token    = st.secrets["DATABRICKS_TOKEN"],
+        catalog         = "workspace",
+        schema          = "meridian_governanca"
     )
-    cursor = conn.cursor()
-    cursor.execute("USE CATALOG workspace")
-    cursor.execute("USE SCHEMA meridian_governanca")
     return conn
 
 @st.cache_data(ttl=300)
