@@ -87,11 +87,15 @@ section[data-testid="stSidebar"] * { color: #E6EDF3 !important; }
 
 @st.cache_resource
 def get_conn():
-    return sql.connect(
-        server_hostname=st.secrets["DATABRICKS_HOST"],
-        http_path=st.secrets["DATABRICKS_HTTP_PATH"],
-        access_token=st.secrets["DATABRICKS_TOKEN"]
+    conn = sql.connect(
+        server_hostname = st.secrets["DATABRICKS_HOST"],
+        http_path       = st.secrets["DATABRICKS_HTTP_PATH"],
+        access_token    = st.secrets["DATABRICKS_TOKEN"]
     )
+    cursor = conn.cursor()
+    cursor.execute("USE CATALOG workspace")
+    cursor.execute("USE SCHEMA meridian_governanca")
+    return conn
 
 @st.cache_data(ttl=300)
 def qry(sql_str):
