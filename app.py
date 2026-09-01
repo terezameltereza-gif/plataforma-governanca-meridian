@@ -240,10 +240,9 @@ with st.sidebar:
         st.session_state["usuario"] = None
 
     if not st.session_state["usuario"]:
-        email = st.selectbox("Selecione seu usuário", list(USUARIOS.keys()),
-    label_visibility="collapsed",
-            format_func=lambda x: f"{USUARIOS[x]['nome']} · {USUARIOS[x]['perfil']}",
-            label_visibility="collapsed")
+       email = st.selectbox("Selecione seu usuário", list(USUARIOS.keys()),
+    format_func=lambda x: f"{USUARIOS[x]['nome']} · {USUARIOS[x]['perfil']}",
+    label_visibility="collapsed")
         if st.button("Entrar →", key="login", use_container_width=True):
             st.session_state["usuario"]      = email
             st.session_state["perfil_atual"] = USUARIOS[email]["perfil"]
