@@ -141,8 +141,9 @@ MENU = {
     "PESSOAL":        ["⚡ Meu Espaço"],
     "INÍCIO":         ["🏠 Início"],
     "CONHECIMENTO":   ["📖 Glossário", "🏛️ Domínios"],
-    "DADOS":          ["📋 Catálogo"],
-    "CONFIABILIDADE": ["🛡️ Scorecard"],
+    "DADOS":          ["📋 Catálogo", "🔗 Linhagem", "📦 Produtos"],
+    "CONFIABILIDADE": ["🛡️ Scorecard", "🏆 Qualidade", "🥇 Certificação"],
+    "GESTÃO":         ["📊 Indicadores"],
     "OPERAÇÃO":       ["✏️ Curadoria", "🕐 Auditoria"],
 }
 
@@ -184,6 +185,36 @@ def load_sugestoes_regras():
 @st.cache_data(ttl=300)
 def load_solicitacoes_acesso():
     df,_ = qry("SELECT * FROM meridian_governanca.solicitacoes_acesso ORDER BY criado_em DESC")
+    return df if df is not None else pd.DataFrame()
+
+@st.cache_data(ttl=300)
+def load_quality_dimensions():
+    df,_ = qry("SELECT * FROM meridian_governanca.gd_quality_dimensions ORDER BY score_final DESC")
+    return df if df is not None else pd.DataFrame()
+
+@st.cache_data(ttl=300)
+def load_certification():
+    df,_ = qry("SELECT * FROM meridian_governanca.gd_certification ORDER BY score_qualidade DESC")
+    return df if df is not None else pd.DataFrame()
+
+@st.cache_data(ttl=300)
+def load_indicators_snapshot():
+    df,_ = qry("SELECT * FROM meridian_governanca.gd_indicators_snapshot ORDER BY data_snapshot ASC")
+    return df if df is not None else pd.DataFrame()
+
+@st.cache_data(ttl=300)
+def load_produtos():
+    df,_ = qry("SELECT * FROM meridian_governanca.produtos_dados ORDER BY status, nome")
+    return df if df is not None else pd.DataFrame()
+
+@st.cache_data(ttl=300)
+def load_produto_ativos():
+    df,_ = qry("SELECT * FROM meridian_governanca.produto_ativos")
+    return df if df is not None else pd.DataFrame()
+
+@st.cache_data(ttl=300)
+def load_linhagem():
+    df,_ = qry("SELECT * FROM meridian_governanca.linhagem_ativos ORDER BY origem_schema, origem_tabela")
     return df if df is not None else pd.DataFrame()
 
 @st.cache_data(ttl=300)
@@ -1602,3 +1633,267 @@ elif pagina == "🕐 Auditoria":
 
     copyright_footer()
 
+# ════════════════════════════════════════════════════════════════════
+# 📊 INDICADORES — Painel de Gestão de Governança
+# ════════════════════════════════════════════════════════════════════
+elif pagina == "📊 Indicadores":
+    page_header("📊","Painel de Indicadores de Gestão",
+                "Evolução temporal da governança de dados — documentação, ownership e qualidade.")
+    st.markdown("""<div style="background:#161B2299;border:1px solid #30363D;border-radius:8px;
+                padding:10px 14px;margin-bottom:16px;"><div style="color:#8B949E;font-size:0.78rem;line-height:1.6;">
+                Este painel mostra como os principais indicadores de governança evoluíram ao longo do tempo.
+                Use o filtro de domínio para acompanhar a maturidade de uma área específica.</div></div>""",
+                unsafe_allow_html=True)
+    df_snap = load_indicators_snapshot()
+    df_meta = load_meta()
+    df_cert = load_certification()
+    if df_snap.empty:
+        estado_vazio("📊","Nenhum snapshot disponível","Os indicadores serão calculados a cada ciclo de curadoria.")
+    else:
+        dominios_snap = ["Todos"] + sorted([d for d in df_snap["dominio"].unique() if d != "Todos"])
+        f_dom_ind = st.selectbox("Filtrar por Domínio", dominios_snap, key="ind_dom")
+        df_sn = df_snap[df_snap["dominio"]==f_dom_ind] if f_dom_ind != "Todos" else df_snap[df_snap["dominio"]=="Todos"]
+        ultimo   = df_sn.sort_values("data_snapshot").iloc[-1]  if not df_sn.empty    else None
+        anterior = df_sn.sort_values("data_snapshot").iloc[-2]  if len(df_sn)>1      else None
+        if ultimo is not None:
+            def delta(a,b,c):
+                if b is None: return ""
+                d = a[c]-b[c]; cor="#3FB950" if d>0 else "#F85149" if d<0 else "#8B949E"; s="↑" if d>0 else "↓" if d<0 else "→"
+                return f'<span style="color:{cor};font-size:0.65rem;font-weight:700;margin-left:4px;">{s}{abs(d):.1f}%</span>'
+            k1,k2,k3,k4 = st.columns(4)
+            for col,(lbl,campo,cor_k) in zip([k1,k2,k3,k4],[
+                ("Documentação","score_doc","#58A6FF"),("Ownership","score_ownership","#C9A227"),
+                ("Qualidade","score_qualidade","#3FB950"),("Score Geral","score_geral","#BC8CFF")]):
+                val=ultimo[campo]; d=delta(ultimo,anterior,campo)
+                cor_v="#3FB950" if val>=80 else "#C9A227" if val>=60 else "#F85149"
+                with col:
+                    st.markdown(f'<div style="background:#161B22;border:1px solid #30363D;border-radius:10px;padding:14px 16px;border-top:3px solid {cor_k};"><div style="font-size:0.62rem;color:#8B949E;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">{lbl}</div><div style="display:flex;align-items:baseline;gap:4px;"><span style="font-size:1.7rem;font-weight:800;color:{cor_v};">{val:.1f}%</span>{d}</div></div>',unsafe_allow_html=True)
+        section_divider("EVOLUÇÃO DOS INDICADORES")
+        if not df_sn.empty:
+            fig = go.Figure()
+            for campo,cor_l,nome_l in [("score_doc","#58A6FF","Documentação"),("score_ownership","#C9A227","Ownership"),("score_qualidade","#3FB950","Qualidade"),("score_geral","#BC8CFF","Score Geral")]:
+                fig.add_trace(go.Scatter(x=pd.to_datetime(df_sn["data_snapshot"]),y=df_sn[campo],name=nome_l,line=dict(color=cor_l,width=2.5),mode="lines+markers",marker=dict(size=6)))
+            fig.update_layout(paper_bgcolor="#161B22",plot_bgcolor="#161B22",font=dict(color="#8B949E",size=11),legend=dict(orientation="h",yanchor="bottom",y=1.02,bgcolor="rgba(0,0,0,0)"),height=320,margin=dict(t=40,b=20,l=40,r=20),xaxis=dict(showgrid=False,color="#484F58"),yaxis=dict(showgrid=True,gridcolor="#21262D",range=[0,105],ticksuffix="%"))
+            st.plotly_chart(fig,use_container_width=True)
+        section_divider("DISTRIBUIÇÃO POR DOMÍNIO")
+        if not df_meta.empty:
+            dom_agg=df_meta.groupby("dominio").agg(score_medio=("score_completude","mean")).reset_index().sort_values("score_medio",ascending=True)
+            fig2=go.Figure(go.Bar(x=dom_agg["score_medio"],y=dom_agg["dominio"],orientation="h",marker=dict(color=dom_agg["score_medio"],colorscale=[[0,"#F85149"],[0.6,"#C9A227"],[1,"#3FB950"]],cmin=0,cmax=100),text=[f"{v:.0f}%" for v in dom_agg["score_medio"]],textposition="outside",textfont=dict(color="#E6EDF3",size=11)))
+            fig2.update_layout(paper_bgcolor="#161B22",plot_bgcolor="#161B22",font=dict(color="#8B949E",size=11),height=260,margin=dict(t=10,b=10,l=10,r=60),xaxis=dict(showgrid=True,gridcolor="#21262D",range=[0,115],ticksuffix="%"),yaxis=dict(showgrid=False,color="#E6EDF3"))
+            st.plotly_chart(fig2,use_container_width=True)
+        section_divider("RESUMO DE CERTIFICAÇÃO")
+        if not df_cert.empty:
+            cert_status=df_cert["status_cert"].value_counts().reset_index(); cert_status.columns=["status","qtd"]
+            cor_cert={"certificado":"#3FB950","em_analise":"#C9A227","pendente":"#58A6FF","nao_iniciado":"#484F58"}
+            cols_cert=st.columns(len(cert_status))
+            for col,(_,row) in zip(cols_cert,cert_status.iterrows()):
+                cor_c=cor_cert.get(row["status"],"#8B949E")
+                label_c={"certificado":"✅ Certificados","em_analise":"🔵 Em Análise","pendente":"⏳ Pendentes","nao_iniciado":"📋 Não Iniciados"}.get(row["status"],row["status"])
+                with col: st.markdown(kpi(row["qtd"],label_c,cor_c),unsafe_allow_html=True)
+    copyright_footer()
+
+# ════════════════════════════════════════════════════════════════════
+# 🏆 QUALIDADE — Score por Dimensão
+# ════════════════════════════════════════════════════════════════════
+elif pagina == "🏆 Qualidade":
+    page_header("🏆","Score de Qualidade de Dados","Avaliação multidimensional — Completude · Unicidade · Validade · Atualidade · Consistência.")
+    st.markdown("""<div style="background:#161B2299;border:1px solid #30363D;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#8B949E;font-size:0.78rem;line-height:1.6;">A qualidade dos dados é avaliada em <strong style="color:#C9A227;">5 dimensões independentes</strong>. O Score Final é a média simples das 5 dimensões.</div></div>""",unsafe_allow_html=True)
+    DIMENSOES={"completude_pct":{"nome":"Completude","icone":"📋","cor":"#58A6FF","conceito":"% de campos obrigatórios preenchidos."},"unicidade_pct":{"nome":"Unicidade","icone":"🔑","cor":"#C9A227","conceito":"% de registros únicos na chave primária."},"validade_pct":{"nome":"Validade","icone":"✅","cor":"#3FB950","conceito":"% de valores no formato e domínio esperados."},"atualidade_pct":{"nome":"Atualidade","icone":"🕐","cor":"#BC8CFF","conceito":"% de registros dentro da janela de tempo esperada."},"consistencia_pct":{"nome":"Consistência","icone":"🔗","cor":"#FF7B72","conceito":"% de registros consistentes com tabelas relacionadas."}}
+    df_qual=load_quality_dimensions()
+    if df_qual.empty:
+        estado_vazio("🏆","Nenhum dado de qualidade","Execute a avaliação de qualidade na Curadoria.")
+    else:
+        media_geral=df_qual["score_final"].mean(); cor_mg="#3FB950" if media_geral>=80 else "#C9A227" if media_geral>=60 else "#F85149"
+        st.markdown(f'<div style="background:#161B22;border:1px solid #30363D;border-radius:16px;padding:20px;text-align:center;margin-bottom:20px;"><div style="font-size:0.7rem;color:#8B949E;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">{len(df_qual)} ativos avaliados</div><div style="font-size:3.5rem;font-weight:800;color:{cor_mg};line-height:1;">{media_geral:.1f}%</div><div style="color:#8B949E;font-size:0.75rem;margin-top:6px;">Alta (≥80%): {len(df_qual[df_qual["nivel"]=="Alta"])} · Média (40–79%): {len(df_qual[df_qual["nivel"]=="Media"])} · Baixa (&lt;40%): {len(df_qual[df_qual["nivel"]=="Baixa"])}</div></div>',unsafe_allow_html=True)
+        section_divider("MÉDIA POR DIMENSÃO")
+        cols_dim=st.columns(5)
+        for col,(campo,info) in zip(cols_dim,DIMENSOES.items()):
+            media_dim=df_qual[campo].mean(); cor_d="#3FB950" if media_dim>=80 else "#C9A227" if media_dim>=60 else "#F85149"
+            with col: st.markdown(f'<div style="background:#161B22;border:1px solid #30363D;border-radius:10px;padding:14px;text-align:center;" title="{info["conceito"]}"><div style="font-size:1.2rem;margin-bottom:4px;">{info["icone"]}</div><div style="font-size:1.6rem;font-weight:800;color:{cor_d};">{media_dim:.1f}%</div><div style="color:#8B949E;font-size:0.68rem;margin-bottom:8px;">{info["nome"]}</div><div style="background:#30363D;border-radius:4px;height:3px;"><div style="background:{cor_d};border-radius:4px;height:3px;width:{min(media_dim,100):.0f}%;"></div></div><div style="color:#484F58;font-size:0.6rem;margin-top:6px;line-height:1.3;">{info["conceito"]}</div></div>',unsafe_allow_html=True)
+        section_divider("AVALIAÇÃO POR ATIVO")
+        f1q,f2q,f3q=st.columns(3)
+        with f1q: fq_dom=st.selectbox("Domínio",["Todos"]+sorted([d for d in df_qual["dominio"].unique() if d]),key="q_dom")
+        with f2q: fq_cam=st.selectbox("Camada",["Todas"]+sorted(df_qual["schema_name"].unique().tolist()),key="q_cam")
+        with f3q: fq_niv=st.selectbox("Nível",["Todos","Alta","Media","Baixa"],key="q_niv")
+        df_qf=df_qual.copy()
+        if fq_dom!="Todos": df_qf=df_qf[df_qf["dominio"]==fq_dom]
+        if fq_cam!="Todas": df_qf=df_qf[df_qf["schema_name"]==fq_cam]
+        if fq_niv!="Todos": df_qf=df_qf[df_qf["nivel"]==fq_niv]
+        df_qf=df_qf.sort_values("score_final",ascending=False)
+        for _,row in df_qf.iterrows():
+            cor_q="#3FB950" if row["score_final"]>=80 else "#C9A227" if row["score_final"]>=40 else "#F85149"
+            nivel_badge={"Alta":"#3FB950","Media":"#C9A227","Baixa":"#F85149"}.get(row["nivel"],"#8B949E")
+            dims_html="".join([f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#484F58;margin-bottom:2px;">{info["icone"]} {info["nome"][:4]}.</div><div style="font-size:0.75rem;font-weight:700;color:{"#3FB950" if row[campo]>=80 else "#C9A227" if row[campo]>=40 else "#F85149"};">{row[campo]:.0f}%</div></div>' for campo,info in DIMENSOES.items()])
+            st.markdown(f'<div style="background:#161B22;border:1px solid #30363D;border-radius:10px;padding:12px 16px;margin-bottom:6px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div><span style="color:#C9A227;font-weight:700;font-size:0.85rem;">{row["table_name"]}</span><span style="background:#58A6FF22;color:#58A6FF;border-radius:3px;padding:1px 6px;font-size:0.62rem;margin-left:6px;">{row["schema_name"]}</span><span style="background:{nivel_badge}22;color:{nivel_badge};border-radius:3px;padding:1px 6px;font-size:0.62rem;margin-left:4px;">{row["nivel"]}</span></div><span style="color:{cor_q};font-size:1.1rem;font-weight:800;">{row["score_final"]:.1f}%</span></div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">{dims_html}</div></div>',unsafe_allow_html=True)
+    copyright_footer()
+
+# ════════════════════════════════════════════════════════════════════
+# 🥇 CERTIFICAÇÃO — Selos e Status
+# ════════════════════════════════════════════════════════════════════
+elif pagina == "🥇 Certificação":
+    page_header("🥇","Certificação de Ativos de Dados","Selos de maturidade — Ouro · Prata · Bronze — com critérios transparentes.")
+    st.markdown("""<div style="background:#161B2299;border:1px solid #30363D;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#8B949E;font-size:0.78rem;line-height:1.6;">A certificação valida que um ativo atende a critérios mínimos de governança e qualidade. Os selos são concedidos após análise formal pela equipe de Governança.</div></div>""",unsafe_allow_html=True)
+    SELOS={"Ouro":{"cor":"#C9A227","icone":"🥇","req_doc":100,"req_qual":90,"desc":"Gov. 100% + Qualidade ≥90% + todos os critérios atendidos"},"Prata":{"cor":"#A8A9AD","icone":"🥈","req_doc":80,"req_qual":70,"desc":"Gov. ≥80% + Qualidade ≥70% + Owner e Domínio definidos"},"Bronze":{"cor":"#CD7F32","icone":"🥉","req_doc":60,"req_qual":40,"desc":"Documentação parcial — ativo em processo de curadoria"}}
+    col_selos=st.columns(3)
+    for col,(nome,info) in zip(col_selos,SELOS.items()):
+        with col: st.markdown(f'<div style="background:#161B22;border:2px solid {info["cor"]}44;border-radius:14px;padding:16px;text-align:center;"><div style="font-size:2rem;margin-bottom:6px;">{info["icone"]}</div><div style="color:{info["cor"]};font-weight:800;font-size:1rem;margin-bottom:4px;">Selo {nome}</div><div style="color:#8B949E;font-size:0.72rem;line-height:1.4;">{info["desc"]}</div><div style="background:#30363D;border-radius:4px;height:1px;margin:10px 0;"></div><div style="font-size:0.65rem;color:#484F58;">Gov. mín: {info["req_doc"]}% · Qual. mín: {info["req_qual"]}%</div></div>',unsafe_allow_html=True)
+    section_divider("STATUS DE CERTIFICAÇÃO POR ATIVO")
+    df_cert=load_certification()
+    if df_cert.empty:
+        estado_vazio("🥇","Nenhum ativo certificado ainda","Inicie o processo de certificação na Curadoria.")
+    else:
+        fc1,fc2,fc3=st.columns(3)
+        with fc1: f_cert_dom=st.selectbox("Domínio",["Todos"]+sorted([d for d in df_cert["dominio"].unique() if d]),key="fc_dom")
+        with fc2: f_cert_st=st.selectbox("Status",["Todos","certificado","em_analise","pendente","nao_iniciado"],key="fc_st")
+        with fc3: f_cert_niv=st.selectbox("Nível",["Todos","Ouro","Prata","Bronze"],key="fc_niv")
+        df_cf=df_cert.copy()
+        if f_cert_dom!="Todos": df_cf=df_cf[df_cf["dominio"]==f_cert_dom]
+        if f_cert_st!="Todos":  df_cf=df_cf[df_cf["status_cert"]==f_cert_st]
+        if f_cert_niv!="Todos": df_cf=df_cf[df_cf["nivel_cert"]==f_cert_niv]
+        for _,row in df_cf.iterrows():
+            cor_st={"certificado":"#3FB950","em_analise":"#C9A227","pendente":"#58A6FF","nao_iniciado":"#484F58"}.get(row["status_cert"],"#8B949E")
+            label_st={"certificado":"✅ Certificado","em_analise":"🔵 Em Análise","pendente":"⏳ Pendente","nao_iniciado":"📋 Não Iniciado"}.get(row["status_cert"],row["status_cert"])
+            cor_nv=SELOS.get(row["nivel_cert"],{}).get("cor","#8B949E"); ic_nv=SELOS.get(row["nivel_cert"],{}).get("icone","")
+            criterios=[("Doc.",row["criterio_doc"]),("Owner",row["criterio_owner"]),("Steward",row["criterio_steward"]),("Domínio",row["criterio_dominio"]),("Qualidade",row["criterio_qualidade"])]
+            crit_items = [(n, ok) for n,ok in criterios]
+            crit_html = "".join([
+                f'<span style="color:{"#3FB950" if ok else "#F85149"};font-size:0.68rem;margin-right:10px;">{"OK" if ok else "X"} {n}</span>'
+                for n,ok in crit_items
+            ])
+            validade_html = f'<span>Válido até: <b style="color:#3FB950;">{str(row["valido_ate"])}</b></span>' if row["valido_ate"] else ""
+            st.markdown(
+                f'<div style="background:#161B22;border:1px solid #30363D;border-radius:12px;padding:14px 18px;margin-bottom:8px;">'
+                f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+                f'<div><span style="color:#E6EDF3;font-weight:800;font-size:0.9rem;">{row["table_name"]}</span>'
+                f'<span style="background:#58A6FF22;color:#58A6FF;border-radius:4px;padding:2px 7px;font-size:0.65rem;margin-left:6px;">{row["schema_name"]}</span>'
+                f'<span style="background:{cor_nv}22;color:{cor_nv};border-radius:4px;padding:2px 7px;font-size:0.65rem;margin-left:4px;">{ic_nv} {row["nivel_cert"]}</span></div>'
+                f'<span style="background:{cor_st}22;color:{cor_st};border-radius:20px;padding:3px 12px;font-size:0.72rem;font-weight:600;border:1px solid {cor_st}44;">{label_st}</span></div>'
+                f'<div style="margin-bottom:8px;">{crit_html}</div>'
+                f'<div style="display:flex;gap:16px;font-size:0.7rem;color:#8B949E;">'
+                f'<span>Doc: <b style="color:#E6EDF3;">{row["score_doc"]:.0f}%</b></span>'
+                f'<span>Qualidade: <b style="color:#E6EDF3;">{row["score_qualidade"]:.1f}%</b></span>'
+                f'<span>Ownership: <b style="color:#E6EDF3;">{row["score_ownership"]:.0f}%</b></span>'
+                f'{validade_html}</div></div>',
+                unsafe_allow_html=True
+            )
+            if is_aprovador and row["status_cert"]=="em_analise":
+                ca2,cr2=st.columns(2)
+                with ca2:
+                    if st.button(f"✅ Certificar {row['table_name']}",key=f"cert_ap_{row['cert_id']}",use_container_width=True):
+                        exe(f"UPDATE meridian_governanca.gd_certification SET status_cert='certificado',certificado_por='{esc(usuario)}',certificado_em=current_timestamp(),valido_ate=date_add(current_date(),365) WHERE cert_id='{row['cert_id']}'")
+                        exe(f"UPDATE meridian_governanca.tabelas_metadata SET selo='certificado',atualizado_em=current_timestamp() WHERE schema_name='{row['schema_name']}' AND table_name='{row['table_name']}'")
+                        st.success("✅ Certificado!"); st.cache_data.clear(); st.rerun()
+                with cr2:
+                    if st.button(f"❌ Rejeitar",key=f"cert_rej_{row['cert_id']}",use_container_width=True):
+                        exe(f"UPDATE meridian_governanca.gd_certification SET status_cert='pendente',certificado_por='{esc(usuario)}',certificado_em=current_timestamp() WHERE cert_id='{row['cert_id']}'")
+                        st.warning("↩️ Devolvido."); st.cache_data.clear(); st.rerun()
+    copyright_footer()
+
+# ════════════════════════════════════════════════════════════════════
+# 🔗 LINHAGEM — Origem e Destino dos Dados
+# ════════════════════════════════════════════════════════════════════
+elif pagina == "🔗 Linhagem":
+    page_header("🔗","Linhagem de Dados","Rastreie a origem e o destino de cada ativo — do dado bruto ao produto final.")
+    st.markdown("""<div style="background:#161B2299;border:1px solid #30363D;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#8B949E;font-size:0.78rem;line-height:1.6;">A linhagem mostra como os dados fluem entre as camadas: Bronze (bruto) → Prata (tratado) → Ouro (pronto para uso).</div></div>""",unsafe_allow_html=True)
+    df_lin=load_linhagem()
+    if df_lin.empty:
+        estado_vazio("🔗","Nenhuma linhagem cadastrada","A linhagem será exibida quando os relacionamentos entre ativos forem registrados.")
+    else:
+        CAMADA_COR={"bronze":"#CD7F32","prata":"#A8A9AD","ouro":"#C9A227"}
+        CAMADA_X={"bronze":0.5,"prata":2.5,"ouro":4.5}
+        k1,k2,k3=st.columns(3)
+        b=df_lin["origem_tabela"][df_lin["origem_schema"]=="bronze"].nunique()
+        p=df_lin["origem_tabela"][df_lin["origem_schema"]=="prata"].nunique()
+        o=df_lin["destino_tabela"][df_lin["destino_schema"]=="ouro"].nunique()
+        with k1: st.markdown(kpi(b,"Ativos Bronze","#CD7F32","🥉","Dados brutos de origem."),unsafe_allow_html=True)
+        with k2: st.markdown(kpi(p,"Ativos Prata","#A8A9AD","🥈","Dados tratados."),unsafe_allow_html=True)
+        with k3: st.markdown(kpi(o,"Ativos Ouro","#C9A227","🥇","Dados prontos para uso."),unsafe_allow_html=True)
+        section_divider("MAPA VISUAL DE LINHAGEM")
+        nos_o=df_lin[["origem_schema","origem_tabela"]].drop_duplicates().rename(columns={"origem_schema":"schema","origem_tabela":"tabela"})
+        nos_d=df_lin[["destino_schema","destino_tabela"]].drop_duplicates().rename(columns={"destino_schema":"schema","destino_tabela":"tabela"})
+        todos=pd.concat([nos_o,nos_d]).drop_duplicates().reset_index(drop=True)
+        por_cam={}
+        for _,n in todos.iterrows(): por_cam.setdefault(n["schema"],[]).append(n["tabela"])
+        pos_nos={}
+        for cam,tabs in por_cam.items():
+            for i,t in enumerate(tabs): pos_nos[f"{cam}.{t}"]=(CAMADA_X.get(cam,1.5),i*1.3-(len(tabs)-1)*0.65)
+        fig_lin=go.Figure()
+        for _,row in df_lin.iterrows():
+            ko=f"{row['origem_schema']}.{row['origem_tabela']}"; kd=f"{row['destino_schema']}.{row['destino_tabela']}"
+            if ko in pos_nos and kd in pos_nos:
+                x0,y0=pos_nos[ko]; x1,y1=pos_nos[kd]
+                fig_lin.add_trace(go.Scatter(x=[x0,x1],y=[y0,y1],mode="lines",line=dict(color="#30363D",width=1.5),hovertext=row["descricao"],hoverinfo="text",showlegend=False))
+        for chave,(x,y) in pos_nos.items():
+            cam,tabela=chave.split(".",1); cor_n=CAMADA_COR.get(cam,"#8B949E")
+            fig_lin.add_trace(go.Scatter(x=[x],y=[y],mode="markers+text",marker=dict(color=cor_n,size=16,line=dict(color="#0D1117",width=2)),text=[tabela],textposition="middle right",textfont=dict(color="#E6EDF3",size=10),hoverinfo="text",hovertext=chave,showlegend=False))
+        for cam,(x_c,cor_c) in [("bronze",(0.5,"#CD7F32")),("prata",(2.5,"#A8A9AD")),("ouro",(4.5,"#C9A227"))]:
+            ys=[p[1] for k,p in pos_nos.items() if k.startswith(cam)]
+            if ys: fig_lin.add_annotation(x=x_c,y=max(ys)+1.2,text=f"🏷️ {cam.upper()}",showarrow=False,font=dict(color=cor_c,size=12),bgcolor="#0D1117",borderpad=4)
+        fig_lin.update_layout(paper_bgcolor="#161B22",plot_bgcolor="#161B22",height=440,margin=dict(t=30,b=20,l=20,r=200),xaxis=dict(showgrid=False,zeroline=False,showticklabels=False,range=[-0.3,7]),yaxis=dict(showgrid=False,zeroline=False,showticklabels=False))
+        st.plotly_chart(fig_lin,use_container_width=True)
+        section_divider("DETALHAMENTO DAS TRANSFORMAÇÕES")
+        f_lin=st.selectbox("Filtrar por origem",["Todas","bronze","prata"],key="lin_cam")
+        df_lf=df_lin if f_lin=="Todas" else df_lin[df_lin["origem_schema"]==f_lin]
+        for _,row in df_lf.iterrows():
+            cor_o2=CAMADA_COR.get(row["origem_schema"],"#8B949E"); cor_d2=CAMADA_COR.get(row["destino_schema"],"#8B949E")
+            tipo_lbl="⚙️ Transformação" if row["tipo_relacao"]=="transformacao" else "📥 Consumo"
+            st.markdown(f'<div style="background:#161B22;border:1px solid #30363D;border-radius:10px;padding:12px 16px;margin-bottom:6px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;"><span style="background:{cor_o2}22;color:{cor_o2};border-radius:6px;padding:4px 10px;font-size:0.75rem;font-weight:700;">{row["origem_schema"]}.{row["origem_tabela"]}</span><span style="color:#484F58;font-size:0.75rem;">{tipo_lbl} →</span><span style="background:{cor_d2}22;color:{cor_d2};border-radius:6px;padding:4px 10px;font-size:0.75rem;font-weight:700;">{row["destino_schema"]}.{row["destino_tabela"]}</span></div><div style="color:#8B949E;font-size:0.73rem;">{row["descricao"]}</div></div>',unsafe_allow_html=True)
+    copyright_footer()
+
+# ════════════════════════════════════════════════════════════════════
+# 📦 PRODUTOS DE DADOS
+# ════════════════════════════════════════════════════════════════════
+elif pagina == "📦 Produtos":
+    page_header("📦","Produtos de Dados","Ativos empacotados e prontos para uso por áreas de negócio.")
+    st.markdown("""<div style="background:#161B2299;border:1px solid #30363D;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#8B949E;font-size:0.78rem;line-height:1.6;">Um Produto de Dados é um conjunto de ativos organizados para atender a uma necessidade específica do negócio, com finalidade, responsável e certificação definidos.</div></div>""",unsafe_allow_html=True)
+    df_prod=load_produtos(); df_pat=load_produto_ativos()
+    if df_prod.empty:
+        estado_vazio("📦","Nenhum produto cadastrado","Os produtos de dados serão exibidos aqui quando cadastrados pela equipe de Governança.")
+    else:
+        ativos_total=df_pat["table_name"].nunique() if not df_pat.empty else 0
+        k1,k2,k3,k4=st.columns(4)
+        with k1: st.markdown(kpi(len(df_prod),"Produtos","#C9A227"),unsafe_allow_html=True)
+        with k2: st.markdown(kpi(len(df_prod[df_prod["status"]=="ativo"]),"Ativos","#3FB950"),unsafe_allow_html=True)
+        with k3: st.markdown(kpi(len(df_prod[df_prod["certificacao"]=="certificado"]),"Certificados","#C9A227"),unsafe_allow_html=True)
+        with k4: st.markdown(kpi(ativos_total,"Ativos Vinculados","#58A6FF"),unsafe_allow_html=True)
+        section_divider("CATÁLOGO DE PRODUTOS")
+        fp1,fp2=st.columns(2)
+        with fp1: fp_dom=st.selectbox("Domínio",["Todos"]+sorted([d for d in df_prod["dominio"].unique() if d]),key="fp_dom")
+        with fp2: fp_st=st.selectbox("Status",["Todos","ativo","em_dev","inativo"],key="fp_st")
+        df_pf=df_prod.copy()
+        if fp_dom!="Todos": df_pf=df_pf[df_pf["dominio"]==fp_dom]
+        if fp_st!="Todos":  df_pf=df_pf[df_pf["status"]==fp_st]
+        if "prod_sel" not in st.session_state: st.session_state["prod_sel"]=None
+        col_pl,col_pd=st.columns([1,2])
+        CAMADA_COR2={"bronze":"#CD7F32","prata":"#A8A9AD","ouro":"#C9A227"}
+        PAPEL_COR={"Principal":"#C9A227","Origem":"#58A6FF","Consumo":"#3FB950"}
+        with col_pl:
+            for _,row in df_pf.iterrows():
+                cor_st={"ativo":"#3FB950","em_dev":"#C9A227","inativo":"#484F58"}.get(row["status"],"#8B949E")
+                cor_cert={"certificado":"#C9A227","em_analise":"#58A6FF","pendente":"#8B949E"}.get(row["certificacao"],"#8B949E")
+                ic_cert={"certificado":"🥇","em_analise":"🥈","pendente":"🥉"}.get(row["certificacao"],"")
+                is_sel=st.session_state["prod_sel"]==row["produto_id"]
+                ativos_p=df_pat[df_pat["produto_id"]==row["produto_id"]] if not df_pat.empty else pd.DataFrame()
+                st.markdown(f'<div style="background:{"#C9A22708" if is_sel else "#161B22"};border:1px solid {"#C9A227" if is_sel else "#30363D"};border-radius:10px;padding:12px 14px;margin-bottom:4px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;"><span style="color:#E6EDF3;font-weight:700;font-size:0.85rem;">{row["nome"]}</span><span style="color:{cor_st};font-size:0.65rem;font-weight:700;">● {row["status"]}</span></div><div style="color:#8B949E;font-size:0.72rem;margin-bottom:6px;">{row["finalidade"][:65]}...</div><div style="display:flex;gap:6px;"><span style="background:#C9A22722;color:#C9A227;border-radius:4px;padding:1px 6px;font-size:0.62rem;">{row["dominio"]}</span><span style="background:{cor_cert}22;color:{cor_cert};border-radius:4px;padding:1px 6px;font-size:0.62rem;">{ic_cert} {row["certificacao"]}</span><span style="background:#58A6FF22;color:#58A6FF;border-radius:4px;padding:1px 6px;font-size:0.62rem;">{len(ativos_p)} ativos</span></div></div>',unsafe_allow_html=True)
+                if st.button(f'{"▼ Fechar" if is_sel else "▶ Ver detalhes"}',key=f"psel_{row['produto_id']}",use_container_width=True):
+                    st.session_state["prod_sel"]=None if is_sel else row["produto_id"]; st.rerun()
+        with col_pd:
+            pid=st.session_state.get("prod_sel")
+            if pid:
+                row_p=df_pf[df_pf["produto_id"]==pid]
+                if not row_p.empty:
+                    p=row_p.iloc[0]; ativos_p=df_pat[df_pat["produto_id"]==pid] if not df_pat.empty else pd.DataFrame()
+                    cor_st2={"ativo":"#3FB950","em_dev":"#C9A227","inativo":"#484F58"}.get(p["status"],"#8B949E")
+                    cor_cert2={"certificado":"#C9A227","em_analise":"#58A6FF","pendente":"#8B949E"}.get(p["certificacao"],"#8B949E")
+                    st.markdown(f'<div style="background:#161B22;border:1px solid #30363D;border-radius:12px;padding:20px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;"><div><div style="color:#E6EDF3;font-size:1.1rem;font-weight:800;">{p["nome"]}</div><div style="color:#8B949E;font-size:0.72rem;margin-top:2px;">{p["dominio"]} · Produto de Dados</div></div><span style="background:{cor_cert2}22;color:{cor_cert2};border-radius:20px;padding:3px 12px;font-size:0.72rem;font-weight:600;border:1px solid {cor_cert2}44;">{"🥇 Certificado" if p["certificacao"]=="certificado" else "🥈 Em Análise" if p["certificacao"]=="em_analise" else "🥉 Pendente"}</span></div><div style="background:#0D1117;border-radius:8px;padding:12px;margin-bottom:10px;"><div style="color:#8B949E;font-size:0.6rem;font-weight:700;text-transform:uppercase;margin-bottom:4px;">FINALIDADE</div><div style="color:#E6EDF3;font-size:0.82rem;line-height:1.5;">{p["finalidade"]}</div></div><div style="background:#0D1117;border-radius:8px;padding:12px;margin-bottom:10px;"><div style="color:#8B949E;font-size:0.6rem;font-weight:700;text-transform:uppercase;margin-bottom:4px;">DESCRIÇÃO</div><div style="color:#E6EDF3;font-size:0.82rem;line-height:1.5;">{p["descricao"]}</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;"><div style="background:#0D1117;border-radius:8px;padding:9px;"><div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">RESPONSÁVEL</div><div style="color:#E6EDF3;font-size:0.78rem;">{p["responsavel"]}</div></div><div style="background:#0D1117;border-radius:8px;padding:9px;"><div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">STATUS</div><div style="color:{cor_st2};font-size:0.78rem;font-weight:700;">{p["status"].replace("_"," ").title()}</div></div></div>',unsafe_allow_html=True)
+                    if not ativos_p.empty:
+                        st.markdown('<div style="background:#0D1117;border-radius:8px;padding:12px;"><div style="color:#8B949E;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">ATIVOS VINCULADOS</div>',unsafe_allow_html=True)
+                        for _,at in ativos_p.iterrows():
+                            cor_cam2=CAMADA_COR2.get(at["schema_name"],"#8B949E"); cor_pap2=PAPEL_COR.get(at["papel"],"#8B949E")
+                            st.markdown(f'<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #21262D;"><div><span style="color:#E6EDF3;font-size:0.75rem;">{at["table_name"]}</span><span style="background:{cor_cam2}22;color:{cor_cam2};border-radius:3px;padding:1px 5px;font-size:0.62rem;margin-left:5px;">{at["schema_name"]}</span></div><span style="background:{cor_pap2}22;color:{cor_pap2};border-radius:3px;padding:1px 7px;font-size:0.62rem;">{at["papel"]}</span></div>',unsafe_allow_html=True)
+                        st.markdown('</div></div>',unsafe_allow_html=True)
+                    else:
+                        st.markdown('</div>',unsafe_allow_html=True)
+            else:
+                estado_vazio("📦","Selecione um produto","Clique em qualquer produto para ver detalhes e ativos vinculados.")
+    copyright_footer()
