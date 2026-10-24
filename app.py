@@ -1706,18 +1706,21 @@ elif pagina == "📊 Indicadores":
     df_cert = load_cert()
     df_sla = load_sla_snap()
 
-    # Filtros
-    ff=st.columns(6)
+    # Filtros aplicáveis à série histórica agregada.
+    # Removidos filtros por ativo (documentação/ownership/qualidade), pois não eram
+    # aplicados aos snapshots e sugeriam uma segmentação que o painel não executava.
+    ff = st.columns([2, 1, 1])
     with ff[0]:
-        doms_ind=["Todos"]+sorted([str(d) for d in df_snap["dominio"].dropna().unique() if str(d)!="Todos" and str(d).strip() and str(d)!="nan"])
-        fi_dom=st.selectbox("Domínio",doms_ind,key="ind_dom")
-    with ff[1]: fi_ano=st.selectbox("Ano",["Todos","2024","2025","2026"],key="ind_ano")
+        doms_ind = ["Todos"] + sorted([
+            str(d) for d in df_snap["dominio"].dropna().unique()
+            if str(d) != "Todos" and str(d).strip() and str(d) != "nan"
+        ]) if not df_snap.empty else ["Todos"]
+        fi_dom = st.selectbox("Domínio", doms_ind, key="ind_dom")
+    with ff[1]:
+        fi_ano = st.selectbox("Ano", ["Todos", "2024", "2025", "2026"], key="ind_ano")
     with ff[2]:
-        meses_map={"Todos":0,"Jan":1,"Fev":2,"Mar":3,"Abr":4,"Mai":5,"Jun":6,"Jul":7,"Ago":8,"Set":9,"Out":10,"Nov":11,"Dez":12}
-        fi_mes=st.selectbox("Mês",list(meses_map.keys()),key="ind_mes")
-    with ff[3]: fi_doc=st.selectbox("Doc. mín. (%)",["Todos","≥80","≥60","≥40"],key="ind_doc")
-    with ff[4]: fi_own=st.selectbox("Ownership",["Todos","Com Owner","Sem Owner"],key="ind_own")
-    with ff[5]: fi_qual=st.selectbox("Qualidade",["Todos","Alta","Média","Baixa"],key="ind_qual")
+        meses_map = {"Todos":0,"Jan":1,"Fev":2,"Mar":3,"Abr":4,"Mai":5,"Jun":6,"Jul":7,"Ago":8,"Set":9,"Out":10,"Nov":11,"Dez":12}
+        fi_mes = st.selectbox("Mês", list(meses_map.keys()), key="ind_mes")
 
     if df_snap.empty:
         st.info("Nenhum snapshot disponível.")
