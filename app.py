@@ -1844,13 +1844,52 @@ elif pagina == "🥇 Certificação":
                 ca2,cr2=st.columns(2)
                 with ca2:
                     if st.button(f"✅ Certificar {row['table_name']}",key=f"cert_ap_{row['cert_id']}",use_container_width=True):
-                        exe(f"UPDATE meridian_governanca.gd_certification SET status_cert='certificado',certificado_por='{esc(usuario)}',certificado_em=current_timestamp(),valido_ate=date_add(current_date(),365) WHERE cert_id='{row['cert_id']}'")
-                        exe(f"UPDATE meridian_governanca.tabelas_metadata SET selo='certificado',atualizado_em=current_timestamp() WHERE schema_name='{row['schema_name']}' AND table_name='{row['table_name']}'")
-                        st.success("✅ Certificado!"); st.cache_data.clear(); st.rerun()
+                        ok_cert, err_cert = exe(
+                            f"UPDATE meridian_governanca.gd_certification "
+                            f"SET status_cert='certificado',certificado_por='{esc(usuario)}',"
+                            f"certificado_em=current_timestamp(),valido_ate=date_add(current_date(),365) "
+                            f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='em_analise'"
+                        )
+                        if not ok_cert:
+                            st.error("Não foi possível atualizar o registro de certificação. Nenhuma confirmação foi emitida.")
+                            st.caption(f"Detalhe técnico: {err_cert}")
+                        else:
+                            ok_meta, err_meta = exe(
+                                f"UPDATE meridian_governanca.tabelas_metadata "
+                                f"SET selo='certificado',atualizado_em=current_timestamp() "
+                                f"WHERE schema_name='{esc(row['schema_name'])}' "
+                                f"AND table_name='{esc(row['table_name'])}'"
+                            )
+                            if not ok_meta:
+                                # Compensação best-effort para não deixar a certificação marcada como concluída.
+                                ok_comp, err_comp = exe(
+                                    f"UPDATE meridian_governanca.gd_certification "
+                                    f"SET status_cert='em_analise',certificado_por=NULL,certificado_em=NULL,valido_ate=NULL "
+                                    f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='certificado'"
+                                )
+                                st.error("A atualização do catálogo falhou. A certificação não foi concluída.")
+                                st.caption(f"Falha no catálogo: {err_meta}")
+                                if not ok_comp:
+                                    st.warning("A reversão automática também falhou. É necessária reconciliação manual dos dois registros.")
+                                    st.caption(f"Falha na reversão: {err_comp}")
+                            else:
+                                st.success("✅ Certificado! Os dois registros foram atualizados.")
+                                st.cache_data.clear()
+                                st.rerun()
                 with cr2:
                     if st.button(f"❌ Rejeitar",key=f"cert_rej_{row['cert_id']}",use_container_width=True):
-                        exe(f"UPDATE meridian_governanca.gd_certification SET status_cert='pendente',certificado_por='{esc(usuario)}',certificado_em=current_timestamp() WHERE cert_id='{row['cert_id']}'")
-                        st.warning("↩️ Devolvido."); st.cache_data.clear(); st.rerun()
+                        ok_rej, err_rej = exe(
+                            f"UPDATE meridian_governanca.gd_certification "
+                            f"SET status_cert='pendente',certificado_por='{esc(usuario)}',certificado_em=current_timestamp() "
+                            f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='em_analise'"
+                        )
+                        if ok_rej:
+                            st.warning("↩️ Devolvido.")
+                            st.cache_data.clear()
+                            st.rerun()
+                        else:
+                            st.error("Não foi possível devolver a certificação.")
+                            st.caption(f"Detalhe técnico: {err_rej}")
     copyright_footer()
 
 # ════════════════════════════════════════════════════════════════════
