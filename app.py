@@ -1087,8 +1087,8 @@ elif pagina == "🏛️ Domínios":
 # 🛡️ SCORECARD — Confiabilidade dos Dados
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "🛡️ Scorecard":
-    page_header("🛡️","Scorecard de Confiabilidade",
-                "O quanto os dados estão documentados, sob responsabilidade e avaliados segundo os critérios da organização.")
+    page_header("🛡️","Scorecard de Governança",
+                "Visão consolidada de documentação, responsabilidade, relacionamentos, completude de metadados e certificação.")
 
     st.markdown("""
     <div style="background:#161B2299;border:1px solid #30363D;border-radius:8px;
@@ -1125,7 +1125,7 @@ elif pagina == "🛡️ Scorecard":
                 Score Geral de Confiabilidade</div>
             <div style="font-size:3.5rem;font-weight:800;color:{cor_g};line-height:1;">{ger:.0f}%</div>
             <div style="color:#8B949E;font-size:0.75rem;margin-top:4px;">
-                Média dos 5 pilares: Documentação · Responsabilidade · Relacionamentos · Qualidade · Certificação</div>
+                Média dos 5 pilares: Documentação · Responsabilidade · Relacionamentos · Completude de Metadados · Certificação</div>
         </div>""", unsafe_allow_html=True)
 
         PILARES_INFO = {
@@ -1144,15 +1144,15 @@ elif pagina == "🛡️ Scorecard":
                 "conceito":"Verifica se os ativos técnicos estão conectados a conceitos de negócio do Glossário. Ativos conectados são mais fáceis de descobrir e entender pelas áreas de negócio.",
                 "como_melhorar":"Acesse o Glossário → Relacionamentos e vincule cada conceito às tabelas correspondentes."
             },
-            "Qualidade":     {
+            "Completude de Metadados":     {
                 "icone":"⭐","cor":"#3FB950","val":qual,
-                "conceito":"Score médio de completude dos metadados (0 a 100%). Calculado com base nos campos obrigatórios: Descrição, Domínio, Responsável, Gestor e Função de Negócio. Cada campo representa 20% do score.",
+                "conceito":"Percentual médio de preenchimento dos metadados obrigatórios. Este indicador mede completude documental; não representa, por si só, a qualidade efetiva dos dados.",
                 "como_melhorar":"Preencha todos os campos obrigatórios na Curadoria. Cada campo preenchido adiciona 20 pontos ao score do ativo."
             },
             "Certificação":  {
                 "icone":"🏆","cor":"#F85149","val":cert,
-                "conceito":"Percentual de ativos com score 100% — todos os campos obrigatórios preenchidos. Ativos certificados estão prontos para uso confiável pelo negócio.",
-                "como_melhorar":"Complete todos os 5 campos de metadados para que o ativo receba automaticamente o status de Certificado."
+                "conceito":"Percentual de ativos com status formal de certificação registrado no campo selo. O preenchimento de metadados, isoladamente, não equivale à certificação.",
+                "como_melhorar":"Siga o fluxo formal de certificação e confirme o atendimento aos critérios definidos antes de conceder o selo."
             },
         }
 
