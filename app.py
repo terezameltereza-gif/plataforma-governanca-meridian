@@ -534,30 +534,26 @@ elif pagina == "📖 Glossário":
                 if g_dom != "Todos": df_gf = df_gf[df_gf["dominio"]==g_dom]
                 if g_st  != "Todos": df_gf = df_gf[df_gf["status"]==g_st]
 
-                if "gid_sel" not in st.session_state:
-                    st.session_state["gid_sel"] = df_gf.iloc[0]["glossary_id"] if not df_gf.empty else None
+                # Mantém a seleção sincronizada com a lista filtrada.
+                # Evita exibir detalhes de um conceito que já não aparece nos resultados.
+                ids_visiveis = df_gf["glossary_id"].tolist() if not df_gf.empty else []
+                if st.session_state.get("gid_sel") not in ids_visiveis:
+                    st.session_state["gid_sel"] = ids_visiveis[0] if ids_visiveis else None
 
                 st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
 
                 if df_gf.empty:
+                    st.session_state["gid_sel"] = None
                     estado_vazio("🔍","Nenhum conceito encontrado","Tente outros termos de busca ou ajuste os filtros.")
                 else:
-                    for _, row in df_gf.iterrows():
-                        cor_st = {"homologado":"#3FB950","em_revisao":"#58A6FF","rascunho":"#8B949E"}.get(row["status"],"#8B949E")
-                        is_sel = st.session_state["gid_sel"] == row["glossary_id"]
-                        st.markdown(f"""
-                        <div style="background:{'#C9A22708' if is_sel else '#161B22'};
-                                    border:1px solid {'#C9A227' if is_sel else '#30363D'};
-                                    border-radius:8px;padding:8px 10px;margin-bottom:2px;">
-                            <div style="color:#E6EDF3;font-weight:600;font-size:0.82rem;">{row['termo']}</div>
-                            <div style="display:flex;justify-content:space-between;margin-top:2px;">
-                                <span style="color:#8B949E;font-size:0.68rem;">{row['dominio']}</span>
-                                <span style="color:{cor_st};font-size:0.65rem;font-weight:600;">● {row['status'].replace('_',' ')}</span>
-                            </div>
-                        </div>""", unsafe_allow_html=True)
-                        if st.button(f"↳ {row['termo']}", key=f"gc_{row['glossary_id']}", use_container_width=True):
-                            st.session_state["gid_sel"] = row["glossary_id"]
-                            st.rerun()
+                    conceitos_por_id = {str(r["glossary_id"]): r for _, r in df_gf.iterrows()}
+                    st.radio(
+                        "Selecionar conceito",
+                        options=list(conceitos_por_id.keys()),
+                        format_func=lambda cid: f"{conceitos_por_id[cid]['termo']} · {conceitos_por_id[cid]['dominio']} · {str(conceitos_por_id[cid]['status']).replace('_', ' ')}",
+                        key="gid_sel",
+                        label_visibility="collapsed",
+                    )
 
                 # Sugestão de novo conceito — para todos os perfis
                 st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
@@ -823,26 +819,26 @@ elif pagina == "📋 Catálogo":
                     chave  = f"{item['schema_name']}.{item['table_name']}"
                     is_sel = st.session_state["cat_sel"] == chave
                     with cols_c[i]:
-                        st.markdown(f"""
-                        <div style="background:{'#C9A22708' if is_sel else '#161B22'};
-                                    border:1px solid {'#C9A227' if is_sel else '#30363D'};
-                                    border-radius:10px;padding:14px;margin-bottom:2px;
-                                    cursor:pointer;">
-                            <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-                                <span style="color:#C9A227;font-weight:700;font-size:0.83rem;">{item['table_name']}</span>
-                                <span style="color:{cor_c};font-weight:800;font-size:0.88rem;" title="Score de documentação: {item['score_completude']}% dos metadados obrigatórios preenchidos.">{item['score_completude']}%</span>
-                            </div>
-                            <div style="color:#8B949E;font-size:0.73rem;line-height:1.4;margin-bottom:8px;">{desc}</div>
-                            <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                                <span style="background:#58A6FF22;color:#58A6FF;border-radius:4px;padding:2px 7px;font-size:0.67rem;" title="Camada de dados">{item['schema_name']}</span>
-                                {f'<span style="background:#C9A22722;color:#C9A227;border-radius:4px;padding:2px 7px;font-size:0.67rem;" title="Domínio de negócio">{item["dominio"]}</span>' if item['dominio'] else ''}
-                                {f'<span style="background:#F8514922;color:#F85149;border-radius:4px;padding:2px 7px;font-size:0.67rem;">🔒 PII</span>' if item['tem_pii'] else ''}
-                            </div>
-                        </div>""", unsafe_allow_html=True)
-                        if st.button(f"{'▼ Fechar' if is_sel else '▶ Ver detalhes'}",
-                                     key=f"csel_{chave}", use_container_width=True):
-                            st.session_state["cat_sel"] = None if is_sel else chave
-                            st.rerun()
+                        # Cartão nativo: evita HTML customizado quebrado e o literal </div>
+                        # que aparecia na interface. A ação fica curta e sem botão gigante.
+                        with st.container(border=True):
+                            st.markdown(f"**{item['table_name']}**")
+                            st.markdown(f":{('green' if item['score_completude'] == 100 else 'orange' if item['score_completude'] >= 60 else 'red')}[{item['score_completude']}% documentação]")
+                            st.caption(desc)
+                            tags = [str(item["schema_name"])]
+                            if item["dominio"]:
+                                tags.append(str(item["dominio"]))
+                            if item["tem_pii"]:
+                                tags.append("🔒 Dado pessoal")
+                            st.caption(" · ".join(tags))
+                            if st.button(
+                                "Fechar detalhes" if is_sel else "Detalhes",
+                                key=f"csel_{chave}",
+                                use_container_width=True,
+                                type="secondary",
+                            ):
+                                st.session_state["cat_sel"] = None if is_sel else chave
+                                st.rerun()
 
             if st.session_state.get("cat_sel"):
                 chave = st.session_state["cat_sel"]
@@ -926,160 +922,116 @@ elif pagina == "📋 Catálogo":
 # 🏛️ DOMÍNIOS
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "🏛️ Domínios":
-    page_header("🏛️","Domínios de Negócio","Áreas de negócio responsáveis pela gestão e uso dos dados.")
+    page_header("🏛️", "Domínios de Negócio", "Responsabilidades, ativos e conceitos organizados por área de negócio.")
 
-    st.markdown("""
-    <div style="background:#161B2299;border:1px solid #30363D;border-radius:8px;
-                padding:10px 14px;margin-bottom:16px;">
-        <div style="color:#8B949E;font-size:0.78rem;line-height:1.6;">
-            Domínios organizam os dados e assuntos relacionados ao negócio, ajudando a definir
-            responsabilidades sobre as informações. Cada domínio possui um
-            <span style="color:#C9A227;">Data Owner</span> responsável pelas decisões estratégicas e
-            um ou mais <span style="color:#58A6FF;">Data Stewards</span> responsáveis pela gestão operacional dos dados.
-        </div>
-    </div>""", unsafe_allow_html=True)
-
-    df_dom  = load_meta()
+    df_dom = load_meta()
     df_glos = load_glossario()
 
-    if not df_dom.empty:
-        dominios = sorted([str(d) for d in df_dom["dominio"].dropna().unique() if str(d).strip() and str(d) != "nan"])
-        k1,k2,k3,k4,k5 = st.columns(5)
-        with k1: st.markdown(kpi(len(dominios),"Domínios Ativos","#C9A227",tooltip="Total de domínios de negócio com dados catalogados."), unsafe_allow_html=True)
-        with k2: st.markdown(kpi(df_dom["data_owner"].nunique(),"Responsáveis (Owner)","#58A6FF",tooltip="Pessoas responsáveis pelas decisões relacionadas aos dados de cada domínio."), unsafe_allow_html=True)
-        with k3: st.markdown(kpi(df_dom["data_steward"].nunique(),"Gestores (Steward)","#BC8CFF",tooltip="Pessoas que atuam na manutenção, qualidade e evolução dos dados de cada domínio."), unsafe_allow_html=True)
-        with k4: st.markdown(kpi(len(df_glos) if not df_glos.empty else 0,"Conceitos Vinculados","#3FB950",tooltip="Total de conceitos de negócio relacionados a domínios."), unsafe_allow_html=True)
-        with k5:
-            cob = round(len(df_glos[df_glos["status"]=="homologado"])/max(len(df_glos),1)*100) if not df_glos.empty else 0
-            st.markdown(kpi(f"{cob}%","Conceitos Homologados","#C9A227",tooltip="Percentual de conceitos que passaram pelo processo formal de aprovação."), unsafe_allow_html=True)
+    if df_dom.empty:
+        estado_vazio("🏛️", "Nenhum domínio encontrado", "Verifique se existem ativos catalogados com domínio definido.")
+    else:
+        dominios = sorted([
+            str(d) for d in df_dom["dominio"].dropna().unique()
+            if str(d).strip() and str(d).lower() != "nan"
+        ])
+        total_owners = df_dom["data_owner"].replace("", pd.NA).dropna().nunique()
+        total_stewards = df_dom["data_steward"].replace("", pd.NA).dropna().nunique()
+        glos_valid = df_glos if not df_glos.empty else pd.DataFrame(columns=["dominio", "status", "termo"])
+        n_conceitos = glos_valid["termo"].nunique() if not glos_valid.empty else 0
+        n_homologados = glos_valid[glos_valid["status"] == "homologado"]["termo"].nunique() if not glos_valid.empty else 0
+        pct_homologados = round(n_homologados / n_conceitos * 100) if n_conceitos else 0
 
-        st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+        k1, k2, k3, k4 = st.columns(4)
+        with k1:
+            st.markdown(kpi(len(dominios), "Domínios", "#C9A227", tooltip="Domínios presentes nos ativos catalogados."), unsafe_allow_html=True)
+        with k2:
+            st.markdown(kpi(total_owners, "Owners distintos", "#58A6FF", tooltip="Quantidade de responsáveis distintos associados aos ativos."), unsafe_allow_html=True)
+        with k3:
+            st.markdown(kpi(total_stewards, "Stewards distintos", "#BC8CFF", tooltip="Quantidade de gestores operacionais distintos associados aos ativos."), unsafe_allow_html=True)
+        with k4:
+            st.markdown(kpi(f"{pct_homologados}%", "Conceitos homologados", "#3FB950", tooltip="Percentual de conceitos distintos homologados."), unsafe_allow_html=True)
 
-        icones_dom = {"Crédito":"💳","Pagamentos":"💸","Clientes":"👥","Compliance":"🛡️","Produtos":"📦"}
+        st.caption("Selecione um domínio para consultar seus responsáveis, ativos e conceitos. A documentação média mede preenchimento de metadados, não qualidade efetiva dos dados.")
 
-        if "dom_sel" not in st.session_state:
-            st.session_state["dom_sel"] = None
+        icones_dom = {"Crédito": "💳", "Pagamentos": "💸", "Clientes": "👥", "Compliance": "🛡️", "Produtos": "📦"}
+        if st.session_state.get("dom_sel") not in dominios:
+            st.session_state["dom_sel"] = dominios[0] if dominios else None
 
-        col_cards, col_det_dom = st.columns([1,2])
-
-        with col_cards:
+        col_lista, col_detalhe = st.columns([1, 1.6], gap="large")
+        with col_lista:
+            st.markdown("#### Domínios")
             for dom in dominios:
-                df_d  = df_dom[df_dom["dominio"]==dom]
-                score = df_d["score_completude"].mean()
-                n_t   = len(df_glos[df_glos["dominio"]==dom]) if not df_glos.empty else 0
-                cor_d = "#3FB950" if score>=80 else "#C9A227" if score>=60 else "#F85149"
-                ic    = icones_dom.get(dom,"🏛️")
-                is_sel = st.session_state["dom_sel"] == dom
+                df_d = df_dom[df_dom["dominio"] == dom]
+                score = float(df_d["score_completude"].fillna(0).mean()) if not df_d.empty else 0
+                n_t = glos_valid[glos_valid["dominio"] == dom]["termo"].nunique() if not glos_valid.empty else 0
+                selected = st.session_state["dom_sel"] == dom
+                with st.container(border=True):
+                    row_name, row_score = st.columns([3, 1])
+                    with row_name:
+                        st.markdown(f"**{icones_dom.get(dom, '🏛️')} {dom}**")
+                    with row_score:
+                        st.markdown(f"**{score:.0f}%**")
+                    st.caption(f"{len(df_d)} ativos · {n_t} conceitos")
+                    if st.button("Selecionado" if selected else "Ver domínio", key=f"domsel_{dom}", use_container_width=True, type="primary" if selected else "secondary"):
+                        st.session_state["dom_sel"] = dom
+                        st.rerun()
 
-                st.markdown(f"""
-                <div style="background:{'#C9A22708' if is_sel else '#161B22'};
-                            border:1px solid {'#C9A227' if is_sel else '#30363D'};
-                            border-radius:10px;padding:12px 14px;margin-bottom:2px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:1.1rem;">{ic}</span>
-                            <span style="color:#E6EDF3;font-weight:700;font-size:0.88rem;">{dom}</span>
-                        </div>
-                        <span style="color:{cor_d};font-weight:800;font-size:1rem;" title="Score médio de documentação dos ativos deste domínio">{score:.0f}%</span>
-                    </div>
-                    <div style="background:#30363D;border-radius:4px;height:3px;margin:8px 0 6px;">
-                        <div style="background:{cor_d};border-radius:4px;height:3px;width:{min(score,100):.0f}%;"></div>
-                    </div>
-                    <div style="font-size:0.68rem;color:#8B949E;">{len(df_d)} ativos · {n_t} conceitos</div>
-                </div>""", unsafe_allow_html=True)
-
-                if st.button(f"{'▼ Fechar' if is_sel else '▶ Ver detalhes'}",
-                             key=f"domsel_{dom}", use_container_width=True):
-                    st.session_state["dom_sel"] = None if is_sel else dom
-                    st.rerun()
-
-        with col_det_dom:
+        with col_detalhe:
             dom_sel = st.session_state.get("dom_sel")
-            if dom_sel:
-                df_d     = df_dom[df_dom["dominio"]==dom_sel]
-                score    = df_d["score_completude"].mean()
-                owners_d = [o for o in df_d["data_owner"].unique() if o]
-                stw_d    = [s for s in df_d["data_steward"].unique() if s]
-                n_t      = len(df_glos[df_glos["dominio"]==dom_sel]) if not df_glos.empty else 0
-                cor_d    = "#3FB950" if score>=80 else "#C9A227" if score>=60 else "#F85149"
-                ic       = icones_dom.get(dom_sel,"🏛️")
+            if dom_sel and dom_sel in dominios:
+                df_d = df_dom[df_dom["dominio"] == dom_sel]
+                score = float(df_d["score_completude"].fillna(0).mean()) if not df_d.empty else 0
+                owners_d = sorted([str(x) for x in df_d["data_owner"].dropna().unique() if str(x).strip()])
+                stw_d = sorted([str(x) for x in df_d["data_steward"].dropna().unique() if str(x).strip()])
+                termos_dom = glos_valid[glos_valid["dominio"] == dom_sel] if not glos_valid.empty else glos_valid
+                ativos_dom = df_d[["table_name", "schema_name", "score_completude"]].copy()
 
-                st.markdown(f"""
-                <div style="background:#161B22;border:1px solid #30363D;border-radius:12px;padding:16px;margin-bottom:10px;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:1.6rem;">{ic}</span>
-                            <div>
-                                <div style="color:#E6EDF3;font-size:1rem;font-weight:800;">{dom_sel}</div>
-                                <div style="color:#8B949E;font-size:0.72rem;">Domínio de dados · Banco Meridian</div>
-                            </div>
-                        </div>
-                        <div style="text-align:right;">
-                            <div style="color:{cor_d};font-size:2rem;font-weight:800;" title="Score médio de documentação dos ativos">{score:.0f}%</div>
-                            <div style="color:#8B949E;font-size:0.65rem;">documentação média</div>
-                        </div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;">
-                        <div style="background:#0D1117;border-radius:6px;padding:8px;text-align:center;">
-                            <div style="color:#C9A227;font-size:1.3rem;font-weight:800;">{len(df_d)}</div>
-                            <div style="color:#8B949E;font-size:0.62rem;">Ativos</div>
-                        </div>
-                        <div style="background:#0D1117;border-radius:6px;padding:8px;text-align:center;">
-                            <div style="color:#58A6FF;font-size:1.3rem;font-weight:800;">{len(owners_d)}</div>
-                            <div style="color:#8B949E;font-size:0.62rem;" title="Responsável pelas decisões">Owners</div>
-                        </div>
-                        <div style="background:#0D1117;border-radius:6px;padding:8px;text-align:center;">
-                            <div style="color:#BC8CFF;font-size:1.3rem;font-weight:800;">{len(stw_d)}</div>
-                            <div style="color:#8B949E;font-size:0.62rem;" title="Responsável pela gestão operacional">Stewards</div>
-                        </div>
-                        <div style="background:#0D1117;border-radius:6px;padding:8px;text-align:center;">
-                            <div style="color:#3FB950;font-size:1.3rem;font-weight:800;">{n_t}</div>
-                            <div style="color:#8B949E;font-size:0.62rem;">Conceitos</div>
-                        </div>
-                    </div>
-                </div>""", unsafe_allow_html=True)
+                st.markdown(f"### {icones_dom.get(dom_sel, '🏛️')} {dom_sel}")
+                st.caption("Resumo do domínio e suas responsabilidades")
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Ativos", len(df_d))
+                m2.metric("Owners", len(owners_d))
+                m3.metric("Stewards", len(stw_d))
+                st.metric("Completude média da documentação", f"{score:.0f}%")
+                st.divider()
 
-                dd1,dd2 = st.columns(2)
-                with dd1:
-                    st.markdown('<div style="background:#161B22;border:1px solid #30363D;border-radius:10px;padding:12px;margin-bottom:8px;">', unsafe_allow_html=True)
-                    st.markdown('<div style="color:#8B949E;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">RESPONSÁVEL PELO DADO (DATA OWNER)</div>', unsafe_allow_html=True)
-                    st.markdown('<div style="color:#484F58;font-size:0.65rem;margin-bottom:8px;">Responsável pelas decisões estratégicas sobre os dados do domínio.</div>', unsafe_allow_html=True)
-                    for owner in owners_d:
-                        nome_fmt = owner.replace("@meridian.com","").replace("."," ").title()
-                        st.markdown(f'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #21262D;">{avatar(nome_fmt,"#C9A227",32)}<div><div style="color:#E6EDF3;font-size:0.78rem;font-weight:600;">{nome_fmt}</div><div style="color:#8B949E;font-size:0.65rem;">Responsável · {dom_sel}</div></div></div>', unsafe_allow_html=True)
-                    if not owners_d:
-                        st.markdown('<div style="color:#8B949E;font-size:0.75rem;">Nenhum responsável definido ainda.</div>', unsafe_allow_html=True)
-                    st.markdown("</div>", unsafe_allow_html=True)
-
-                    st.markdown('<div style="background:#161B22;border:1px solid #30363D;border-radius:10px;padding:12px;">', unsafe_allow_html=True)
-                    st.markdown('<div style="color:#8B949E;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📋 ATIVOS DO DOMÍNIO</div>', unsafe_allow_html=True)
-                    for _,row_t in df_d.iterrows():
-                        cor_t = "#3FB950" if row_t["score_completude"]==100 else "#C9A227" if row_t["score_completude"]>=60 else "#F85149"
-                        st.markdown(f'<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #21262D;"><div><span style="color:#C9A227;font-size:0.75rem;font-weight:600;">{row_t["table_name"]}</span><span style="background:#58A6FF22;color:#58A6FF;border-radius:3px;padding:1px 5px;font-size:0.62rem;margin-left:5px;">{row_t["schema_name"]}</span></div><span style="color:{cor_t};font-weight:700;font-size:0.78rem;" title="Score de documentação">{row_t["score_completude"]}%</span></div>', unsafe_allow_html=True)
-                    st.markdown("</div>", unsafe_allow_html=True)
-
-                with dd2:
-                    st.markdown('<div style="background:#161B22;border:1px solid #30363D;border-radius:10px;padding:12px;margin-bottom:8px;">', unsafe_allow_html=True)
-                    st.markdown('<div style="color:#8B949E;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">GESTOR DO DADO (DATA STEWARD)</div>', unsafe_allow_html=True)
-                    st.markdown('<div style="color:#484F58;font-size:0.65rem;margin-bottom:8px;">Responsável pela manutenção, qualidade e evolução dos dados do domínio.</div>', unsafe_allow_html=True)
-                    for stw in stw_d:
-                        nome_stw = stw.replace("@meridian.com","").replace("."," ").title()
-                        st.markdown(f'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #21262D;">{avatar(nome_stw,"#58A6FF",32)}<div><div style="color:#E6EDF3;font-size:0.78rem;font-weight:600;">{nome_stw}</div><div style="color:#8B949E;font-size:0.65rem;">Gestor · {dom_sel}</div></div></div>', unsafe_allow_html=True)
-                    if not stw_d:
-                        st.markdown('<div style="color:#8B949E;font-size:0.75rem;">Nenhum gestor definido ainda.</div>', unsafe_allow_html=True)
-                    st.markdown("</div>", unsafe_allow_html=True)
-
-                    if not df_glos.empty:
-                        termos_dom = df_glos[df_glos["dominio"]==dom_sel]
-                        if not termos_dom.empty:
-                            st.markdown('<div style="background:#161B22;border:1px solid #30363D;border-radius:10px;padding:12px;">', unsafe_allow_html=True)
-                            st.markdown('<div style="color:#8B949E;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📖 CONCEITOS DO DOMÍNIO</div>', unsafe_allow_html=True)
-                            for _,t in termos_dom.iterrows():
-                                cor_ts = {"homologado":"#3FB950","em_revisao":"#58A6FF","rascunho":"#8B949E"}.get(t["status"],"#8B949E")
-                                st.markdown(f'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #21262D;"><span style="color:#E6EDF3;font-size:0.75rem;">{t["termo"]}</span><span style="color:{cor_ts};font-size:0.68rem;">● {t["status"].replace("_"," ")}</span></div>', unsafe_allow_html=True)
-                            st.markdown("</div>", unsafe_allow_html=True)
+                left, right = st.columns(2, gap="medium")
+                with left:
+                    with st.container(border=True):
+                        st.markdown("**Data Owners**")
+                        st.caption("Responsáveis pelas decisões estratégicas sobre os dados.")
+                        if owners_d:
+                            for owner in owners_d:
+                                nome = owner.replace("@meridian.com", "").replace(".", " ").title()
+                                st.write(f"• {nome}")
+                        else:
+                            st.caption("Nenhum responsável definido.")
+                    with st.container(border=True):
+                        st.markdown("**Ativos do domínio**")
+                        if ativos_dom.empty:
+                            st.caption("Nenhum ativo encontrado.")
+                        else:
+                            ativos_dom = ativos_dom.rename(columns={"table_name": "Ativo", "schema_name": "Camada", "score_completude": "Completude (%)"})
+                            st.dataframe(ativos_dom, use_container_width=True, hide_index=True)
+                with right:
+                    with st.container(border=True):
+                        st.markdown("**Data Stewards**")
+                        st.caption("Responsáveis pela manutenção operacional e evolução dos dados.")
+                        if stw_d:
+                            for steward in stw_d:
+                                nome = steward.replace("@meridian.com", "").replace(".", " ").title()
+                                st.write(f"• {nome}")
+                        else:
+                            st.caption("Nenhum gestor definido.")
+                    with st.container(border=True):
+                        st.markdown("**Conceitos de negócio**")
+                        if termos_dom.empty:
+                            st.caption("Nenhum conceito vinculado a este domínio.")
+                        else:
+                            conceitos_view = termos_dom[["termo", "status"]].drop_duplicates().rename(columns={"termo": "Conceito", "status": "Status"})
+                            st.dataframe(conceitos_view, use_container_width=True, hide_index=True)
             else:
-                estado_vazio("🏛️","Selecione um domínio","Clique em um domínio para ver responsáveis, ativos e conceitos vinculados.")
+                estado_vazio("🏛️", "Selecione um domínio", "Escolha um domínio na lista para ver seus detalhes.")
 
     copyright_footer()
 
@@ -1087,16 +1039,16 @@ elif pagina == "🏛️ Domínios":
 # 🛡️ SCORECARD — Confiabilidade dos Dados
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "🛡️ Scorecard":
-    page_header("🛡️","Scorecard de Confiabilidade",
-                "O quanto os dados estão documentados, sob responsabilidade e avaliados segundo os critérios da organização.")
+    page_header("🛡️","Scorecard de Governança",
+                "Visão consolidada de documentação, responsabilidade, relacionamentos, completude de metadados e certificação.")
 
     st.markdown("""
     <div style="background:#161B2299;border:1px solid #30363D;border-radius:8px;
                 padding:10px 14px;margin-bottom:16px;">
         <div style="color:#8B949E;font-size:0.78rem;line-height:1.6;">
-            O Scorecard avalia a maturidade dos dados em cinco dimensões independentes.
-            Cada indicador possui um conceito e uma forma de melhoria explicados ao clicar no pilar.
-            <strong style="color:#C9A227;">Nenhum número aparece sem definição.</strong>
+            O Scorecard resume cinco medidas operacionais com pesos iguais.
+            O resultado é um índice indicativo de governança, não uma certificação nem uma avaliação formal de maturidade.
+            Selecione um pilar para entender sua definição e como melhorar o resultado.
         </div>
     </div>""", unsafe_allow_html=True)
 
@@ -1122,10 +1074,12 @@ elif pagina == "🛡️ Scorecard":
         <div style="background:#161B22;border:1px solid #30363D;border-radius:16px;
                     padding:20px;text-align:center;margin-bottom:20px;">
             <div style="font-size:0.7rem;color:#8B949E;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">
-                Score Geral de Confiabilidade</div>
+                Índice Indicativo de Governança</div>
             <div style="font-size:3.5rem;font-weight:800;color:{cor_g};line-height:1;">{ger:.0f}%</div>
             <div style="color:#8B949E;font-size:0.75rem;margin-top:4px;">
-                Média dos 5 pilares: Documentação · Responsabilidade · Relacionamentos · Qualidade · Certificação</div>
+                Média simples dos cinco pilares, com peso igual. Não representa qualidade efetiva dos dados nem maturidade formal.</div>
+            <div style="color:#8B949E;font-size:0.7rem;margin-top:6px;">
+                Documentação · Responsabilidade · Relacionamentos · Completude de Metadados · Certificação</div>
         </div>""", unsafe_allow_html=True)
 
         PILARES_INFO = {
@@ -1144,15 +1098,15 @@ elif pagina == "🛡️ Scorecard":
                 "conceito":"Verifica se os ativos técnicos estão conectados a conceitos de negócio do Glossário. Ativos conectados são mais fáceis de descobrir e entender pelas áreas de negócio.",
                 "como_melhorar":"Acesse o Glossário → Relacionamentos e vincule cada conceito às tabelas correspondentes."
             },
-            "Qualidade":     {
+            "Completude de Metadados":     {
                 "icone":"⭐","cor":"#3FB950","val":qual,
-                "conceito":"Score médio de completude dos metadados (0 a 100%). Calculado com base nos campos obrigatórios: Descrição, Domínio, Responsável, Gestor e Função de Negócio. Cada campo representa 20% do score.",
+                "conceito":"Percentual médio de preenchimento dos metadados obrigatórios. Este indicador mede completude documental; não representa, por si só, a qualidade efetiva dos dados.",
                 "como_melhorar":"Preencha todos os campos obrigatórios na Curadoria. Cada campo preenchido adiciona 20 pontos ao score do ativo."
             },
             "Certificação":  {
                 "icone":"🏆","cor":"#F85149","val":cert,
-                "conceito":"Percentual de ativos com score 100% — todos os campos obrigatórios preenchidos. Ativos certificados estão prontos para uso confiável pelo negócio.",
-                "como_melhorar":"Complete todos os 5 campos de metadados para que o ativo receba automaticamente o status de Certificado."
+                "conceito":"Percentual de ativos com status formal de certificação registrado no campo selo. O preenchimento de metadados, isoladamente, não equivale à certificação.",
+                "como_melhorar":"Siga o fluxo formal de certificação e confirme o atendimento aos critérios definidos antes de conceder o selo."
             },
         }
 
@@ -1175,12 +1129,20 @@ elif pagina == "🛡️ Scorecard":
                         <div style="background:{cor_p};border-radius:4px;height:4px;width:{min(info['val'],100):.0f}%;"></div>
                     </div>
                 </div>""", unsafe_allow_html=True)
-                if st.button(f"{'▼ Fechar' if is_sel else '▶ Entender'}",
-                             key=f"scp_{nome}", use_container_width=True):
-                    st.session_state["sc_pilar"] = None if is_sel else nome
-                    st.rerun()
-
-        pilar_sel = st.session_state.get("sc_pilar")
+        # Um único controle de navegação para os cinco pilares evita repetir
+        # cinco botões "Entender" e reduz o ruído visual.
+        opcoes_pilar = ["Selecione um pilar"] + list(PILARES_INFO.keys())
+        selecao_atual = st.session_state.get("sc_pilar")
+        if selecao_atual not in PILARES_INFO:
+            selecao_atual = "Selecione um pilar"
+        escolha_pilar = st.selectbox(
+            "Consultar definição do pilar",
+            options=opcoes_pilar,
+            index=opcoes_pilar.index(selecao_atual),
+            key="sc_pilar_select",
+        )
+        pilar_sel = escolha_pilar if escolha_pilar in PILARES_INFO else None
+        st.session_state["sc_pilar"] = pilar_sel
         if pilar_sel and pilar_sel in PILARES_INFO:
             info  = PILARES_INFO[pilar_sel]
             cor_p2 = "#3FB950" if info["val"]>=80 else "#C9A227" if info["val"]>=60 else "#F85149"
@@ -1523,12 +1485,20 @@ elif pagina == "✏️ Curadoria":
                         if st.button("💾 Salvar",type="primary",key="c_save",use_container_width=True):
                             filled = sum([bool(new_desc),bool(new_dom),bool(new_own),bool(new_stw),bool(row["funcao_negocio"])])
                             ns = filled*20
-                            sl = "certificado" if ns==100 else "parcial" if ns>=60 else "pendente"
-                            ok,err = exe(f"UPDATE meridian_governanca.tabelas_metadata SET descricao='{esc(new_desc)}',dominio='{esc(new_dom)}',data_owner='{esc(new_own)}',data_steward='{esc(new_stw)}',score_completude={ns},selo='{sl}',atualizado_em=current_timestamp() WHERE schema_name='{sel_s}' AND table_name='{sel_t}'")
+                            # Completude de metadados não concede nem revoga certificação.
+                            ok,err = exe(f"UPDATE meridian_governanca.tabelas_metadata SET descricao='{esc(new_desc)}',dominio='{esc(new_dom)}',data_owner='{esc(new_own)}',data_steward='{esc(new_stw)}',score_completude={ns},atualizado_em=current_timestamp() WHERE schema_name='{esc(sel_s)}' AND table_name='{esc(sel_t)}'")
                             if ok:
-                                exe(f"INSERT INTO meridian_governanca.metadata_audit VALUES ('{uuid.uuid4()}',current_timestamp(),'{sel_s}','{sel_t}','tabela','','metadados','{row['score_completude']}','{ns}','manual','{esc(usuario)}','{esc(usuario[:8])}')")
-                                st.success(f"✅ Salvo! Score: {ns}%"); st.cache_data.clear(); st.rerun()
-                            else: st.error(f"Não foi possível salvar. Tente novamente.")
+                                ok_aud, err_aud = exe(f"INSERT INTO meridian_governanca.metadata_audit VALUES ('{uuid.uuid4()}',current_timestamp(),'{esc(sel_s)}','{esc(sel_t)}','tabela','','metadados','{row['score_completude']}','{ns}','manual','{esc(usuario)}','{esc(usuario[:8])}')")
+                                if ok_aud:
+                                    st.success(f"✅ Metadados salvos e auditados. Completude: {ns}%.")
+                                else:
+                                    st.error("Os metadados foram salvos, mas o registro de auditoria falhou. A equipe responsável deve reconciliar a trilha.")
+                                    st.caption(f"Detalhe da auditoria: {err_aud}")
+                                st.cache_data.clear()
+                                st.rerun()
+                            else:
+                                st.error("Não foi possível salvar os metadados.")
+                                st.caption(f"Detalhe técnico: {err}")
                     with bc2:
                         if st.button("🤖 Sugerir com IA",key="c_ai",use_container_width=True):
                             sugestoes = {
@@ -1563,11 +1533,23 @@ elif pagina == "✏️ Curadoria":
                         with sa1:
                             if st.button("✅ Aceitar e salvar",key="ai_ac",use_container_width=True):
                                 filled = sum([bool(sug_d),bool(sug_dom),bool(new_own),bool(new_stw),bool(row["funcao_negocio"])])
-                                ns = filled*20; sl = "certificado" if ns==100 else "parcial" if ns>=60 else "pendente"
-                                ok,_ = exe(f"UPDATE meridian_governanca.tabelas_metadata SET descricao='{esc(sug_d)}',dominio='{esc(sug_dom)}',score_completude={ns},selo='{sl}',atualizado_em=current_timestamp() WHERE schema_name='{sel_s}' AND table_name='{sel_t}'")
+                                ns = filled*20
+                                # Sugestão de metadados não concede nem revoga certificação.
+                                ok, err = exe(f"UPDATE meridian_governanca.tabelas_metadata SET descricao='{esc(sug_d)}',dominio='{esc(sug_dom)}',score_completude={ns},atualizado_em=current_timestamp() WHERE schema_name='{esc(sel_s)}' AND table_name='{esc(sel_t)}'")
                                 if ok:
-                                    exe(f"INSERT INTO meridian_governanca.metadata_audit VALUES ('{uuid.uuid4()}',current_timestamp(),'{sel_s}','{sel_t}','tabela','','metadados','{row['score_completude']}','{ns}','ia','{esc(usuario)}','{esc(usuario[:8])}')")
-                                    st.success("✅ Aplicado!"); del st.session_state["ai_desc"]; del st.session_state["ai_dom"]; st.cache_data.clear(); st.rerun()
+                                    ok_aud, err_aud = exe(f"INSERT INTO meridian_governanca.metadata_audit VALUES ('{uuid.uuid4()}',current_timestamp(),'{esc(sel_s)}','{esc(sel_t)}','tabela','','metadados','{row['score_completude']}','{ns}','ia','{esc(usuario)}','{esc(usuario[:8])}')")
+                                    if ok_aud:
+                                        st.success(f"✅ Metadados aplicados e auditados. Completude: {ns}%.")
+                                    else:
+                                        st.error("Os metadados foram aplicados, mas o registro de auditoria falhou.")
+                                        st.caption(f"Detalhe da auditoria: {err_aud}")
+                                    del st.session_state["ai_desc"]
+                                    del st.session_state["ai_dom"]
+                                    st.cache_data.clear()
+                                    st.rerun()
+                                else:
+                                    st.error("Não foi possível aplicar os metadados sugeridos.")
+                                    st.caption(f"Detalhe técnico: {err}")
                         with sa2:
                             if st.button("❌ Descartar",key="ai_dc",use_container_width=True):
                                 del st.session_state["ai_desc"]; del st.session_state["ai_dom"]; st.rerun()
@@ -1590,18 +1572,35 @@ elif pagina == "✏️ Curadoria":
                     with lb2: l_own = st.text_input("Responsável (Owner)",key="l_own")
                     with lb3: l_stw = st.text_input("Gestor (Steward)",key="l_stw")
                     if st.button(f"🚀 Aplicar em {len(sels)} tabela(s)",type="primary",key="l_apply"):
-                        erros = []
-                        for _,r in sels.iterrows():
-                            sets = []
-                            if l_dom: sets.append(f"dominio='{esc(l_dom)}'")
-                            if l_own: sets.append(f"data_owner='{esc(l_own)}'")
-                            if l_stw: sets.append(f"data_steward='{esc(l_stw)}'")
-                            if sets:
+                        campos_solicitados = bool(l_dom or l_own or l_stw)
+                        if not campos_solicitados:
+                            st.info("Informe pelo menos um campo para atualizar antes de aplicar.")
+                        else:
+                            erros = []
+                            atualizadas = []
+                            for _, r in sels.iterrows():
+                                sets = []
+                                if l_dom: sets.append(f"dominio='{esc(l_dom)}'")
+                                if l_own: sets.append(f"data_owner='{esc(l_own)}'")
+                                if l_stw: sets.append(f"data_steward='{esc(l_stw)}'")
                                 sets.append("atualizado_em=current_timestamp()")
-                                ok,_ = exe(f"UPDATE meridian_governanca.tabelas_metadata SET {', '.join(sets)} WHERE schema_name='{r['Schema']}' AND table_name='{r['Tabela']}'")
-                                if not ok: erros.append(r["Tabela"])
-                        if erros: st.warning(f"Não foi possível atualizar: {erros}")
-                        else: st.success(f"✅ {len(sels)} tabelas atualizadas!"); st.cache_data.clear(); st.rerun()
+                                ok, err = exe(
+                                    f"UPDATE meridian_governanca.tabelas_metadata "
+                                    f"SET {', '.join(sets)} "
+                                    f"WHERE schema_name='{esc(r['Schema'])}' AND table_name='{esc(r['Tabela'])}'"
+                                )
+                                if ok:
+                                    atualizadas.append(str(r["Tabela"]))
+                                else:
+                                    erros.append({"tabela": str(r["Tabela"]), "erro": str(err)})
+                            if erros:
+                                st.error(f"{len(erros)} de {len(sels)} atualização(ões) falharam.")
+                                st.dataframe(pd.DataFrame(erros), use_container_width=True, hide_index=True)
+                            if atualizadas:
+                                st.success(f"Atualizações concluídas: {len(atualizadas)} de {len(sels)}.")
+                                st.cache_data.clear()
+                                if not erros:
+                                    st.rerun()
 
     copyright_footer()
 
@@ -1671,18 +1670,21 @@ elif pagina == "📊 Indicadores":
     df_cert = load_cert()
     df_sla = load_sla_snap()
 
-    # Filtros
-    ff=st.columns(6)
+    # Filtros aplicáveis à série histórica agregada.
+    # Removidos filtros por ativo (documentação/ownership/qualidade), pois não eram
+    # aplicados aos snapshots e sugeriam uma segmentação que o painel não executava.
+    ff = st.columns([2, 1, 1])
     with ff[0]:
-        doms_ind=["Todos"]+sorted([str(d) for d in df_snap["dominio"].dropna().unique() if str(d)!="Todos" and str(d).strip() and str(d)!="nan"])
-        fi_dom=st.selectbox("Domínio",doms_ind,key="ind_dom")
-    with ff[1]: fi_ano=st.selectbox("Ano",["Todos","2024","2025","2026"],key="ind_ano")
+        doms_ind = ["Todos"] + sorted([
+            str(d) for d in df_snap["dominio"].dropna().unique()
+            if str(d) != "Todos" and str(d).strip() and str(d) != "nan"
+        ]) if not df_snap.empty else ["Todos"]
+        fi_dom = st.selectbox("Domínio", doms_ind, key="ind_dom")
+    with ff[1]:
+        fi_ano = st.selectbox("Ano", ["Todos", "2024", "2025", "2026"], key="ind_ano")
     with ff[2]:
-        meses_map={"Todos":0,"Jan":1,"Fev":2,"Mar":3,"Abr":4,"Mai":5,"Jun":6,"Jul":7,"Ago":8,"Set":9,"Out":10,"Nov":11,"Dez":12}
-        fi_mes=st.selectbox("Mês",list(meses_map.keys()),key="ind_mes")
-    with ff[3]: fi_doc=st.selectbox("Doc. mín. (%)",["Todos","≥80","≥60","≥40"],key="ind_doc")
-    with ff[4]: fi_own=st.selectbox("Ownership",["Todos","Com Owner","Sem Owner"],key="ind_own")
-    with ff[5]: fi_qual=st.selectbox("Qualidade",["Todos","Alta","Média","Baixa"],key="ind_qual")
+        meses_map = {"Todos":0,"Jan":1,"Fev":2,"Mar":3,"Abr":4,"Mai":5,"Jun":6,"Jul":7,"Ago":8,"Set":9,"Out":10,"Nov":11,"Dez":12}
+        fi_mes = st.selectbox("Mês", list(meses_map.keys()), key="ind_mes")
 
     if df_snap.empty:
         st.info("Nenhum snapshot disponível.")
@@ -1814,43 +1816,95 @@ elif pagina == "🥇 Certificação":
         if f_cert_dom!="Todos": df_cf=df_cf[df_cf["dominio"]==f_cert_dom]
         if f_cert_st!="Todos":  df_cf=df_cf[df_cf["status_cert"]==f_cert_st]
         if f_cert_niv!="Todos": df_cf=df_cf[df_cf["nivel_cert"]==f_cert_niv]
-        for _,row in df_cf.iterrows():
-            cor_st={"certificado":"#3FB950","em_analise":"#C9A227","pendente":"#58A6FF","nao_iniciado":"#484F58"}.get(row["status_cert"],"#8B949E")
-            label_st={"certificado":"✅ Certificado","em_analise":"🔵 Em Análise","pendente":"⏳ Pendente","nao_iniciado":"📋 Não Iniciado"}.get(row["status_cert"],row["status_cert"])
-            cor_nv=SELOS.get(row["nivel_cert"],{}).get("cor","#8B949E"); ic_nv=SELOS.get(row["nivel_cert"],{}).get("icone","")
-            criterios=[("Doc.",row["criterio_doc"]),("Owner",row["criterio_owner"]),("Steward",row["criterio_steward"]),("Domínio",row["criterio_dominio"]),("Qualidade",row["criterio_qualidade"])]
-            crit_items = [(n, ok) for n,ok in criterios]
-            crit_html = "".join([
-                f'<span style="color:{"#3FB950" if ok else "#F85149"};font-size:0.68rem;margin-right:10px;">{"OK" if ok else "X"} {n}</span>'
-                for n,ok in crit_items
-            ])
-            validade_html = f'<span>Válido até: <b style="color:#3FB950;">{str(row["valido_ate"])}</b></span>' if row["valido_ate"] else ""
-            st.markdown(
-                f'<div style="background:#161B22;border:1px solid #30363D;border-radius:12px;padding:14px 18px;margin-bottom:8px;">'
-                f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
-                f'<div><span style="color:#E6EDF3;font-weight:800;font-size:0.9rem;">{row["table_name"]}</span>'
-                f'<span style="background:#58A6FF22;color:#58A6FF;border-radius:4px;padding:2px 7px;font-size:0.65rem;margin-left:6px;">{row["schema_name"]}</span>'
-                f'<span style="background:{cor_nv}22;color:{cor_nv};border-radius:4px;padding:2px 7px;font-size:0.65rem;margin-left:4px;">{ic_nv} {row["nivel_cert"]}</span></div>'
-                f'<span style="background:{cor_st}22;color:{cor_st};border-radius:20px;padding:3px 12px;font-size:0.72rem;font-weight:600;border:1px solid {cor_st}44;">{label_st}</span></div>'
-                f'<div style="margin-bottom:8px;">{crit_html}</div>'
-                f'<div style="display:flex;gap:16px;font-size:0.7rem;color:#8B949E;">'
-                f'<span>Doc: <b style="color:#E6EDF3;">{row["score_doc"]:.0f}%</b></span>'
-                f'<span>Qualidade: <b style="color:#E6EDF3;">{row["score_qualidade"]:.1f}%</b></span>'
-                f'<span>Ownership: <b style="color:#E6EDF3;">{row["score_ownership"]:.0f}%</b></span>'
-                f'{validade_html}</div></div>',
-                unsafe_allow_html=True
-            )
+        if df_cf.empty:
+            estado_vazio("🔎", "Nenhum ativo encontrado", "Altere os filtros para consultar outros ativos.")
+        else:
+            st.caption(f"{len(df_cf)} ativo(s) · Os critérios ficam disponíveis sob demanda.")
+            for _, row in df_cf.iterrows():
+                status_map = {
+                    "certificado": ("Certificado", "green"),
+                    "em_analise": ("Em análise", "orange"),
+                    "pendente": ("Pendente", "blue"),
+                    "nao_iniciado": ("Não iniciado", "gray"),
+                }
+                label_st, cor_md = status_map.get(row["status_cert"], (str(row["status_cert"]).replace("_", " ").capitalize(), "gray"))
+                nivel = str(row["nivel_cert"]) if pd.notna(row["nivel_cert"]) else "Sem nível"
+                selo = SELOS.get(nivel, {})
+                with st.container(border=True):
+                    col_ativo, col_status = st.columns([3, 1])
+                    with col_ativo:
+                        st.markdown(f"**{row['table_name']}**")
+                        st.caption(f"{row['schema_name']} · Selo {nivel}")
+                    with col_status:
+                        st.markdown(f":{cor_md}[**{label_st}**]")
+                        if pd.notna(row["valido_ate"]) and row["valido_ate"]:
+                            st.caption(f"Válido até {row['valido_ate']}")
+                    m1, m2, m3 = st.columns(3)
+                    m1.metric("Documentação", f"{float(row['score_doc'] or 0):.0f}%")
+                    m2.metric("Qualidade", f"{float(row['score_qualidade'] or 0):.1f}%")
+                    m3.metric("Responsabilidades", f"{float(row['score_ownership'] or 0):.0f}%")
+                    with st.expander("Critérios de certificação", expanded=False):
+                        crit_cols = st.columns(5)
+                        criterios = [
+                            ("Documentação", bool(row["criterio_doc"])),
+                            ("Owner", bool(row["criterio_owner"])),
+                            ("Steward", bool(row["criterio_steward"])),
+                            ("Domínio", bool(row["criterio_dominio"])),
+                            ("Qualidade", bool(row["criterio_qualidade"])),
+                        ]
+                        for col, (nome, atendido) in zip(crit_cols, criterios):
+                            with col:
+                                st.write(("✓ " if atendido else "✕ ") + nome)
             if is_aprovador and row["status_cert"]=="em_analise":
                 ca2,cr2=st.columns(2)
                 with ca2:
                     if st.button(f"✅ Certificar {row['table_name']}",key=f"cert_ap_{row['cert_id']}",use_container_width=True):
-                        exe(f"UPDATE meridian_governanca.gd_certification SET status_cert='certificado',certificado_por='{esc(usuario)}',certificado_em=current_timestamp(),valido_ate=date_add(current_date(),365) WHERE cert_id='{row['cert_id']}'")
-                        exe(f"UPDATE meridian_governanca.tabelas_metadata SET selo='certificado',atualizado_em=current_timestamp() WHERE schema_name='{row['schema_name']}' AND table_name='{row['table_name']}'")
-                        st.success("✅ Certificado!"); st.cache_data.clear(); st.rerun()
+                        ok_cert, err_cert = exe(
+                            f"UPDATE meridian_governanca.gd_certification "
+                            f"SET status_cert='certificado',certificado_por='{esc(usuario)}',"
+                            f"certificado_em=current_timestamp(),valido_ate=date_add(current_date(),365) "
+                            f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='em_analise'"
+                        )
+                        if not ok_cert:
+                            st.error("Não foi possível atualizar o registro de certificação. Nenhuma confirmação foi emitida.")
+                            st.caption(f"Detalhe técnico: {err_cert}")
+                        else:
+                            ok_meta, err_meta = exe(
+                                f"UPDATE meridian_governanca.tabelas_metadata "
+                                f"SET selo='certificado',atualizado_em=current_timestamp() "
+                                f"WHERE schema_name='{esc(row['schema_name'])}' "
+                                f"AND table_name='{esc(row['table_name'])}'"
+                            )
+                            if not ok_meta:
+                                # Compensação best-effort para não deixar a certificação marcada como concluída.
+                                ok_comp, err_comp = exe(
+                                    f"UPDATE meridian_governanca.gd_certification "
+                                    f"SET status_cert='em_analise',certificado_por=NULL,certificado_em=NULL,valido_ate=NULL "
+                                    f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='certificado'"
+                                )
+                                st.error("A atualização do catálogo falhou. A certificação não foi concluída.")
+                                st.caption(f"Falha no catálogo: {err_meta}")
+                                if not ok_comp:
+                                    st.warning("A reversão automática também falhou. É necessária reconciliação manual dos dois registros.")
+                                    st.caption(f"Falha na reversão: {err_comp}")
+                            else:
+                                st.success("✅ Certificado! Os dois registros foram atualizados.")
+                                st.cache_data.clear()
+                                st.rerun()
                 with cr2:
                     if st.button(f"❌ Rejeitar",key=f"cert_rej_{row['cert_id']}",use_container_width=True):
-                        exe(f"UPDATE meridian_governanca.gd_certification SET status_cert='pendente',certificado_por='{esc(usuario)}',certificado_em=current_timestamp() WHERE cert_id='{row['cert_id']}'")
-                        st.warning("↩️ Devolvido."); st.cache_data.clear(); st.rerun()
+                        ok_rej, err_rej = exe(
+                            f"UPDATE meridian_governanca.gd_certification "
+                            f"SET status_cert='pendente',certificado_por='{esc(usuario)}',certificado_em=current_timestamp() "
+                            f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='em_analise'"
+                        )
+                        if ok_rej:
+                            st.warning("↩️ Devolvido.")
+                            st.cache_data.clear()
+                            st.rerun()
+                        else:
+                            st.error("Não foi possível devolver a certificação.")
+                            st.caption(f"Detalhe técnico: {err_rej}")
     copyright_footer()
 
 # ════════════════════════════════════════════════════════════════════
