@@ -6,6 +6,7 @@ Reprodução proibida sem autorização expressa.
 """
 import streamlit as st
 import pandas as pd
+import threading, time
 from databricks import sql
 import plotly.express as px
 import plotly.graph_objects as go
@@ -52,6 +53,33 @@ def get_conn():
     )
     return conn
 
+# ─── KEEP-ALIVE ──────────────────────────────────────────────────────────────
+# Roda uma vez por processo do servidor (cache_resource) e mantém o
+# SQL Warehouse ativo enviando um SELECT 1 a cada 4 minutos.
+@st.cache_resource
+def _start_keepalive():
+    def _ping():
+        while True:
+            time.sleep(240)   # 4 minutos — antes do timeout de idle (10 min)
+            try:
+                conn = get_conn()
+                cur  = conn.cursor()
+                cur.execute("SELECT 1")
+                cur.close()
+            except Exception:
+                # Sessão expirou — limpa o cache para reconectar
+                try: get_conn.clear()
+                except: pass
+    t = threading.Thread(target=_ping, daemon=True)
+    t.start()
+    return True
+
+_start_keepalive()
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _is_session_err(msg: str) -> bool:
+    return "SessionHandle" in msg or ("Session" in msg and "closed" in msg)
+
 @st.cache_data(ttl=300)
 def qry(sql_str):
     try:
@@ -61,7 +89,11 @@ def qry(sql_str):
         cols = [d[0] for d in cur.description]
         return pd.DataFrame(cur.fetchall(), columns=cols), None
     except Exception as e:
-        return pd.DataFrame(), str(e)
+        err = str(e)
+        if _is_session_err(err):
+            try: get_conn.clear(); qry.clear()
+            except: pass
+        return pd.DataFrame(), err
 
 def exe(sql_str):
     try:
@@ -70,7 +102,11 @@ def exe(sql_str):
         cur.execute(sql_str)
         return True, None
     except Exception as e:
-        return False, str(e)
+        err = str(e)
+        if _is_session_err(err):
+            try: get_conn.clear()
+            except: pass
+        return False, err
 
 def esc(v): return str(v).replace("'","''") if v else ""
 
