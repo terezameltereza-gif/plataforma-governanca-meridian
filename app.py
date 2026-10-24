@@ -543,19 +543,12 @@ elif pagina == "📖 Glossário":
                     estado_vazio("🔍","Nenhum conceito encontrado","Tente outros termos de busca ou ajuste os filtros.")
                 else:
                     for _, row in df_gf.iterrows():
-                        cor_st = {"homologado":"#3FB950","em_revisao":"#58A6FF","rascunho":"#8B949E"}.get(row["status"],"#8B949E")
                         is_sel = st.session_state["gid_sel"] == row["glossary_id"]
-                        st.markdown(f"""
-                        <div style="background:{'#C9A22708' if is_sel else '#161B22'};
-                                    border:1px solid {'#C9A227' if is_sel else '#30363D'};
-                                    border-radius:8px;padding:8px 10px;margin-bottom:2px;">
-                            <div style="color:#E6EDF3;font-weight:600;font-size:0.82rem;">{row['termo']}</div>
-                            <div style="display:flex;justify-content:space-between;margin-top:2px;">
-                                <span style="color:#8B949E;font-size:0.68rem;">{row['dominio']}</span>
-                                <span style="color:{cor_st};font-size:0.65rem;font-weight:600;">● {row['status'].replace('_',' ')}</span>
-                            </div>
-                        </div>""", unsafe_allow_html=True)
-                        if st.button(f"↳ {row['termo']}", key=f"gc_{row['glossary_id']}", use_container_width=True):
+                        status_label = str(row["status"]).replace("_", " ")
+                        # Um único controle clicável por conceito, sem cartão visual duplicado.
+                        label_sel = "✓ " if is_sel else "↳ "
+                        label = f"{label_sel}{row['termo']}  ·  {row['dominio']}  ·  {status_label}"
+                        if st.button(label, key=f"gc_{row['glossary_id']}", use_container_width=True, type="primary" if is_sel else "secondary"):
                             st.session_state["gid_sel"] = row["glossary_id"]
                             st.rerun()
 
