@@ -1590,18 +1590,35 @@ elif pagina == "✏️ Curadoria":
                     with lb2: l_own = st.text_input("Responsável (Owner)",key="l_own")
                     with lb3: l_stw = st.text_input("Gestor (Steward)",key="l_stw")
                     if st.button(f"🚀 Aplicar em {len(sels)} tabela(s)",type="primary",key="l_apply"):
-                        erros = []
-                        for _,r in sels.iterrows():
-                            sets = []
-                            if l_dom: sets.append(f"dominio='{esc(l_dom)}'")
-                            if l_own: sets.append(f"data_owner='{esc(l_own)}'")
-                            if l_stw: sets.append(f"data_steward='{esc(l_stw)}'")
-                            if sets:
+                        campos_solicitados = bool(l_dom or l_own or l_stw)
+                        if not campos_solicitados:
+                            st.info("Informe pelo menos um campo para atualizar antes de aplicar.")
+                        else:
+                            erros = []
+                            atualizadas = []
+                            for _, r in sels.iterrows():
+                                sets = []
+                                if l_dom: sets.append(f"dominio='{esc(l_dom)}'")
+                                if l_own: sets.append(f"data_owner='{esc(l_own)}'")
+                                if l_stw: sets.append(f"data_steward='{esc(l_stw)}'")
                                 sets.append("atualizado_em=current_timestamp()")
-                                ok,_ = exe(f"UPDATE meridian_governanca.tabelas_metadata SET {', '.join(sets)} WHERE schema_name='{r['Schema']}' AND table_name='{r['Tabela']}'")
-                                if not ok: erros.append(r["Tabela"])
-                        if erros: st.warning(f"Não foi possível atualizar: {erros}")
-                        else: st.success(f"✅ {len(sels)} tabelas atualizadas!"); st.cache_data.clear(); st.rerun()
+                                ok, err = exe(
+                                    f"UPDATE meridian_governanca.tabelas_metadata "
+                                    f"SET {', '.join(sets)} "
+                                    f"WHERE schema_name='{esc(r['Schema'])}' AND table_name='{esc(r['Tabela'])}'"
+                                )
+                                if ok:
+                                    atualizadas.append(str(r["Tabela"]))
+                                else:
+                                    erros.append({"tabela": str(r["Tabela"]), "erro": str(err)})
+                            if erros:
+                                st.error(f"{len(erros)} de {len(sels)} atualização(ões) falharam.")
+                                st.dataframe(pd.DataFrame(erros), use_container_width=True, hide_index=True)
+                            if atualizadas:
+                                st.success(f"Atualizações concluídas: {len(atualizadas)} de {len(sels)}.")
+                                st.cache_data.clear()
+                                if not erros:
+                                    st.rerun()
 
     copyright_footer()
 
