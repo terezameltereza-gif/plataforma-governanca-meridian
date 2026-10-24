@@ -108,7 +108,9 @@ MENU = {**MENU_BASE, **MENU_OP}
 # ════════════════════════════════════════════════════════════════════
 @st.cache_data(ttl=300)
 def load_meta():
-    df,_ = qry("SELECT * FROM meridian_governanca.tabelas_metadata")
+    df, err = qry("SELECT * FROM meridian_governanca.tabelas_metadata")
+    if err and df.empty:
+        st.session_state["_db_err"] = err
     return df if df is not None else pd.DataFrame()
 
 @st.cache_data(ttl=300)
@@ -392,6 +394,9 @@ if pagina == "🏠 Início":
     df_links = load_links()
     df_rules = load_rules()
 
+    if df_meta.empty and st.session_state.get("_db_err"):
+        st.warning(f"⚠️ Não foi possível carregar os dados do Databricks. Verifique se o SQL Warehouse está ativo e se o token de acesso é válido. Detalhe: `{st.session_state['_db_err'][:200]}`")
+
     total_ativos = len(df_meta)  if not df_meta.empty else 0
     total_dom    = df_meta["dominio"].nunique() if not df_meta.empty else 0
     total_termos = len(df_gloss) if not df_gloss.empty else 0
@@ -429,19 +434,33 @@ if pagina == "🏠 Início":
          "Mostra o quanto os dados atendem aos critérios de qualidade definidos para sua utilização confiável."),
     ]
 
+    st.markdown("""<style>
+    .nav-card-btn>div>button{height:0!important;min-height:0!important;padding:0!important;
+        margin:0!important;border:none!important;background:transparent!important;
+        overflow:hidden!important;font-size:0!important;color:transparent!important;box-shadow:none!important;}
+    .card-visual{background:#161B22;border:1px solid #30363D;border-top:3px solid #C9A22744;
+        border-radius:12px;padding:16px;cursor:pointer;margin-bottom:12px;
+        transition:border-color .2s,background .2s;}
+    .card-visual:hover{border-color:#C9A227;border-top-color:#C9A227;background:#1A2030;}
+    </style>""", unsafe_allow_html=True)
+
     cols_cards = st.columns(3)
     for i, (ic, tit, dest, desc) in enumerate(cards_info):
-        with cols_cards[i%3]:
+        with cols_cards[i % 3]:
+            st.markdown('<div class="nav-card-btn">', unsafe_allow_html=True)
+            clicked = st.button("x", key=f"card_{i}", use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            if clicked:
+                st.session_state["pagina"] = dest
+                st.rerun()
             st.markdown(f"""
-            <div style="background:#161B22;border:1px solid #30363D;border-radius:12px;
-                        padding:16px;margin-bottom:12px;border-top:3px solid #C9A22744;">
+            <div class="card-visual" onclick="
+                var all=document.querySelectorAll('.nav-card-btn button');
+                if(all[{i}])all[{i}].click();">
                 <div style="font-size:1.3rem;margin-bottom:8px;">{ic}</div>
                 <div style="color:#E6EDF3;font-weight:700;font-size:0.9rem;margin-bottom:6px;">{tit}</div>
                 <div style="color:#8B949E;font-size:0.75rem;line-height:1.5;">{desc}</div>
             </div>""", unsafe_allow_html=True)
-            if st.button(f"Explorar {tit} →", key=f"card_{i}", use_container_width=True):
-                st.session_state["pagina"] = dest
-                st.rerun()
 
     section_divider("COMO OS DADOS SE CONECTAM")
     st.markdown("""
@@ -620,11 +639,11 @@ elif pagina == "📖 Glossário":
                                 </div>
                                 <div style="background:#0D1117;border-radius:8px;padding:9px;">
                                     <div style="font-size:0.6rem;color:#8B949E;text-transform:uppercase;letter-spacing:1px;">RESPONSÁVEL (OWNER)</div>
-                                    <div style="color:#E6EDF3;font-size:0.78rem;">{row.get('owner_email','—')}</div>
+                                    <div style="color:#E6EDF3;font-size:0.78rem;">{row.get('owner','—')}</div>
                                 </div>
                                 <div style="background:#0D1117;border-radius:8px;padding:9px;">
-                                    <div style="font-size:0.6rem;color:#8B949E;text-transform:uppercase;letter-spacing:1px;">GESTOR DO DADO (STEWARD)</div>
-                                    <div style="color:#E6EDF3;font-size:0.78rem;">{row.get('steward_email','—')}</div>
+                                    <div style="font-size:0.6rem;color:#8B949E;text-transform:uppercase;letter-spacing:1px;">CRIADO POR</div>
+                                    <div style="color:#E6EDF3;font-size:0.78rem;">{row.get('criado_por','—')}</div>
                                 </div>
                             </div>
                             <div style="background:#0D1117;border:1px solid #30363D;border-radius:8px;padding:10px 14px;">
@@ -828,7 +847,7 @@ elif pagina == "📋 Catálogo":
                             tags = [str(item["schema_name"])]
                             if item["dominio"]:
                                 tags.append(str(item["dominio"]))
-                            if item["tem_pii"]:
+                            if str(item.get("classificacao","")).lower() in ("pii","sensível","sensivel"):
                                 tags.append("🔒 Dado pessoal")
                             st.caption(" · ".join(tags))
                             if st.button(
@@ -878,12 +897,12 @@ elif pagina == "📋 Catálogo":
                                 <div style="color:#E6EDF3;font-size:0.78rem;">{item['data_steward'] or '—'}</div>
                             </div>
                             <div style="background:#0D1117;border-radius:8px;padding:8px;">
-                                <div style="font-size:0.6rem;color:#8B949E;text-transform:uppercase;margin-bottom:2px;">FUNÇÃO</div>
-                                <div style="color:#E6EDF3;font-size:0.78rem;">{item['funcao_negocio'] or '—'}</div>
+                                <div style="font-size:0.6rem;color:#8B949E;text-transform:uppercase;margin-bottom:2px;">CLASSIFICAÇÃO</div>
+                                <div style="color:#E6EDF3;font-size:0.78rem;">{item.get('classificacao') or '—'}</div>
                             </div>
                             <div style="background:#0D1117;border-radius:8px;padding:8px;">
-                                <div style="font-size:0.6rem;color:#8B949E;text-transform:uppercase;margin-bottom:2px;">DADO PESSOAL (PII)</div>
-                                <div style="color:#F85149;font-size:0.78rem;">{'🔒 Contém dado pessoal' if item['tem_pii'] else '—'}</div>
+                                <div style="font-size:0.6rem;color:#8B949E;text-transform:uppercase;margin-bottom:2px;">STATUS</div>
+                                <div style="color:#E6EDF3;font-size:0.78rem;">{item.get('status') or '—'}</div>
                             </div>
                         </div>""", unsafe_allow_html=True)
 
@@ -1066,7 +1085,12 @@ elif pagina == "🛡️ Scorecard":
         own  = df_sc_f["data_owner"].apply(bool).mean()*100
         rel  = (df_sc_f["table_name"].isin(df_links["table_name"]).sum()/max(len(df_sc_f),1))*100 if not df_links.empty else 0
         qual = df_sc_f["score_completude"].mean()
-        cert = (len(df_sc_f[df_sc_f["selo"]=="certificado"])/max(len(df_sc_f),1))*100
+        df_cert_sc = load_cert()
+        if not df_cert_sc.empty:
+            cert_tabs = df_cert_sc[df_cert_sc["status_cert"]=="certificado"]["table_name"].tolist()
+            cert = (df_sc_f["table_name"].isin(cert_tabs).sum() / max(len(df_sc_f),1)) * 100
+        else:
+            cert = 0
         ger  = (doc+own+rel+qual+cert)/5
         cor_g = "#3FB950" if ger>=80 else "#C9A227" if ger>=60 else "#F85149"
 
@@ -1428,7 +1452,7 @@ elif pagina == "⚡ Meu Espaço":
             st.info("Nenhuma solicitação no sistema ainda.")
 
         section_divider("MEUS CONCEITOS NO GLOSSÁRIO")
-        df_meus = df_gloss[df_gloss["steward_email"]==usuario] if not df_gloss.empty else pd.DataFrame()
+        df_meus = df_gloss[df_gloss["criado_por"]==usuario] if not df_gloss.empty else pd.DataFrame()
         if not df_meus.empty:
             for _,row in df_meus.iterrows():
                 cor_s = {"homologado":"#3FB950","em_revisao":"#58A6FF","rascunho":"#8B949E"}.get(row["status"],"#8B949E")
@@ -1459,7 +1483,9 @@ elif pagina == "✏️ Curadoria":
                     row = df_cur[(df_cur["schema_name"]==sel_s)&(df_cur["table_name"]==sel_t)].iloc[0]
                     doc_p  = 100 if row["descricao"] else 0
                     own_p  = 100 if row["data_owner"] else 0
-                    cert_p = 100 if row["selo"]=="certificado" else 0
+                    df_cert_cur = load_cert()
+                    cert_tabelas_cur = df_cert_cur[df_cert_cur["status_cert"]=="certificado"]["table_name"].tolist() if not df_cert_cur.empty else []
+                    cert_p = 100 if sel_t in cert_tabelas_cur else 0
                     qual_p = row["score_completude"]
 
                     st.markdown(f'<div style="background:#161B22;border:1px solid #30363D;border-radius:10px;padding:12px 16px;margin-bottom:12px;"><div style="color:#C9A227;font-weight:700;font-size:0.9rem;">{sel_t}</div><div style="color:#8B949E;font-size:0.72rem;margin-top:2px;">{row["descricao"][:60]+"..." if row["descricao"] and len(row["descricao"])>60 else row["descricao"] or "Sem descrição cadastrada."}</div></div>', unsafe_allow_html=True)
@@ -1483,8 +1509,8 @@ elif pagina == "✏️ Curadoria":
                     bc1,bc2 = st.columns(2)
                     with bc1:
                         if st.button("💾 Salvar",type="primary",key="c_save",use_container_width=True):
-                            filled = sum([bool(new_desc),bool(new_dom),bool(new_own),bool(new_stw),bool(row["funcao_negocio"])])
-                            ns = filled*20
+                            filled = sum([bool(new_desc),bool(new_dom),bool(new_own),bool(new_stw)])
+                            ns = min(filled*25, 100)
                             # Completude de metadados não concede nem revoga certificação.
                             ok,err = exe(f"UPDATE meridian_governanca.tabelas_metadata SET descricao='{esc(new_desc)}',dominio='{esc(new_dom)}',data_owner='{esc(new_own)}',data_steward='{esc(new_stw)}',score_completude={ns},atualizado_em=current_timestamp() WHERE schema_name='{esc(sel_s)}' AND table_name='{esc(sel_t)}'")
                             if ok:
@@ -1532,8 +1558,8 @@ elif pagina == "✏️ Curadoria":
                         sa1,sa2 = st.columns(2)
                         with sa1:
                             if st.button("✅ Aceitar e salvar",key="ai_ac",use_container_width=True):
-                                filled = sum([bool(sug_d),bool(sug_dom),bool(new_own),bool(new_stw),bool(row["funcao_negocio"])])
-                                ns = filled*20
+                                filled = sum([bool(sug_d),bool(sug_dom),bool(new_own),bool(new_stw)])
+                                ns = min(filled*25, 100)
                                 # Sugestão de metadados não concede nem revoga certificação.
                                 ok, err = exe(f"UPDATE meridian_governanca.tabelas_metadata SET descricao='{esc(sug_d)}',dominio='{esc(sug_dom)}',score_completude={ns},atualizado_em=current_timestamp() WHERE schema_name='{esc(sel_s)}' AND table_name='{esc(sel_t)}'")
                                 if ok:
@@ -1557,13 +1583,14 @@ elif pagina == "✏️ Curadoria":
             with cur2:
                 f1c,f2c = st.columns(2)
                 with f1c: fl_s = st.selectbox("Schema",["Todos"]+sorted(df_cur["schema_name"].unique().tolist()),key="lote_s")
-                with f2c: fl_sl = st.selectbox("Situação",["Todos","certificado","parcial","pendente"],key="lote_sl")
+                status_opts = ["Todos"]+sorted([str(s) for s in df_cur["status"].dropna().unique() if str(s).strip()]) if not df_cur.empty else ["Todos"]
+                with f2c: fl_sl = st.selectbox("Situação",status_opts,key="lote_sl")
                 df_l = df_cur.copy()
                 if fl_s  != "Todos": df_l = df_l[df_l["schema_name"]==fl_s]
-                if fl_sl != "Todos": df_l = df_l[df_l["selo"]==fl_sl]
-                df_led = df_l[["schema_name","table_name","score_completude","selo"]].copy()
+                if fl_sl != "Todos": df_l = df_l[df_l["status"]==fl_sl]
+                df_led = df_l[["schema_name","table_name","score_completude","status"]].copy()
                 df_led.insert(0,"Selecionar",False)
-                edited = st.data_editor(df_led.rename(columns={"schema_name":"Schema","table_name":"Tabela","score_completude":"Score","selo":"Situação"}),use_container_width=True,hide_index=True,column_config={"Selecionar":st.column_config.CheckboxColumn()})
+                edited = st.data_editor(df_led.rename(columns={"schema_name":"Schema","table_name":"Tabela","score_completude":"Score","status":"Status"}),use_container_width=True,hide_index=True,column_config={"Selecionar":st.column_config.CheckboxColumn()})
                 sels = edited[edited["Selecionar"]==True]
                 if len(sels)>0:
                     st.markdown(f'<div style="color:#C9A227;font-size:0.82rem;margin:6px 0;">{len(sels)} tabela(s) selecionada(s)</div>', unsafe_allow_html=True)
@@ -1869,28 +1896,9 @@ elif pagina == "🥇 Certificação":
                             st.error("Não foi possível atualizar o registro de certificação. Nenhuma confirmação foi emitida.")
                             st.caption(f"Detalhe técnico: {err_cert}")
                         else:
-                            ok_meta, err_meta = exe(
-                                f"UPDATE meridian_governanca.tabelas_metadata "
-                                f"SET selo='certificado',atualizado_em=current_timestamp() "
-                                f"WHERE schema_name='{esc(row['schema_name'])}' "
-                                f"AND table_name='{esc(row['table_name'])}'"
-                            )
-                            if not ok_meta:
-                                # Compensação best-effort para não deixar a certificação marcada como concluída.
-                                ok_comp, err_comp = exe(
-                                    f"UPDATE meridian_governanca.gd_certification "
-                                    f"SET status_cert='em_analise',certificado_por=NULL,certificado_em=NULL,valido_ate=NULL "
-                                    f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='certificado'"
-                                )
-                                st.error("A atualização do catálogo falhou. A certificação não foi concluída.")
-                                st.caption(f"Falha no catálogo: {err_meta}")
-                                if not ok_comp:
-                                    st.warning("A reversão automática também falhou. É necessária reconciliação manual dos dois registros.")
-                                    st.caption(f"Falha na reversão: {err_comp}")
-                            else:
-                                st.success("✅ Certificado! Os dois registros foram atualizados.")
-                                st.cache_data.clear()
-                                st.rerun()
+                            st.success("✅ Certificado! O registro foi atualizado.")
+                            st.cache_data.clear()
+                            st.rerun()
                 with cr2:
                     if st.button(f"❌ Rejeitar",key=f"cert_rej_{row['cert_id']}",use_container_width=True):
                         ok_rej, err_rej = exe(
