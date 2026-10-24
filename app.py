@@ -1816,32 +1816,45 @@ elif pagina == "🥇 Certificação":
         if f_cert_dom!="Todos": df_cf=df_cf[df_cf["dominio"]==f_cert_dom]
         if f_cert_st!="Todos":  df_cf=df_cf[df_cf["status_cert"]==f_cert_st]
         if f_cert_niv!="Todos": df_cf=df_cf[df_cf["nivel_cert"]==f_cert_niv]
-        for _,row in df_cf.iterrows():
-            cor_st={"certificado":"#3FB950","em_analise":"#C9A227","pendente":"#58A6FF","nao_iniciado":"#484F58"}.get(row["status_cert"],"#8B949E")
-            label_st={"certificado":"✅ Certificado","em_analise":"🔵 Em Análise","pendente":"⏳ Pendente","nao_iniciado":"📋 Não Iniciado"}.get(row["status_cert"],row["status_cert"])
-            cor_nv=SELOS.get(row["nivel_cert"],{}).get("cor","#8B949E"); ic_nv=SELOS.get(row["nivel_cert"],{}).get("icone","")
-            criterios=[("Doc.",row["criterio_doc"]),("Owner",row["criterio_owner"]),("Steward",row["criterio_steward"]),("Domínio",row["criterio_dominio"]),("Qualidade",row["criterio_qualidade"])]
-            crit_items = [(n, ok) for n,ok in criterios]
-            crit_html = "".join([
-                f'<span style="color:{"#3FB950" if ok else "#F85149"};font-size:0.68rem;margin-right:10px;">{"OK" if ok else "X"} {n}</span>'
-                for n,ok in crit_items
-            ])
-            validade_html = f'<span>Válido até: <b style="color:#3FB950;">{str(row["valido_ate"])}</b></span>' if row["valido_ate"] else ""
-            st.markdown(
-                f'<div style="background:#161B22;border:1px solid #30363D;border-radius:12px;padding:14px 18px;margin-bottom:8px;">'
-                f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
-                f'<div><span style="color:#E6EDF3;font-weight:800;font-size:0.9rem;">{row["table_name"]}</span>'
-                f'<span style="background:#58A6FF22;color:#58A6FF;border-radius:4px;padding:2px 7px;font-size:0.65rem;margin-left:6px;">{row["schema_name"]}</span>'
-                f'<span style="background:{cor_nv}22;color:{cor_nv};border-radius:4px;padding:2px 7px;font-size:0.65rem;margin-left:4px;">{ic_nv} {row["nivel_cert"]}</span></div>'
-                f'<span style="background:{cor_st}22;color:{cor_st};border-radius:20px;padding:3px 12px;font-size:0.72rem;font-weight:600;border:1px solid {cor_st}44;">{label_st}</span></div>'
-                f'<div style="margin-bottom:8px;">{crit_html}</div>'
-                f'<div style="display:flex;gap:16px;font-size:0.7rem;color:#8B949E;">'
-                f'<span>Doc: <b style="color:#E6EDF3;">{row["score_doc"]:.0f}%</b></span>'
-                f'<span>Qualidade: <b style="color:#E6EDF3;">{row["score_qualidade"]:.1f}%</b></span>'
-                f'<span>Ownership: <b style="color:#E6EDF3;">{row["score_ownership"]:.0f}%</b></span>'
-                f'{validade_html}</div></div>',
-                unsafe_allow_html=True
-            )
+        if df_cf.empty:
+            estado_vazio("🔎", "Nenhum ativo encontrado", "Altere os filtros para consultar outros ativos.")
+        else:
+            st.caption(f"{len(df_cf)} ativo(s) · Os critérios ficam disponíveis sob demanda.")
+            for _, row in df_cf.iterrows():
+                status_map = {
+                    "certificado": ("Certificado", "green"),
+                    "em_analise": ("Em análise", "orange"),
+                    "pendente": ("Pendente", "blue"),
+                    "nao_iniciado": ("Não iniciado", "gray"),
+                }
+                label_st, cor_md = status_map.get(row["status_cert"], (str(row["status_cert"]).replace("_", " ").capitalize(), "gray"))
+                nivel = str(row["nivel_cert"]) if pd.notna(row["nivel_cert"]) else "Sem nível"
+                selo = SELOS.get(nivel, {})
+                with st.container(border=True):
+                    col_ativo, col_status = st.columns([3, 1])
+                    with col_ativo:
+                        st.markdown(f"**{row['table_name']}**")
+                        st.caption(f"{row['schema_name']} · Selo {nivel}")
+                    with col_status:
+                        st.markdown(f":{cor_md}[**{label_st}**]")
+                        if pd.notna(row["valido_ate"]) and row["valido_ate"]:
+                            st.caption(f"Válido até {row['valido_ate']}")
+                    m1, m2, m3 = st.columns(3)
+                    m1.metric("Documentação", f"{float(row['score_doc'] or 0):.0f}%")
+                    m2.metric("Qualidade", f"{float(row['score_qualidade'] or 0):.1f}%")
+                    m3.metric("Responsabilidades", f"{float(row['score_ownership'] or 0):.0f}%")
+                    with st.expander("Critérios de certificação", expanded=False):
+                        crit_cols = st.columns(5)
+                        criterios = [
+                            ("Documentação", bool(row["criterio_doc"])),
+                            ("Owner", bool(row["criterio_owner"])),
+                            ("Steward", bool(row["criterio_steward"])),
+                            ("Domínio", bool(row["criterio_dominio"])),
+                            ("Qualidade", bool(row["criterio_qualidade"])),
+                        ]
+                        for col, (nome, atendido) in zip(crit_cols, criterios):
+                            with col:
+                                st.write(("✓ " if atendido else "✕ ") + nome)
             if is_aprovador and row["status_cert"]=="em_analise":
                 ca2,cr2=st.columns(2)
                 with ca2:
