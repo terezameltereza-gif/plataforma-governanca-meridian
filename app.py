@@ -543,17 +543,17 @@ elif pagina == "📖 Glossário":
                 st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
 
                 if df_gf.empty:
+                    st.session_state["gid_sel"] = None
                     estado_vazio("🔍","Nenhum conceito encontrado","Tente outros termos de busca ou ajuste os filtros.")
                 else:
-                    for _, row in df_gf.iterrows():
-                        is_sel = st.session_state["gid_sel"] == row["glossary_id"]
-                        status_label = str(row["status"]).replace("_", " ")
-                        # Um único controle clicável por conceito, sem cartão visual duplicado.
-                        label_sel = "✓ " if is_sel else "↳ "
-                        label = f"{label_sel}{row['termo']}  ·  {row['dominio']}  ·  {status_label}"
-                        if st.button(label, key=f"gc_{row['glossary_id']}", use_container_width=True, type="primary" if is_sel else "secondary"):
-                            st.session_state["gid_sel"] = row["glossary_id"]
-                            st.rerun()
+                    conceitos_por_id = {str(r["glossary_id"]): r for _, r in df_gf.iterrows()}
+                    st.radio(
+                        "Selecionar conceito",
+                        options=list(conceitos_por_id.keys()),
+                        format_func=lambda cid: f"{conceitos_por_id[cid]['termo']} · {conceitos_por_id[cid]['dominio']} · {str(conceitos_por_id[cid]['status']).replace('_', ' ')}",
+                        key="gid_sel",
+                        label_visibility="collapsed",
+                    )
 
                 # Sugestão de novo conceito — para todos os perfis
                 st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
