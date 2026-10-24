@@ -819,26 +819,26 @@ elif pagina == "📋 Catálogo":
                     chave  = f"{item['schema_name']}.{item['table_name']}"
                     is_sel = st.session_state["cat_sel"] == chave
                     with cols_c[i]:
-                        st.markdown(f"""
-                        <div style="background:{'#C9A22708' if is_sel else '#161B22'};
-                                    border:1px solid {'#C9A227' if is_sel else '#30363D'};
-                                    border-radius:10px;padding:14px;margin-bottom:2px;
-                                    cursor:pointer;">
-                            <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-                                <span style="color:#C9A227;font-weight:700;font-size:0.83rem;">{item['table_name']}</span>
-                                <span style="color:{cor_c};font-weight:800;font-size:0.88rem;" title="Score de documentação: {item['score_completude']}% dos metadados obrigatórios preenchidos.">{item['score_completude']}%</span>
-                            </div>
-                            <div style="color:#8B949E;font-size:0.73rem;line-height:1.4;margin-bottom:8px;">{desc}</div>
-                            <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                                <span style="background:#58A6FF22;color:#58A6FF;border-radius:4px;padding:2px 7px;font-size:0.67rem;" title="Camada de dados">{item['schema_name']}</span>
-                                {f'<span style="background:#C9A22722;color:#C9A227;border-radius:4px;padding:2px 7px;font-size:0.67rem;" title="Domínio de negócio">{item["dominio"]}</span>' if item['dominio'] else ''}
-                                {f'<span style="background:#F8514922;color:#F85149;border-radius:4px;padding:2px 7px;font-size:0.67rem;">🔒 PII</span>' if item['tem_pii'] else ''}
-                            </div>
-                        </div>""", unsafe_allow_html=True)
-                        if st.button(f"{'▼ Fechar' if is_sel else '▶ Ver detalhes'}",
-                                     key=f"csel_{chave}", use_container_width=True):
-                            st.session_state["cat_sel"] = None if is_sel else chave
-                            st.rerun()
+                        # Cartão nativo: evita HTML customizado quebrado e o literal </div>
+                        # que aparecia na interface. A ação fica curta e sem botão gigante.
+                        with st.container(border=True):
+                            st.markdown(f"**{item['table_name']}**")
+                            st.markdown(f":{('green' if item['score_completude'] == 100 else 'orange' if item['score_completude'] >= 60 else 'red')}[{item['score_completude']}% documentação]")
+                            st.caption(desc)
+                            tags = [str(item["schema_name"])]
+                            if item["dominio"]:
+                                tags.append(str(item["dominio"]))
+                            if item["tem_pii"]:
+                                tags.append("🔒 Dado pessoal")
+                            st.caption(" · ".join(tags))
+                            if st.button(
+                                "Fechar detalhes" if is_sel else "Detalhes",
+                                key=f"csel_{chave}",
+                                use_container_width=True,
+                                type="secondary",
+                            ):
+                                st.session_state["cat_sel"] = None if is_sel else chave
+                                st.rerun()
 
             if st.session_state.get("cat_sel"):
                 chave = st.session_state["cat_sel"]
