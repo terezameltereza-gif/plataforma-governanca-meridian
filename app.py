@@ -1523,12 +1523,20 @@ elif pagina == "✏️ Curadoria":
                         if st.button("💾 Salvar",type="primary",key="c_save",use_container_width=True):
                             filled = sum([bool(new_desc),bool(new_dom),bool(new_own),bool(new_stw),bool(row["funcao_negocio"])])
                             ns = filled*20
-                            sl = "certificado" if ns==100 else "parcial" if ns>=60 else "pendente"
-                            ok,err = exe(f"UPDATE meridian_governanca.tabelas_metadata SET descricao='{esc(new_desc)}',dominio='{esc(new_dom)}',data_owner='{esc(new_own)}',data_steward='{esc(new_stw)}',score_completude={ns},selo='{sl}',atualizado_em=current_timestamp() WHERE schema_name='{sel_s}' AND table_name='{sel_t}'")
+                            # Completude de metadados não concede nem revoga certificação.
+                            ok,err = exe(f"UPDATE meridian_governanca.tabelas_metadata SET descricao='{esc(new_desc)}',dominio='{esc(new_dom)}',data_owner='{esc(new_own)}',data_steward='{esc(new_stw)}',score_completude={ns},atualizado_em=current_timestamp() WHERE schema_name='{esc(sel_s)}' AND table_name='{esc(sel_t)}'")
                             if ok:
-                                exe(f"INSERT INTO meridian_governanca.metadata_audit VALUES ('{uuid.uuid4()}',current_timestamp(),'{sel_s}','{sel_t}','tabela','','metadados','{row['score_completude']}','{ns}','manual','{esc(usuario)}','{esc(usuario[:8])}')")
-                                st.success(f"✅ Salvo! Score: {ns}%"); st.cache_data.clear(); st.rerun()
-                            else: st.error(f"Não foi possível salvar. Tente novamente.")
+                                ok_aud, err_aud = exe(f"INSERT INTO meridian_governanca.metadata_audit VALUES ('{uuid.uuid4()}',current_timestamp(),'{esc(sel_s)}','{esc(sel_t)}','tabela','','metadados','{row['score_completude']}','{ns}','manual','{esc(usuario)}','{esc(usuario[:8])}')")
+                                if ok_aud:
+                                    st.success(f"✅ Metadados salvos e auditados. Completude: {ns}%.")
+                                else:
+                                    st.error("Os metadados foram salvos, mas o registro de auditoria falhou. A equipe responsável deve reconciliar a trilha.")
+                                    st.caption(f"Detalhe da auditoria: {err_aud}")
+                                st.cache_data.clear()
+                                st.rerun()
+                            else:
+                                st.error("Não foi possível salvar os metadados.")
+                                st.caption(f"Detalhe técnico: {err}")
                     with bc2:
                         if st.button("🤖 Sugerir com IA",key="c_ai",use_container_width=True):
                             sugestoes = {
@@ -1563,11 +1571,23 @@ elif pagina == "✏️ Curadoria":
                         with sa1:
                             if st.button("✅ Aceitar e salvar",key="ai_ac",use_container_width=True):
                                 filled = sum([bool(sug_d),bool(sug_dom),bool(new_own),bool(new_stw),bool(row["funcao_negocio"])])
-                                ns = filled*20; sl = "certificado" if ns==100 else "parcial" if ns>=60 else "pendente"
-                                ok,_ = exe(f"UPDATE meridian_governanca.tabelas_metadata SET descricao='{esc(sug_d)}',dominio='{esc(sug_dom)}',score_completude={ns},selo='{sl}',atualizado_em=current_timestamp() WHERE schema_name='{sel_s}' AND table_name='{sel_t}'")
+                                ns = filled*20
+                                # Sugestão de metadados não concede nem revoga certificação.
+                                ok, err = exe(f"UPDATE meridian_governanca.tabelas_metadata SET descricao='{esc(sug_d)}',dominio='{esc(sug_dom)}',score_completude={ns},atualizado_em=current_timestamp() WHERE schema_name='{esc(sel_s)}' AND table_name='{esc(sel_t)}'")
                                 if ok:
-                                    exe(f"INSERT INTO meridian_governanca.metadata_audit VALUES ('{uuid.uuid4()}',current_timestamp(),'{sel_s}','{sel_t}','tabela','','metadados','{row['score_completude']}','{ns}','ia','{esc(usuario)}','{esc(usuario[:8])}')")
-                                    st.success("✅ Aplicado!"); del st.session_state["ai_desc"]; del st.session_state["ai_dom"]; st.cache_data.clear(); st.rerun()
+                                    ok_aud, err_aud = exe(f"INSERT INTO meridian_governanca.metadata_audit VALUES ('{uuid.uuid4()}',current_timestamp(),'{esc(sel_s)}','{esc(sel_t)}','tabela','','metadados','{row['score_completude']}','{ns}','ia','{esc(usuario)}','{esc(usuario[:8])}')")
+                                    if ok_aud:
+                                        st.success(f"✅ Metadados aplicados e auditados. Completude: {ns}%.")
+                                    else:
+                                        st.error("Os metadados foram aplicados, mas o registro de auditoria falhou.")
+                                        st.caption(f"Detalhe da auditoria: {err_aud}")
+                                    del st.session_state["ai_desc"]
+                                    del st.session_state["ai_dom"]
+                                    st.cache_data.clear()
+                                    st.rerun()
+                                else:
+                                    st.error("Não foi possível aplicar os metadados sugeridos.")
+                                    st.caption(f"Detalhe técnico: {err}")
                         with sa2:
                             if st.button("❌ Descartar",key="ai_dc",use_container_width=True):
                                 del st.session_state["ai_desc"]; del st.session_state["ai_dom"]; st.rerun()
