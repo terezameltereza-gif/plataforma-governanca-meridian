@@ -1129,12 +1129,20 @@ elif pagina == "🛡️ Scorecard":
                         <div style="background:{cor_p};border-radius:4px;height:4px;width:{min(info['val'],100):.0f}%;"></div>
                     </div>
                 </div>""", unsafe_allow_html=True)
-                if st.button(f"{'▼ Fechar' if is_sel else '▶ Entender'}",
-                             key=f"scp_{nome}", use_container_width=True):
-                    st.session_state["sc_pilar"] = None if is_sel else nome
-                    st.rerun()
-
-        pilar_sel = st.session_state.get("sc_pilar")
+        # Um único controle de navegação para os cinco pilares evita repetir
+        # cinco botões "Entender" e reduz o ruído visual.
+        opcoes_pilar = ["Selecione um pilar"] + list(PILARES_INFO.keys())
+        selecao_atual = st.session_state.get("sc_pilar")
+        if selecao_atual not in PILARES_INFO:
+            selecao_atual = "Selecione um pilar"
+        escolha_pilar = st.selectbox(
+            "Consultar definição do pilar",
+            options=opcoes_pilar,
+            index=opcoes_pilar.index(selecao_atual),
+            key="sc_pilar_select",
+        )
+        pilar_sel = escolha_pilar if escolha_pilar in PILARES_INFO else None
+        st.session_state["sc_pilar"] = pilar_sel
         if pilar_sel and pilar_sel in PILARES_INFO:
             info  = PILARES_INFO[pilar_sel]
             cor_p2 = "#3FB950" if info["val"]>=80 else "#C9A227" if info["val"]>=60 else "#F85149"
