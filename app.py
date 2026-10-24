@@ -1090,9 +1090,9 @@ elif pagina == "🛡️ Scorecard":
     <div style="background:#161B2299;border:1px solid #30363D;border-radius:8px;
                 padding:10px 14px;margin-bottom:16px;">
         <div style="color:#8B949E;font-size:0.78rem;line-height:1.6;">
-            O Scorecard avalia a maturidade dos dados em cinco dimensões independentes.
-            Cada indicador possui um conceito e uma forma de melhoria explicados ao clicar no pilar.
-            <strong style="color:#C9A227;">Nenhum número aparece sem definição.</strong>
+            O Scorecard resume cinco medidas operacionais com pesos iguais.
+            O resultado é um índice indicativo de governança, não uma certificação nem uma avaliação formal de maturidade.
+            Selecione um pilar para entender sua definição e como melhorar o resultado.
         </div>
     </div>""", unsafe_allow_html=True)
 
@@ -1118,10 +1118,12 @@ elif pagina == "🛡️ Scorecard":
         <div style="background:#161B22;border:1px solid #30363D;border-radius:16px;
                     padding:20px;text-align:center;margin-bottom:20px;">
             <div style="font-size:0.7rem;color:#8B949E;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">
-                Score Geral de Governança</div>
+                Índice Indicativo de Governança</div>
             <div style="font-size:3.5rem;font-weight:800;color:{cor_g};line-height:1;">{ger:.0f}%</div>
             <div style="color:#8B949E;font-size:0.75rem;margin-top:4px;">
-                Média dos 5 pilares: Documentação · Responsabilidade · Relacionamentos · Completude de Metadados · Certificação</div>
+                Média simples dos cinco pilares, com peso igual. Não representa qualidade efetiva dos dados nem maturidade formal.</div>
+            <div style="color:#8B949E;font-size:0.7rem;margin-top:6px;">
+                Documentação · Responsabilidade · Relacionamentos · Completude de Metadados · Certificação</div>
         </div>""", unsafe_allow_html=True)
 
         PILARES_INFO = {
