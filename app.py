@@ -471,12 +471,7 @@ if pagina == "🏠 Início":
     ]
 
     st.markdown("""<style>
-    .nav-card-btn{height:0!important;min-height:0!important;overflow:hidden!important;
-        padding:0!important;margin:0!important;line-height:0!important;font-size:0!important;}
-    .nav-card-btn *{height:0!important;min-height:0!important;padding:0!important;
-        margin:0!important;border:none!important;background:transparent!important;
-        overflow:hidden!important;font-size:0!important;color:transparent!important;
-        box-shadow:none!important;display:block!important;}
+    .nav-card-btn{display:none!important;}
     .card-visual{background:#161B22;border:1px solid #30363D;border-top:3px solid #C9A22744;
         border-radius:12px;padding:16px;cursor:pointer;margin-bottom:12px;
         transition:border-color .2s,background .2s;}
