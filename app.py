@@ -922,160 +922,116 @@ elif pagina == "📋 Catálogo":
 # 🏛️ DOMÍNIOS
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "🏛️ Domínios":
-    page_header("🏛️","Domínios de Negócio","Áreas de negócio responsáveis pela gestão e uso dos dados.")
+    page_header("🏛️", "Domínios de Negócio", "Responsabilidades, ativos e conceitos organizados por área de negócio.")
 
-    st.markdown("""
-    <div style="background:#161B2299;border:1px solid #30363D;border-radius:8px;
-                padding:10px 14px;margin-bottom:16px;">
-        <div style="color:#8B949E;font-size:0.78rem;line-height:1.6;">
-            Domínios organizam os dados e assuntos relacionados ao negócio, ajudando a definir
-            responsabilidades sobre as informações. Cada domínio possui um
-            <span style="color:#C9A227;">Data Owner</span> responsável pelas decisões estratégicas e
-            um ou mais <span style="color:#58A6FF;">Data Stewards</span> responsáveis pela gestão operacional dos dados.
-        </div>
-    </div>""", unsafe_allow_html=True)
-
-    df_dom  = load_meta()
+    df_dom = load_meta()
     df_glos = load_glossario()
 
-    if not df_dom.empty:
-        dominios = sorted([str(d) for d in df_dom["dominio"].dropna().unique() if str(d).strip() and str(d) != "nan"])
-        k1,k2,k3,k4,k5 = st.columns(5)
-        with k1: st.markdown(kpi(len(dominios),"Domínios Ativos","#C9A227",tooltip="Total de domínios de negócio com dados catalogados."), unsafe_allow_html=True)
-        with k2: st.markdown(kpi(df_dom["data_owner"].nunique(),"Responsáveis (Owner)","#58A6FF",tooltip="Pessoas responsáveis pelas decisões relacionadas aos dados de cada domínio."), unsafe_allow_html=True)
-        with k3: st.markdown(kpi(df_dom["data_steward"].nunique(),"Gestores (Steward)","#BC8CFF",tooltip="Pessoas que atuam na manutenção, qualidade e evolução dos dados de cada domínio."), unsafe_allow_html=True)
-        with k4: st.markdown(kpi(len(df_glos) if not df_glos.empty else 0,"Conceitos Vinculados","#3FB950",tooltip="Total de conceitos de negócio relacionados a domínios."), unsafe_allow_html=True)
-        with k5:
-            cob = round(len(df_glos[df_glos["status"]=="homologado"])/max(len(df_glos),1)*100) if not df_glos.empty else 0
-            st.markdown(kpi(f"{cob}%","Conceitos Homologados","#C9A227",tooltip="Percentual de conceitos que passaram pelo processo formal de aprovação."), unsafe_allow_html=True)
+    if df_dom.empty:
+        estado_vazio("🏛️", "Nenhum domínio encontrado", "Verifique se existem ativos catalogados com domínio definido.")
+    else:
+        dominios = sorted([
+            str(d) for d in df_dom["dominio"].dropna().unique()
+            if str(d).strip() and str(d).lower() != "nan"
+        ])
+        total_owners = df_dom["data_owner"].replace("", pd.NA).dropna().nunique()
+        total_stewards = df_dom["data_steward"].replace("", pd.NA).dropna().nunique()
+        glos_valid = df_glos if not df_glos.empty else pd.DataFrame(columns=["dominio", "status", "termo"])
+        n_conceitos = glos_valid["termo"].nunique() if not glos_valid.empty else 0
+        n_homologados = glos_valid[glos_valid["status"] == "homologado"]["termo"].nunique() if not glos_valid.empty else 0
+        pct_homologados = round(n_homologados / n_conceitos * 100) if n_conceitos else 0
 
-        st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+        k1, k2, k3, k4 = st.columns(4)
+        with k1:
+            st.markdown(kpi(len(dominios), "Domínios", "#C9A227", tooltip="Domínios presentes nos ativos catalogados."), unsafe_allow_html=True)
+        with k2:
+            st.markdown(kpi(total_owners, "Owners distintos", "#58A6FF", tooltip="Quantidade de responsáveis distintos associados aos ativos."), unsafe_allow_html=True)
+        with k3:
+            st.markdown(kpi(total_stewards, "Stewards distintos", "#BC8CFF", tooltip="Quantidade de gestores operacionais distintos associados aos ativos."), unsafe_allow_html=True)
+        with k4:
+            st.markdown(kpi(f"{pct_homologados}%", "Conceitos homologados", "#3FB950", tooltip="Percentual de conceitos distintos homologados."), unsafe_allow_html=True)
 
-        icones_dom = {"Crédito":"💳","Pagamentos":"💸","Clientes":"👥","Compliance":"🛡️","Produtos":"📦"}
+        st.caption("Selecione um domínio para consultar seus responsáveis, ativos e conceitos. A documentação média mede preenchimento de metadados, não qualidade efetiva dos dados.")
 
-        if "dom_sel" not in st.session_state:
-            st.session_state["dom_sel"] = None
+        icones_dom = {"Crédito": "💳", "Pagamentos": "💸", "Clientes": "👥", "Compliance": "🛡️", "Produtos": "📦"}
+        if st.session_state.get("dom_sel") not in dominios:
+            st.session_state["dom_sel"] = dominios[0] if dominios else None
 
-        col_cards, col_det_dom = st.columns([1,2])
-
-        with col_cards:
+        col_lista, col_detalhe = st.columns([1, 1.6], gap="large")
+        with col_lista:
+            st.markdown("#### Domínios")
             for dom in dominios:
-                df_d  = df_dom[df_dom["dominio"]==dom]
-                score = df_d["score_completude"].mean()
-                n_t   = len(df_glos[df_glos["dominio"]==dom]) if not df_glos.empty else 0
-                cor_d = "#3FB950" if score>=80 else "#C9A227" if score>=60 else "#F85149"
-                ic    = icones_dom.get(dom,"🏛️")
-                is_sel = st.session_state["dom_sel"] == dom
+                df_d = df_dom[df_dom["dominio"] == dom]
+                score = float(df_d["score_completude"].fillna(0).mean()) if not df_d.empty else 0
+                n_t = glos_valid[glos_valid["dominio"] == dom]["termo"].nunique() if not glos_valid.empty else 0
+                selected = st.session_state["dom_sel"] == dom
+                with st.container(border=True):
+                    row_name, row_score = st.columns([3, 1])
+                    with row_name:
+                        st.markdown(f"**{icones_dom.get(dom, '🏛️')} {dom}**")
+                    with row_score:
+                        st.markdown(f"**{score:.0f}%**")
+                    st.caption(f"{len(df_d)} ativos · {n_t} conceitos")
+                    if st.button("Selecionado" if selected else "Ver domínio", key=f"domsel_{dom}", use_container_width=True, type="primary" if selected else "secondary"):
+                        st.session_state["dom_sel"] = dom
+                        st.rerun()
 
-                st.markdown(f"""
-                <div style="background:{'#C9A22708' if is_sel else '#161B22'};
-                            border:1px solid {'#C9A227' if is_sel else '#30363D'};
-                            border-radius:10px;padding:12px 14px;margin-bottom:2px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:1.1rem;">{ic}</span>
-                            <span style="color:#E6EDF3;font-weight:700;font-size:0.88rem;">{dom}</span>
-                        </div>
-                        <span style="color:{cor_d};font-weight:800;font-size:1rem;" title="Score médio de documentação dos ativos deste domínio">{score:.0f}%</span>
-                    </div>
-                    <div style="background:#30363D;border-radius:4px;height:3px;margin:8px 0 6px;">
-                        <div style="background:{cor_d};border-radius:4px;height:3px;width:{min(score,100):.0f}%;"></div>
-                    </div>
-                    <div style="font-size:0.68rem;color:#8B949E;">{len(df_d)} ativos · {n_t} conceitos</div>
-                </div>""", unsafe_allow_html=True)
-
-                if st.button(f"{'▼ Fechar' if is_sel else '▶ Ver detalhes'}",
-                             key=f"domsel_{dom}", use_container_width=True):
-                    st.session_state["dom_sel"] = None if is_sel else dom
-                    st.rerun()
-
-        with col_det_dom:
+        with col_detalhe:
             dom_sel = st.session_state.get("dom_sel")
-            if dom_sel:
-                df_d     = df_dom[df_dom["dominio"]==dom_sel]
-                score    = df_d["score_completude"].mean()
-                owners_d = [o for o in df_d["data_owner"].unique() if o]
-                stw_d    = [s for s in df_d["data_steward"].unique() if s]
-                n_t      = len(df_glos[df_glos["dominio"]==dom_sel]) if not df_glos.empty else 0
-                cor_d    = "#3FB950" if score>=80 else "#C9A227" if score>=60 else "#F85149"
-                ic       = icones_dom.get(dom_sel,"🏛️")
+            if dom_sel and dom_sel in dominios:
+                df_d = df_dom[df_dom["dominio"] == dom_sel]
+                score = float(df_d["score_completude"].fillna(0).mean()) if not df_d.empty else 0
+                owners_d = sorted([str(x) for x in df_d["data_owner"].dropna().unique() if str(x).strip()])
+                stw_d = sorted([str(x) for x in df_d["data_steward"].dropna().unique() if str(x).strip()])
+                termos_dom = glos_valid[glos_valid["dominio"] == dom_sel] if not glos_valid.empty else glos_valid
+                ativos_dom = df_d[["table_name", "schema_name", "score_completude"]].copy()
 
-                st.markdown(f"""
-                <div style="background:#161B22;border:1px solid #30363D;border-radius:12px;padding:16px;margin-bottom:10px;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:1.6rem;">{ic}</span>
-                            <div>
-                                <div style="color:#E6EDF3;font-size:1rem;font-weight:800;">{dom_sel}</div>
-                                <div style="color:#8B949E;font-size:0.72rem;">Domínio de dados · Banco Meridian</div>
-                            </div>
-                        </div>
-                        <div style="text-align:right;">
-                            <div style="color:{cor_d};font-size:2rem;font-weight:800;" title="Score médio de documentação dos ativos">{score:.0f}%</div>
-                            <div style="color:#8B949E;font-size:0.65rem;">documentação média</div>
-                        </div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;">
-                        <div style="background:#0D1117;border-radius:6px;padding:8px;text-align:center;">
-                            <div style="color:#C9A227;font-size:1.3rem;font-weight:800;">{len(df_d)}</div>
-                            <div style="color:#8B949E;font-size:0.62rem;">Ativos</div>
-                        </div>
-                        <div style="background:#0D1117;border-radius:6px;padding:8px;text-align:center;">
-                            <div style="color:#58A6FF;font-size:1.3rem;font-weight:800;">{len(owners_d)}</div>
-                            <div style="color:#8B949E;font-size:0.62rem;" title="Responsável pelas decisões">Owners</div>
-                        </div>
-                        <div style="background:#0D1117;border-radius:6px;padding:8px;text-align:center;">
-                            <div style="color:#BC8CFF;font-size:1.3rem;font-weight:800;">{len(stw_d)}</div>
-                            <div style="color:#8B949E;font-size:0.62rem;" title="Responsável pela gestão operacional">Stewards</div>
-                        </div>
-                        <div style="background:#0D1117;border-radius:6px;padding:8px;text-align:center;">
-                            <div style="color:#3FB950;font-size:1.3rem;font-weight:800;">{n_t}</div>
-                            <div style="color:#8B949E;font-size:0.62rem;">Conceitos</div>
-                        </div>
-                    </div>
-                </div>""", unsafe_allow_html=True)
+                st.markdown(f"### {icones_dom.get(dom_sel, '🏛️')} {dom_sel}")
+                st.caption("Resumo do domínio e suas responsabilidades")
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Ativos", len(df_d))
+                m2.metric("Owners", len(owners_d))
+                m3.metric("Stewards", len(stw_d))
+                st.metric("Completude média da documentação", f"{score:.0f}%")
+                st.divider()
 
-                dd1,dd2 = st.columns(2)
-                with dd1:
-                    st.markdown('<div style="background:#161B22;border:1px solid #30363D;border-radius:10px;padding:12px;margin-bottom:8px;">', unsafe_allow_html=True)
-                    st.markdown('<div style="color:#8B949E;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">RESPONSÁVEL PELO DADO (DATA OWNER)</div>', unsafe_allow_html=True)
-                    st.markdown('<div style="color:#484F58;font-size:0.65rem;margin-bottom:8px;">Responsável pelas decisões estratégicas sobre os dados do domínio.</div>', unsafe_allow_html=True)
-                    for owner in owners_d:
-                        nome_fmt = owner.replace("@meridian.com","").replace("."," ").title()
-                        st.markdown(f'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #21262D;">{avatar(nome_fmt,"#C9A227",32)}<div><div style="color:#E6EDF3;font-size:0.78rem;font-weight:600;">{nome_fmt}</div><div style="color:#8B949E;font-size:0.65rem;">Responsável · {dom_sel}</div></div></div>', unsafe_allow_html=True)
-                    if not owners_d:
-                        st.markdown('<div style="color:#8B949E;font-size:0.75rem;">Nenhum responsável definido ainda.</div>', unsafe_allow_html=True)
-                    st.markdown("</div>", unsafe_allow_html=True)
-
-                    st.markdown('<div style="background:#161B22;border:1px solid #30363D;border-radius:10px;padding:12px;">', unsafe_allow_html=True)
-                    st.markdown('<div style="color:#8B949E;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📋 ATIVOS DO DOMÍNIO</div>', unsafe_allow_html=True)
-                    for _,row_t in df_d.iterrows():
-                        cor_t = "#3FB950" if row_t["score_completude"]==100 else "#C9A227" if row_t["score_completude"]>=60 else "#F85149"
-                        st.markdown(f'<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #21262D;"><div><span style="color:#C9A227;font-size:0.75rem;font-weight:600;">{row_t["table_name"]}</span><span style="background:#58A6FF22;color:#58A6FF;border-radius:3px;padding:1px 5px;font-size:0.62rem;margin-left:5px;">{row_t["schema_name"]}</span></div><span style="color:{cor_t};font-weight:700;font-size:0.78rem;" title="Score de documentação">{row_t["score_completude"]}%</span></div>', unsafe_allow_html=True)
-                    st.markdown("</div>", unsafe_allow_html=True)
-
-                with dd2:
-                    st.markdown('<div style="background:#161B22;border:1px solid #30363D;border-radius:10px;padding:12px;margin-bottom:8px;">', unsafe_allow_html=True)
-                    st.markdown('<div style="color:#8B949E;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">GESTOR DO DADO (DATA STEWARD)</div>', unsafe_allow_html=True)
-                    st.markdown('<div style="color:#484F58;font-size:0.65rem;margin-bottom:8px;">Responsável pela manutenção, qualidade e evolução dos dados do domínio.</div>', unsafe_allow_html=True)
-                    for stw in stw_d:
-                        nome_stw = stw.replace("@meridian.com","").replace("."," ").title()
-                        st.markdown(f'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #21262D;">{avatar(nome_stw,"#58A6FF",32)}<div><div style="color:#E6EDF3;font-size:0.78rem;font-weight:600;">{nome_stw}</div><div style="color:#8B949E;font-size:0.65rem;">Gestor · {dom_sel}</div></div></div>', unsafe_allow_html=True)
-                    if not stw_d:
-                        st.markdown('<div style="color:#8B949E;font-size:0.75rem;">Nenhum gestor definido ainda.</div>', unsafe_allow_html=True)
-                    st.markdown("</div>", unsafe_allow_html=True)
-
-                    if not df_glos.empty:
-                        termos_dom = df_glos[df_glos["dominio"]==dom_sel]
-                        if not termos_dom.empty:
-                            st.markdown('<div style="background:#161B22;border:1px solid #30363D;border-radius:10px;padding:12px;">', unsafe_allow_html=True)
-                            st.markdown('<div style="color:#8B949E;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📖 CONCEITOS DO DOMÍNIO</div>', unsafe_allow_html=True)
-                            for _,t in termos_dom.iterrows():
-                                cor_ts = {"homologado":"#3FB950","em_revisao":"#58A6FF","rascunho":"#8B949E"}.get(t["status"],"#8B949E")
-                                st.markdown(f'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #21262D;"><span style="color:#E6EDF3;font-size:0.75rem;">{t["termo"]}</span><span style="color:{cor_ts};font-size:0.68rem;">● {t["status"].replace("_"," ")}</span></div>', unsafe_allow_html=True)
-                            st.markdown("</div>", unsafe_allow_html=True)
+                left, right = st.columns(2, gap="medium")
+                with left:
+                    with st.container(border=True):
+                        st.markdown("**Data Owners**")
+                        st.caption("Responsáveis pelas decisões estratégicas sobre os dados.")
+                        if owners_d:
+                            for owner in owners_d:
+                                nome = owner.replace("@meridian.com", "").replace(".", " ").title()
+                                st.write(f"• {nome}")
+                        else:
+                            st.caption("Nenhum responsável definido.")
+                    with st.container(border=True):
+                        st.markdown("**Ativos do domínio**")
+                        if ativos_dom.empty:
+                            st.caption("Nenhum ativo encontrado.")
+                        else:
+                            ativos_dom = ativos_dom.rename(columns={"table_name": "Ativo", "schema_name": "Camada", "score_completude": "Completude (%)"})
+                            st.dataframe(ativos_dom, use_container_width=True, hide_index=True)
+                with right:
+                    with st.container(border=True):
+                        st.markdown("**Data Stewards**")
+                        st.caption("Responsáveis pela manutenção operacional e evolução dos dados.")
+                        if stw_d:
+                            for steward in stw_d:
+                                nome = steward.replace("@meridian.com", "").replace(".", " ").title()
+                                st.write(f"• {nome}")
+                        else:
+                            st.caption("Nenhum gestor definido.")
+                    with st.container(border=True):
+                        st.markdown("**Conceitos de negócio**")
+                        if termos_dom.empty:
+                            st.caption("Nenhum conceito vinculado a este domínio.")
+                        else:
+                            conceitos_view = termos_dom[["termo", "status"]].drop_duplicates().rename(columns={"termo": "Conceito", "status": "Status"})
+                            st.dataframe(conceitos_view, use_container_width=True, hide_index=True)
             else:
-                estado_vazio("🏛️","Selecione um domínio","Clique em um domínio para ver responsáveis, ativos e conceitos vinculados.")
+                estado_vazio("🏛️", "Selecione um domínio", "Escolha um domínio na lista para ver seus detalhes.")
 
     copyright_footer()
 
