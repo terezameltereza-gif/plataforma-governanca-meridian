@@ -1122,7 +1122,7 @@ elif pagina == "🛡️ Scorecard":
         <div style="background:#161B22;border:1px solid #30363D;border-radius:16px;
                     padding:20px;text-align:center;margin-bottom:20px;">
             <div style="font-size:0.7rem;color:#8B949E;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">
-                Score Geral de Confiabilidade</div>
+                Score Geral de Governança</div>
             <div style="font-size:3.5rem;font-weight:800;color:{cor_g};line-height:1;">{ger:.0f}%</div>
             <div style="color:#8B949E;font-size:0.75rem;margin-top:4px;">
                 Média dos 5 pilares: Documentação · Responsabilidade · Relacionamentos · Completude de Metadados · Certificação</div>
