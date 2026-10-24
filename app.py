@@ -534,8 +534,11 @@ elif pagina == "📖 Glossário":
                 if g_dom != "Todos": df_gf = df_gf[df_gf["dominio"]==g_dom]
                 if g_st  != "Todos": df_gf = df_gf[df_gf["status"]==g_st]
 
-                if "gid_sel" not in st.session_state:
-                    st.session_state["gid_sel"] = df_gf.iloc[0]["glossary_id"] if not df_gf.empty else None
+                # Mantém a seleção sincronizada com a lista filtrada.
+                # Evita exibir detalhes de um conceito que já não aparece nos resultados.
+                ids_visiveis = df_gf["glossary_id"].tolist() if not df_gf.empty else []
+                if st.session_state.get("gid_sel") not in ids_visiveis:
+                    st.session_state["gid_sel"] = ids_visiveis[0] if ids_visiveis else None
 
                 st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
 
