@@ -20,22 +20,61 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body,.stApp{background:#F4F1EC !important;font-family:'Inter',sans-serif !important;}
-.main .block-container{padding-top:0 !important;max-width:100% !important;padding-left:1.5rem !important;padding-right:1.5rem !important;}
+html,body,.stApp{background:#F0F2F5 !important;font-family:'Inter',sans-serif !important;}
 h1,h2,h3{font-family:'Lora',serif !important;font-weight:700 !important;color:#0D1B2A !important;}
-section[data-testid="stSidebar"]{background:#0A0F1A !important;border-right:2px solid #C9A22733 !important;min-width:230px !important;}
-section[data-testid="stSidebar"] *{color:#C4B078 !important;}
-.stButton > button{background:#C9A227 !important;color:#0A0F1A !important;border:none !important;border-radius:8px !important;font-weight:700 !important;font-size:0.82rem !important;}
-section[data-testid="stSidebar"] .stButton > button{background:transparent !important;color:#6B7080 !important;border:none !important;border-radius:7px !important;font-weight:500 !important;font-size:0.82rem !important;text-align:left !important;justify-content:flex-start !important;padding:6px 10px !important;width:100% !important;box-shadow:none !important;margin-bottom:1px !important;}
-section[data-testid="stSidebar"] .stButton > button:hover{background:#1A2535 !important;color:#D4C49A !important;}
-.stTabs [data-baseweb="tab-list"]{background:#FFFFFF;border-radius:10px;padding:4px;gap:4px;border:1px solid #E8E4DC;}
+
+/* ── Topbar fixa ── */
+header[data-testid="stHeader"]{display:none !important;}
+.gov-topbar{
+    position:fixed !important;top:0 !important;left:0 !important;right:0 !important;
+    height:52px !important;background:#0D1B2A !important;z-index:99999 !important;
+    display:flex !important;align-items:center !important;padding:0 20px !important;gap:14px !important;
+    box-shadow:0 2px 12px rgba(0,0,0,0.4) !important;border-bottom:1px solid #1A3A5C !important;}
+
+/* ── Sidebar ── */
+section[data-testid="stSidebar"]{
+    background:#0D1B2A !important;border-right:1px solid #1A3A5C !important;
+    min-width:220px !important;margin-top:52px !important;padding-top:0 !important;}
+section[data-testid="stSidebar"] > div{padding-top:0 !important;}
+section[data-testid="stSidebar"] *{color:#6B8299 !important;}
+section[data-testid="stSidebar"] .stButton>button{
+    background:transparent !important;color:#8DAFC8 !important;border:none !important;
+    border-radius:7px !important;font-weight:500 !important;font-size:0.81rem !important;
+    text-align:left !important;justify-content:flex-start !important;
+    padding:8px 14px !important;width:100% !important;box-shadow:none !important;
+    margin-bottom:1px !important;transition:background .15s,color .15s !important;}
+section[data-testid="stSidebar"] .stButton>button:hover{background:#162035 !important;color:#D4C49A !important;}
+
+/* ── Main content ── */
+.main .block-container{
+    padding-top:68px !important;max-width:100% !important;
+    padding-left:1.5rem !important;padding-right:1.5rem !important;}
+
+/* ── Componentes gerais ── */
+.stButton>button{background:#1E4D9B !important;color:#FFFFFF !important;border:none !important;
+    border-radius:8px !important;font-weight:600 !important;font-size:0.82rem !important;}
+.stButton>button:hover{background:#1A4280 !important;}
+.stTabs [data-baseweb="tab-list"]{background:#FFFFFF;border-radius:10px;padding:4px;gap:4px;border:1px solid #E2E8F0;}
 .stTabs [data-baseweb="tab"]{border-radius:7px !important;color:#6B7280 !important;padding:7px 16px !important;font-size:0.82rem !important;font-weight:600 !important;}
-.stTabs [aria-selected="true"]{background:#C9A227 !important;color:#0A0F1A !important;}
-.stSelectbox > div > div,.stTextInput > div > div > input,.stTextArea > div > div > textarea{background:#FFFFFF !important;border:1px solid #E8E4DC !important;border-radius:8px !important;color:#0D1B2A !important;}
+.stTabs [aria-selected="true"]{background:#1E4D9B !important;color:#FFFFFF !important;}
+.stSelectbox>div>div,.stTextInput>div>div>input,.stTextArea>div>div>textarea{background:#FFFFFF !important;border:1px solid #E2E8F0 !important;border-radius:8px !important;color:#0D1B2A !important;}
 .stDataFrame{background:#FFFFFF !important;border-radius:10px !important;}
 div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
+
+/* ── Home: atalhos ── */
+.atalho-btn .stButton>button{
+    background:#FFFFFF !important;color:#1A202C !important;
+    border:1px solid #E2E8F0 !important;border-radius:0 0 10px 10px !important;
+    font-weight:600 !important;font-size:0.73rem !important;
+    padding:6px 12px !important;text-align:center !important;
+    justify-content:center !important;width:100% !important;
+    box-shadow:none !important;border-top:1px solid #E8EDF5 !important;}
+.atalho-btn .stButton>button:hover{background:#F0F4FF !important;color:#1E4D9B !important;}
+
+/* ── Journey cards ── */
+.nav-card-btn{display:none !important;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -296,30 +335,28 @@ def copyright_footer():
     </div>""", unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════════════════
-# SIDEBAR
+# SIDEBAR — Navegação principal redesenhada
 # ════════════════════════════════════════════════════════════════════
 with st.sidebar:
-    st.markdown(
-        '<div style="padding:18px 12px 12px;">'
-        '<div style="display:flex;align-items:center;gap:10px;padding-bottom:16px;border-bottom:1px solid #1A2535;margin-bottom:14px;">'
-        '<div style="width:38px;height:38px;border-radius:50%;border:2px solid #C9A227;display:flex;align-items:center;justify-content:center;'
-        'font-family:Lora,serif;font-weight:700;font-size:18px;color:#C9A227;flex-shrink:0;">G</div>'
-        '<div><div style="font-family:Lora,serif;font-size:13px;font-weight:700;color:#E2D4A8;letter-spacing:2px;">GOVERNANTES</div>'
-        '<div style="font-size:9px;color:#4A5568;letter-spacing:1px;">GOVERNANÇA DE DADOS & IA</div></div>'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
-
     if "usuario" not in st.session_state:
         st.session_state["usuario"] = None
 
     if not st.session_state["usuario"]:
-        email = st.selectbox(
-            "Selecione seu usuário",
-            list(USUARIOS.keys()),
+        st.markdown("""
+        <div style="padding:28px 16px 16px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
+                <div style="width:34px;height:34px;border-radius:8px;background:#C9A22722;border:1px solid #C9A22744;
+                            display:flex;align-items:center;justify-content:center;
+                            font-family:Lora,serif;font-weight:700;font-size:16px;color:#C9A227;">G</div>
+                <div>
+                    <div style="font-family:Lora,serif;font-size:13px;font-weight:700;color:#E2D4A8;letter-spacing:1.5px;">Governantes</div>
+                    <div style="font-size:8.5px;color:#3A5068;letter-spacing:0.8px;text-transform:uppercase;">Governança de Dados</div>
+                </div>
+            </div>
+        </div>""", unsafe_allow_html=True)
+        email = st.selectbox("Usuário", list(USUARIOS.keys()),
             format_func=lambda x: f"{USUARIOS[x]['nome']} · {USUARIOS[x]['perfil']}",
-            label_visibility="collapsed"
-        )
+            label_visibility="collapsed")
         if st.button("Entrar →", key="login", use_container_width=True):
             st.session_state["usuario"]      = email
             st.session_state["perfil_atual"] = USUARIOS[email]["perfil"]
@@ -339,43 +376,126 @@ with st.sidebar:
     if "pagina" not in st.session_state:
         st.session_state["pagina"] = "🏠 Início"
 
+    # ── Espaçamento inicial
+    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+
+    # ── Navegação flat
+    NAV_ITEMS = [
+        ("🏠", "Início",                "🏠 Início"),
+        ("📋", "Catálogo de Dados",     "📋 Catálogo"),
+        ("📖", "Glossário de Negócio",  "📖 Glossário"),
+        ("🏆", "Qualidade de Dados",    "🏆 Qualidade"),
+        ("🔗", "Linhagem de Dados",     "🔗 Linhagem"),
+        ("📬", "Solicitações",          "⚡ Meu Espaço"),
+        ("📊", "Gestão e Indicadores",  "📊 Indicadores"),
+    ]
+    NAV_OP = [
+        ("🏛️", "Domínios",     "🏛️ Domínios"),
+        ("📦", "Produtos",     "📦 Produtos"),
+        ("🛡️", "Scorecard",   "🛡️ Scorecard"),
+        ("🥇", "Certificação", "🥇 Certificação"),
+        ("✏️", "Curadoria",   "✏️ Curadoria"),
+        ("🕐", "Auditoria",   "🕐 Auditoria"),
+    ]
+
+    nav_all = NAV_ITEMS + (NAV_OP if is_curador else [])
+
+    for icon, label, dest in nav_all:
+        is_active = st.session_state["pagina"] == dest
+        if is_active:
+            st.markdown(f"""
+            <div style="background:linear-gradient(90deg,#1E4D9B22,#1E4D9B0A);
+                        border-left:3px solid #1E4D9B;border-radius:0 7px 7px 0;
+                        padding:8px 14px;display:flex;align-items:center;gap:10px;
+                        margin:1px 8px 1px 0;font-size:0.81rem;font-weight:700;color:#FFFFFF;">
+                <span style="font-size:0.9rem;">{icon}</span><span>{label}</span>
+            </div>""", unsafe_allow_html=True)
+        else:
+            if st.button(f"{icon}  {label}", key=f"nav_{dest}_{label}", use_container_width=True):
+                st.session_state["pagina"] = dest
+                for k in ["gid_sel","cat_sel","dom_sel","sc_pilar"]:
+                    st.session_state.pop(k, None)
+                st.rerun()
+
+    # ── Perfil (rodapé)
+    iniciais_u = "".join([n[0].upper() for n in u["nome"].split()[:2]])
     st.markdown(f"""
-    <div style="background:#161B22;border:1px solid #30363D;border-radius:8px;
-                padding:8px 10px;margin-bottom:10px;">
-        <div style="font-size:0.6rem;color:#8B949E;text-transform:uppercase;
-                    letter-spacing:1px;">Usuário logado</div>
-        <div style="font-weight:700;color:#E6EDF3;font-size:0.82rem;">{u['nome']}</div>
-        <div style="color:{cor};font-size:0.72rem;font-weight:600;">{PERFIL_LABEL[perfil]}</div>
+    <div style="position:absolute;bottom:0;left:0;right:0;
+                border-top:1px solid #1A3A5C;padding:14px 14px 16px;
+                background:#0D1B2A;">
+        <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:1.5px;
+                    color:#3A5068;margin-bottom:10px;font-weight:700;">Perfil Atual</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:{cor}22;
+                        border:1.5px solid {cor}55;display:flex;align-items:center;
+                        justify-content:center;color:{cor};font-weight:800;
+                        font-size:12px;flex-shrink:0;">{iniciais_u}</div>
+            <div style="overflow:hidden;">
+                <div style="color:#C8D6E5;font-size:0.78rem;font-weight:700;
+                            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{u['nome']}</div>
+                <div style="color:{cor};font-size:0.67rem;">{PERFIL_LABEL[perfil]}</div>
+            </div>
+        </div>
     </div>""", unsafe_allow_html=True)
-
-    menu_atual = {**MENU_BASE}
-    if is_curador: menu_atual = {**menu_atual, **MENU_OP}
-    for secao, itens in menu_atual.items():
-        st.markdown(
-            f'<div style="font-size:0.58rem;font-weight:700;text-transform:uppercase;'
-            f'letter-spacing:1.5px;color:#4A5568;padding:8px 14px 3px;">{secao}</div>',
-            unsafe_allow_html=True)
-        for item in itens:
-            is_active = st.session_state["pagina"] == item
-            if is_active:
-                st.markdown(f"""
-                <div style="background:#C9A22718;border-left:3px solid #C9A227;
-                            border-radius:0 6px 6px 0;padding:6px 10px 6px 9px;
-                            font-size:0.82rem;font-weight:700;color:#C9A227;
-                            margin-bottom:1px;">{item}</div>""",
-                            unsafe_allow_html=True)
-            else:
-                if st.button(item, key=f"nav_{item}", use_container_width=True):
-                    st.session_state["pagina"] = item
-                    for k in ["gid_sel","cat_sel","dom_sel","sc_pilar"]:
-                        st.session_state.pop(k, None)
-                    st.rerun()
-
-    st.markdown('<div style="height:1px;background:#30363D;margin:10px 0 8px;"></div>',
-                unsafe_allow_html=True)
-    if st.button("↩ Sair", key="logout", use_container_width=True):
+    st.markdown("<div style='height:90px;'></div>", unsafe_allow_html=True)
+    if st.button("↩ Trocar perfil", key="logout", use_container_width=True):
         st.session_state["usuario"] = None
         st.rerun()
+
+# ════════════════════════════════════════════════════════════════════
+# TOPBAR — Cabeçalho institucional fixo
+# ════════════════════════════════════════════════════════════════════
+_nome_tb  = st.session_state.get("nome_atual", "")
+_perf_tb  = st.session_state.get("perfil_atual", "consultante")
+_perf_lbl = PERFIL_LABEL.get(_perf_tb, "")
+_iniciais = "".join([n[0].upper() for n in _nome_tb.split()[:2]]) if _nome_tb else "U"
+_cor_tb   = PERFIL_COR.get(_perf_tb, "#58A6FF")
+
+st.markdown(f"""
+<div class="gov-topbar">
+    <!-- Logo -->
+    <div style="display:flex;align-items:center;gap:10px;min-width:190px;">
+        <div style="width:30px;height:30px;border-radius:7px;background:#C9A22722;border:1px solid #C9A22744;
+                    display:flex;align-items:center;justify-content:center;
+                    font-family:Lora,serif;font-weight:700;font-size:15px;color:#C9A227;flex-shrink:0;">G</div>
+        <div>
+            <div style="font-family:Lora,serif;font-size:12.5px;font-weight:700;color:#E2D4A8;letter-spacing:1.5px;line-height:1.2;">Governantes</div>
+            <div style="font-size:8px;color:#3A5068;letter-spacing:0.8px;text-transform:uppercase;line-height:1.2;">Governança de Dados & IA</div>
+        </div>
+    </div>
+    <!-- Jornadas -->
+    <div style="display:flex;align-items:center;gap:6px;margin:0 12px;">
+        <span style="color:#2A4A6A;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Catálogo e descoberta de ativos">🔍 Descobrir</span>
+        <span style="color:#2A4A6A;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Glossário e definições">📖 Entender</span>
+        <span style="color:#2A4A6A;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Qualidade e scorecard">🛡️ Confiar</span>
+        <span style="color:#2A4A6A;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Curadoria e solicitações">⚡ Agir</span>
+        <span style="color:#2A4A6A;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Indicadores e gestão">📊 Decidir</span>
+    </div>
+    <!-- Busca -->
+    <div style="flex:1;max-width:380px;">
+        <div style="background:#162035;border:1px solid #1E3A5A;border-radius:8px;
+                    padding:6px 14px;display:flex;align-items:center;gap:8px;">
+            <span style="color:#3A5068;font-size:12px;">🔍</span>
+            <span style="color:#3A5068;font-size:0.78rem;">Buscar dados, termos, regras...</span>
+        </div>
+    </div>
+    <!-- Usuário -->
+    <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0;">
+        <span style="color:#3A5068;font-size:1rem;cursor:pointer;" title="Notificações">🔔</span>
+        <div style="text-align:right;display:none;">
+            <div style="color:#C8D6E5;font-size:0.75rem;font-weight:700;line-height:1.2;">{_nome_tb}</div>
+            <div style="color:{_cor_tb};font-size:0.65rem;line-height:1.2;">{_perf_lbl}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;">
+            <div style="color:#C8D6E5;font-size:0.73rem;font-weight:700;line-height:1.2;">{_nome_tb}</div>
+            <div style="color:{_cor_tb};font-size:0.63rem;line-height:1.2;">{_perf_lbl}</div>
+        </div>
+        <div style="width:30px;height:30px;border-radius:50%;background:{_cor_tb}22;
+                    border:1.5px solid {_cor_tb}55;display:flex;align-items:center;
+                    justify-content:center;color:{_cor_tb};font-weight:800;font-size:11px;flex-shrink:0;">{_iniciais}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 pagina       = st.session_state.get("pagina","🏠 Início")
 usuario      = st.session_state["usuario"]
@@ -385,150 +505,409 @@ is_curador   = perfil in ["curador","aprovador"]
 is_aprovador = perfil == "aprovador"
 
 # ════════════════════════════════════════════════════════════════════
-# 🏠 INÍCIO — Central de Conhecimento e Descoberta
+# 🏠 INÍCIO — Plataforma de Governança de Dados
 # ════════════════════════════════════════════════════════════════════
 if pagina == "🏠 Início":
-    now_str = datetime.now().strftime("%d/%m/%Y %H:%M")
-    st.markdown(f"""
-    <div style="background:linear-gradient(135deg,#161B22,#1C2128);
-                border:1px solid #30363D;border-radius:16px;
-                padding:28px 32px;margin-bottom:20px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-                <div style="color:#E6EDF3;font-size:1.5rem;font-weight:800;margin-bottom:6px;">
-                    Plataforma de Governança de Dados</div>
-                <div style="color:#8B949E;font-size:0.85rem;max-width:560px;line-height:1.6;">
-                    Um espaço para descobrir, entender e utilizar os dados do Banco Meridian
-                    com mais clareza e confiança.</div>
-                <div style="color:#8B949E;font-size:0.78rem;max-width:560px;line-height:1.5;margin-top:6px;">
-                    Explore conceitos, dados, responsáveis, regras, qualidade e relacionamentos da organização.</div>
-                <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-                    <span style="background:#3FB95022;color:#3FB950;border-radius:20px;
-                                 padding:3px 12px;font-size:0.72rem;font-weight:600;
-                                 border:1px solid #3FB95044;">✓ Dados Confiáveis</span>
-                    <span style="background:#58A6FF22;color:#58A6FF;border-radius:20px;
-                                 padding:3px 12px;font-size:0.72rem;font-weight:600;
-                                 border:1px solid #58A6FF44;">✓ Responsabilidade Definida</span>
-                    <span style="background:#BC8CFF22;color:#BC8CFF;border-radius:20px;
-                                 padding:3px 12px;font-size:0.72rem;font-weight:600;
-                                 border:1px solid #BC8CFF44;">✓ IA Ready</span>
-                </div>
-            </div>
-            <div style="text-align:right;flex-shrink:0;">
-                <div style="color:#8B949E;font-size:0.68rem;">Última atualização</div>
-                <div style="color:#E6EDF3;font-size:0.82rem;font-weight:600;">{now_str}</div>
-                <div style="background:#3FB95022;color:#3FB950;border-radius:20px;
-                            padding:2px 10px;font-size:0.68rem;font-weight:600;
-                            border:1px solid #3FB95044;margin-top:4px;
-                            display:inline-block;">● AO VIVO</div>
-            </div>
-        </div>
-    </div>""", unsafe_allow_html=True)
 
-    df_meta  = load_meta()
-    df_gloss = load_glossario()
-    df_links = load_links()
-    df_rules = load_rules()
+    # ── Dados para a home ────────────────────────────────────────────
+    df_meta   = load_meta()
+    df_gloss  = load_glossario()
+    df_cert   = load_cert()
+    df_qual   = load_quality_dimensions()
+    df_sol_ac = load_solicitacoes_acesso()
+    df_sol_qu = load_solicitacoes_qualidade()
+    df_tl     = load_timeline()
 
     if df_meta.empty and st.session_state.get("_db_err"):
-        st.warning(f"⚠️ Não foi possível carregar os dados do Databricks. Verifique se o SQL Warehouse está ativo e se o token de acesso é válido. Detalhe: `{st.session_state['_db_err'][:200]}`")
+        st.warning(f"⚠️ Databricks indisponível. Detalhe: `{st.session_state['_db_err'][:200]}`")
 
+    # ── KPIs ─────────────────────────────────────────────────────────
     total_ativos = len(df_meta)  if not df_meta.empty else 0
-    total_dom    = df_meta["dominio"].nunique() if not df_meta.empty else 0
     total_termos = len(df_gloss) if not df_gloss.empty else 0
-    total_regras = len(df_rules) if not df_rules.empty else 0
-    tabs_link    = df_links["table_name"].nunique() if not df_links.empty else 0
-    cobertura    = round(tabs_link/max(total_ativos,1)*100)
-    cor_cob      = "#3FB950" if cobertura>=70 else "#C9A227" if cobertura>=40 else "#F85149"
+    qual_media   = round(df_qual["score_final"].mean(), 1) if not df_qual.empty and "score_final" in df_qual.columns else None
+    qual_str     = f"{qual_media}%" if qual_media is not None else "—"
 
-    k1,k2,k3,k4,k5 = st.columns(5)
-    with k1: st.markdown(kpi(total_termos,"Conceitos de Negócio","#C9A227","📖",
-        "Definições oficiais dos principais assuntos utilizados pela organização."), unsafe_allow_html=True)
-    with k2: st.markdown(kpi(total_ativos,"Ativos de Dados","#58A6FF","🗂️",
-        "Tabelas e outros ativos de dados catalogados na plataforma."), unsafe_allow_html=True)
-    with k3: st.markdown(kpi(total_dom,"Domínios de Negócio","#BC8CFF","🏛️",
-        "Agrupamentos de dados e assuntos de negócio com responsabilidades definidas."), unsafe_allow_html=True)
-    with k4: st.markdown(kpi(total_regras,"Regras de Negócio","#3FB950","📏",
-        "Critérios documentados utilizados para definição, cálculo ou validação de informações."), unsafe_allow_html=True)
-    with k5: st.markdown(kpi(f"{cobertura}%","Dados Conectados ao Negócio",cor_cob,"🔗",
-        f"Percentual de ativos de dados que possuem relacionamento documentado com conceitos de negócio. ({tabs_link} de {total_ativos} ativos vinculados)"), unsafe_allow_html=True)
+    STATUS_CLOSED = {"concluido","aprovado","cancelado","concluída","aprovada","encerrado"}
+    sol_abertas = 0
+    if not df_sol_ac.empty and "status" in df_sol_ac.columns:
+        sol_abertas += len(df_sol_ac[~df_sol_ac["status"].str.lower().isin(STATUS_CLOSED)])
+    if not df_sol_qu.empty and "status" in df_sol_qu.columns:
+        sol_abertas += len(df_sol_qu[~df_sol_qu["status"].str.lower().isin(STATUS_CLOSED)])
 
-    section_divider("O QUE VOCÊ ENCONTRA AQUI?")
+    # ══════════════════════════════════════════════════════════════════
+    # A. BANNER
+    # ══════════════════════════════════════════════════════════════════
+    st.markdown("""
+    <div style="background:linear-gradient(105deg,#0D1B2A 45%,#0D1B2AB8 65%,#1B4A6B77 85%),
+                url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
+                border-radius:14px;padding:40px 36px 36px;margin-bottom:16px;
+                position:relative;min-height:170px;overflow:hidden;">
+        <div style="max-width:480px;">
+            <div style="color:#5A8AAA;font-size:0.65rem;letter-spacing:3px;
+                        text-transform:uppercase;margin-bottom:10px;font-weight:700;">
+                PLATAFORMA DE GOVERNANÇA DE DADOS
+            </div>
+            <div style="color:#FFFFFF;font-size:1.75rem;font-weight:800;line-height:1.25;
+                        margin-bottom:10px;font-family:'Lora',serif;letter-spacing:-0.3px;">
+                Dados bem governados<br>impulsionam grandes decisões
+            </div>
+            <div style="color:#7AAABF;font-size:0.85rem;line-height:1.6;">
+                Encontre, entenda, confie e aja sobre os dados da sua organização.
+            </div>
+        </div>
+        <div style="position:absolute;right:32px;top:50%;transform:translateY(-50%);
+                    background:rgba(13,27,42,0.88);border:1px solid #1E3A5C;
+                    border-radius:12px;padding:18px 20px;min-width:200px;
+                    backdrop-filter:blur(10px);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <span style="font-size:1.3rem;">📊</span>
+                <span style="color:#C9A227;font-size:0.82rem;font-weight:700;">Nossa missão</span>
+            </div>
+            <div style="color:#6A8EA8;font-size:0.72rem;line-height:1.6;">
+                Transformar dados em confiança para impulsionar decisões que geram valor real para a organização.
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    cards_info = [
-        ("📖","Conceitos de Negócio","Glossário",
-         "Definições oficiais dos principais assuntos utilizados pela organização, ajudando diferentes áreas a compartilhar o mesmo entendimento."),
-        ("📏","Regras de Negócio","📖 Glossário",
-         "Critérios utilizados para definir, calcular, classificar ou validar informações utilizadas nos processos e indicadores."),
-        ("🗂️","Ativos de Dados","📋 Catálogo",
-         "Dados disponíveis para consulta e utilização, como tabelas, views e outros ativos catalogados na organização."),
-        ("🏛️","Domínios de Negócio","🏛️ Domínios",
-         "Agrupamentos de assuntos e dados relacionados a uma área de negócio, com responsabilidades claramente definidas."),
-        ("🔗","Relacionamentos","📖 Glossário",
-         "Mostram como conceitos, regras, indicadores, ativos e produtos de dados estão conectados entre si."),
-        ("🛡️","Qualidade dos Dados","🛡️ Scorecard",
-         "Mostra o quanto os dados atendem aos critérios de qualidade definidos para sua utilização confiável."),
+    # ══════════════════════════════════════════════════════════════════
+    # B. ATALHOS — 5 cards horizontais
+    # ══════════════════════════════════════════════════════════════════
+    ATALHOS = [
+        ("📋","Catálogo de Dados",    "📋 Catálogo",   "Encontre e explore ativos de dados",    "#1E6FBF"),
+        ("📖","Glossário de Negócio", "📖 Glossário",   "Veja termos, conceitos e regras",        "#C9A227"),
+        ("🏆","Qualidade de Dados",   "🏆 Qualidade",   "Monitore a saúde e aponte problemas",   "#3FB950"),
+        ("🔗","Linhagem de Dados",    "🔗 Linhagem",    "Veja a origem e o fluxo dos dados",     "#BC8CFF"),
+        ("📬","Solicitações",         "⚡ Meu Espaço",  "Peça acessos e melhorias de qualidade", "#FF8C42"),
     ]
-
-    st.markdown("""<style>
-    .nav-card-btn{display:none!important;}
-    .card-visual{background:#161B22;border:1px solid #30363D;border-top:3px solid #C9A22744;
-        border-radius:12px;padding:16px;cursor:pointer;margin-bottom:12px;
-        transition:border-color .2s,background .2s;}
-    .card-visual:hover{border-color:#C9A227;border-top-color:#C9A227;background:#1A2030;}
-    </style>""", unsafe_allow_html=True)
-
-    cols_cards = st.columns(3)
-    for i, (ic, tit, dest, desc) in enumerate(cards_info):
-        with cols_cards[i % 3]:
-            st.markdown('<div class="nav-card-btn">', unsafe_allow_html=True)
-            clicked = st.button("x", key=f"card_{i}", use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-            if clicked:
+    sc_cols = st.columns(5, gap="small")
+    for i, (ic, tit, dest, desc, cor_sc) in enumerate(ATALHOS):
+        with sc_cols[i]:
+            st.markdown(f"""
+            <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px 10px 0 0;
+                        padding:14px 14px 10px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                <div style="font-size:1.5rem;margin-bottom:7px;">{ic}</div>
+                <div style="color:#1A202C;font-weight:700;font-size:0.8rem;
+                            margin-bottom:4px;line-height:1.3;">{tit}</div>
+                <div style="color:#718096;font-size:0.7rem;line-height:1.4;">{desc}</div>
+            </div>""", unsafe_allow_html=True)
+            st.markdown('<div class="atalho-btn">', unsafe_allow_html=True)
+            if st.button(f"→ Acessar", key=f"sc_{i}", use_container_width=True):
                 st.session_state["pagina"] = dest
                 st.rerun()
-            st.markdown(f"""
-            <div class="card-visual" onclick="
-                var all=document.querySelectorAll('.nav-card-btn button');
-                if(all[{i}])all[{i}].click();">
-                <div style="font-size:1.3rem;margin-bottom:8px;">{ic}</div>
-                <div style="color:#E6EDF3;font-weight:700;font-size:0.9rem;margin-bottom:6px;">{tit}</div>
-                <div style="color:#8B949E;font-size:0.75rem;line-height:1.5;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-    section_divider("COMO OS DADOS SE CONECTAM")
+    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+
+    # ══════════════════════════════════════════════════════════════════
+    # C. PANORAMA EXECUTIVO
+    # ══════════════════════════════════════════════════════════════════
     st.markdown("""
-    <div style="background:#161B22;border:1px solid #30363D;border-radius:12px;padding:20px 24px;margin-bottom:8px;">
-        <div style="color:#8B949E;font-size:0.75rem;margin-bottom:16px;">
-            Toda informação utilizada pela organização segue uma jornada — do conceito à decisão.
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <div style="background:#C9A22722;border:1px solid #C9A22744;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">CONCEITO</div>
-                <div style="color:#C9A227;font-weight:700;font-size:0.82rem;">Inadimplência</div>
+    <div style="font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;
+                color:#94A3B8;margin-bottom:10px;">Panorama Geral</div>
+    """, unsafe_allow_html=True)
+
+    pan_left, pan_mid, pan_right = st.columns([2.2, 2.8, 2.0], gap="small")
+
+    # ── KPI tiles ────────────────────────────────────────────────────
+    with pan_left:
+        st.markdown("""
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
+                    padding:16px 18px;height:100%;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:1.5px;color:#94A3B8;margin-bottom:14px;">Indicadores</div>
+        """, unsafe_allow_html=True)
+
+        kpi_data = [
+            (total_ativos,  "Ativos de Dados",      "#1E4D9B", "🗂️"),
+            (total_termos,  "Termos de Negócio",    "#C9A227", "📖"),
+            (qual_str,      "Qualidade Média",       "#3FB950", "🛡️"),
+            (sol_abertas,   "Solicitações em Aberto","#F97316", "📬"),
+        ]
+        for val, lbl, cor_k, ic_k in kpi_data:
+            st.markdown(f"""
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 0;
+                        border-bottom:1px solid #F1F5F9;">
+                <div style="width:34px;height:34px;border-radius:8px;background:{cor_k}14;
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:1rem;flex-shrink:0;">{ic_k}</div>
+                <div style="flex:1;min-width:0;">
+                    <div style="color:#64748B;font-size:0.65rem;">{lbl}</div>
+                    <div style="color:{cor_k};font-size:1.35rem;font-weight:800;line-height:1.2;">{val}</div>
+                </div>
+            </div>""", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # ── Qualidade por Domínio ────────────────────────────────────────
+    with pan_mid:
+        st.markdown("""
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
+                    padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:1.5px;color:#94A3B8;margin-bottom:12px;">Qualidade por Domínio</div>
+        """, unsafe_allow_html=True)
+
+        if not df_qual.empty and "dominio" in df_qual.columns and "score_final" in df_qual.columns:
+            dom_qual = df_qual.groupby("dominio")["score_final"].mean().reset_index()
+            dom_qual = dom_qual.sort_values("score_final", ascending=False).head(7)
+            CORES_DOM = ["#1E4D9B","#3FB950","#BC8CFF","#F97316","#C9A227","#F85149","#58A6FF"]
+            for idx, row in dom_qual.iterrows():
+                sc = round(float(row["score_final"]), 1)
+                cor_d = CORES_DOM[idx % len(CORES_DOM)]
+                cor_bar = "#3FB950" if sc >= 80 else "#C9A227" if sc >= 60 else "#F85149"
+                st.markdown(f"""
+                <div style="margin-bottom:9px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+                        <div style="color:#334155;font-size:0.73rem;font-weight:600;
+                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65%;">{row['dominio']}</div>
+                        <div style="color:{cor_bar};font-size:0.73rem;font-weight:800;margin-left:6px;">{sc}%</div>
+                    </div>
+                    <div style="background:#F1F5F9;border-radius:99px;height:5px;overflow:hidden;">
+                        <div style="width:{sc}%;height:100%;background:{cor_bar};border-radius:99px;"></div>
+                    </div>
+                </div>""", unsafe_allow_html=True)
+        else:
+            st.markdown('<div style="color:#94A3B8;font-size:0.78rem;padding:20px 0;text-align:center;">Dados não disponíveis</div>', unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # ── Rosca Solicitações ───────────────────────────────────────────
+    with pan_right:
+        st.markdown("""
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
+                    padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:1.5px;color:#94A3B8;margin-bottom:10px;">Status das Solicitações</div>
+        """, unsafe_allow_html=True)
+
+        frames = []
+        for df_s in [df_sol_ac, df_sol_qu]:
+            if not df_s.empty and "status" in df_s.columns:
+                frames.append(df_s[["status"]])
+        if frames:
+            df_all_sol = pd.concat(frames, ignore_index=True)
+            st._df_status = df_all_sol  # avoid unused warning
+            status_counts = df_all_sol["status"].value_counts().reset_index()
+            status_counts.columns = ["status","total"]
+            STATUS_COLORS = {
+                "pendente":"#F97316","em_analise":"#3B82F6","aprovado":"#3FB950",
+                "concluido":"#1E4D9B","cancelado":"#94A3B8","em_revisao":"#BC8CFF",
+                "reprovado":"#F85149","concluída":"#1E4D9B","aprovada":"#3FB950",
+            }
+            cores_rosca = [STATUS_COLORS.get(s,"#CBD5E1") for s in status_counts["status"]]
+            total_sol = status_counts["total"].sum()
+
+            fig_donut = go.Figure(go.Pie(
+                labels=status_counts["status"],
+                values=status_counts["total"],
+                hole=0.62,
+                marker=dict(colors=cores_rosca, line=dict(color="#FFFFFF", width=2)),
+                textinfo="none",
+                hovertemplate="%{label}: %{value}<extra></extra>",
+            ))
+            fig_donut.add_annotation(
+                text=f"<b>{total_sol}</b>",
+                x=0.5, y=0.55, showarrow=False, font=dict(size=22, color="#0D1B2A"))
+            fig_donut.add_annotation(
+                text="total", x=0.5, y=0.4, showarrow=False,
+                font=dict(size=10, color="#94A3B8"))
+            fig_donut.update_layout(
+                showlegend=False, margin=dict(t=0,b=0,l=0,r=0),
+                height=150, paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)")
+            st.plotly_chart(fig_donut, use_container_width=True, config={"displayModeBar":False})
+
+            # Legenda
+            for _, row in status_counts.iterrows():
+                cor_l = STATUS_COLORS.get(row["status"],"#CBD5E1")
+                st.markdown(f"""
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                    <div style="width:8px;height:8px;border-radius:50%;background:{cor_l};flex-shrink:0;"></div>
+                    <div style="color:#475569;font-size:0.67rem;flex:1;">{row['status']}</div>
+                    <div style="color:#0D1B2A;font-size:0.73rem;font-weight:700;">{row['total']}</div>
+                </div>""", unsafe_allow_html=True)
+        else:
+            st.markdown('<div style="color:#94A3B8;font-size:0.78rem;padding:20px 0;text-align:center;">Sem solicitações registradas</div>', unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+
+    # ══════════════════════════════════════════════════════════════════
+    # D. ÁREA OPERACIONAL — 3 colunas
+    # ══════════════════════════════════════════════════════════════════
+    st.markdown("""
+    <div style="font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;
+                color:#94A3B8;margin-bottom:10px;">Área Operacional</div>
+    """, unsafe_allow_html=True)
+
+    op1, op2, op3 = st.columns(3, gap="small")
+
+    # ── Ativos de destaque ────────────────────────────────────────────
+    with op1:
+        st.markdown("""
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
+                    padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
+                            letter-spacing:1.5px;color:#94A3B8;">Ativos em Destaque</div>
+                <span style="font-size:0.6rem;color:#94A3B8;font-style:italic;">por qualidade</span>
             </div>
-            <div style="color:#C9A227;font-size:1.2rem;">→</div>
-            <div style="background:#58A6FF22;border:1px solid #58A6FF44;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">REGRA</div>
-                <div style="color:#58A6FF;font-weight:700;font-size:0.82rem;">Janela 90 dias</div>
-            </div>
-            <div style="color:#C9A227;font-size:1.2rem;">→</div>
-            <div style="background:#BC8CFF22;border:1px solid #BC8CFF44;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">ATIVO</div>
-                <div style="color:#BC8CFF;font-weight:700;font-size:0.82rem;">fato_inadimplencia</div>
-            </div>
-            <div style="color:#C9A227;font-size:1.2rem;">→</div>
-            <div style="background:#3FB95022;border:1px solid #3FB95044;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">INDICADOR</div>
-                <div style="color:#3FB950;font-weight:700;font-size:0.82rem;">Taxa NPL</div>
-            </div>
-            <div style="color:#C9A227;font-size:1.2rem;">→</div>
-            <div style="background:#F8514922;border:1px solid #F8514944;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">DECISÃO</div>
-                <div style="color:#F85149;font-weight:700;font-size:0.82rem;">Gestão de Risco</div>
-            </div>
-        </div>
-    </div>""", unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+
+        if not df_meta.empty:
+            # Enriquecer com qualidade se disponível
+            ativos_dest = df_meta.copy()
+            if not df_cert.empty and "dominio" in df_cert.columns and "score_qualidade" in df_cert.columns:
+                dom_score = df_cert.groupby("dominio")["score_qualidade"].mean()
+                ativos_dest["_score"] = ativos_dest["dominio"].map(dom_score).fillna(0)
+                ativos_dest = ativos_dest.sort_values("_score", ascending=False)
+            exibir_ativos = ativos_dest[["table_name","dominio"]].head(5)
+            for _, row in exibir_ativos.iterrows():
+                st.markdown(f"""
+                <div style="display:flex;align-items:center;gap:8px;padding:7px 0;
+                            border-bottom:1px solid #F8FAFC;">
+                    <span style="font-size:0.9rem;">🗂️</span>
+                    <div style="flex:1;min-width:0;">
+                        <div style="color:#1E293B;font-size:0.72rem;font-weight:600;
+                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{row['table_name']}</div>
+                        <div style="color:#94A3B8;font-size:0.63rem;">{row['dominio']}</div>
+                    </div>
+                </div>""", unsafe_allow_html=True)
+        else:
+            st.markdown('<div style="color:#94A3B8;font-size:0.75rem;padding:10px 0;">Sem dados disponíveis</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # ── Pendências dos meus dados ─────────────────────────────────────
+    with op2:
+        st.markdown("""
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
+                    padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:1.5px;color:#94A3B8;margin-bottom:10px;">Pendências Abertas</div>
+        """, unsafe_allow_html=True)
+
+        pendencias = []
+        if not df_sol_ac.empty and "status" in df_sol_ac.columns:
+            pend_ac = df_sol_ac[~df_sol_ac["status"].str.lower().isin(STATUS_CLOSED)]
+            for _, row in pend_ac.head(3).iterrows():
+                tipo = "Acesso"
+                desc = str(row.get("tabela",""))[:40] if "tabela" in row else "—"
+                st_p = row.get("status","—")
+                pendencias.append((tipo, desc, st_p))
+        if not df_sol_qu.empty and "status" in df_sol_qu.columns:
+            pend_qu = df_sol_qu[~df_sol_qu["status"].str.lower().isin(STATUS_CLOSED)]
+            for _, row in pend_qu.head(3).iterrows():
+                tipo = "Qualidade"
+                desc = str(row.get("descricao",""))[:40] if "descricao" in row else "—"
+                st_p = row.get("status","—")
+                pendencias.append((tipo, desc, st_p))
+
+        STATUS_COR_PILL = {"pendente":"#F97316","em_analise":"#3B82F6","em_revisao":"#BC8CFF"}
+        if pendencias:
+            for tipo_p, desc_p, status_p in pendencias[:5]:
+                cor_p = STATUS_COR_PILL.get(status_p.lower(),"#94A3B8")
+                tipo_ic = "📬" if tipo_p=="Acesso" else "🛡️"
+                st.markdown(f"""
+                <div style="padding:7px 0;border-bottom:1px solid #F8FAFC;">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+                        <span style="font-size:0.85rem;">{tipo_ic}</span>
+                        <span style="color:#1E293B;font-size:0.71rem;font-weight:600;">{tipo_p}</span>
+                        <span style="background:{cor_p}18;color:{cor_p};border-radius:20px;
+                                     padding:1px 7px;font-size:0.6rem;font-weight:700;margin-left:auto;">{status_p}</span>
+                    </div>
+                    <div style="color:#64748B;font-size:0.65rem;padding-left:22px;">{desc_p}</div>
+                </div>""", unsafe_allow_html=True)
+        else:
+            st.markdown('<div style="color:#94A3B8;font-size:0.75rem;padding:16px 0;text-align:center;">✓ Nenhuma pendência em aberto</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # ── Últimas atividades ────────────────────────────────────────────
+    with op3:
+        st.markdown("""
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
+                    padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:1.5px;color:#94A3B8;margin-bottom:10px;">Últimas Atividades</div>
+        """, unsafe_allow_html=True)
+
+        if not df_tl.empty:
+            tl_show = df_tl.head(6)
+            for _, row in tl_show.iterrows():
+                tipo_a = str(row.get("tipo_solicitacao", row.get("tipo","—")))[:30]
+                status_a = str(row.get("status","—"))
+                responsavel = str(row.get("responsavel", row.get("solicitante","—")))[:20]
+                data_a = ""
+                for dc in ["iniciado_em","criado_em","data","updated_at"]:
+                    if dc in row and pd.notna(row[dc]):
+                        try:
+                            data_a = pd.to_datetime(row[dc]).strftime("%d/%m %H:%M")
+                        except:
+                            data_a = str(row[dc])[:10]
+                        break
+                cor_a = "#3FB950" if "conclu" in status_a.lower() or "aprova" in status_a.lower() \
+                        else "#F97316" if "penden" in status_a.lower() else "#94A3B8"
+                st.markdown(f"""
+                <div style="padding:7px 0;border-bottom:1px solid #F8FAFC;display:flex;align-items:flex-start;gap:8px;">
+                    <div style="width:7px;height:7px;border-radius:50%;background:{cor_a};
+                                margin-top:4px;flex-shrink:0;"></div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="color:#1E293B;font-size:0.71rem;font-weight:600;
+                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{tipo_a}</div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
+                            <span style="color:#94A3B8;font-size:0.62rem;">{responsavel}</span>
+                            <span style="color:#94A3B8;font-size:0.6rem;">{data_a}</span>
+                        </div>
+                    </div>
+                </div>""", unsafe_allow_html=True)
+        else:
+            st.markdown('<div style="color:#94A3B8;font-size:0.75rem;padding:16px 0;text-align:center;">Sem atividades registradas</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+
+    # ══════════════════════════════════════════════════════════════════
+    # E. JORNADAS — 5 cards de navegação
+    # ══════════════════════════════════════════════════════════════════
+    st.markdown("""
+    <div style="font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;
+                color:#94A3B8;margin-bottom:10px;">Jornadas de Exploração</div>
+    """, unsafe_allow_html=True)
+
+    JORNADAS = [
+        ("📋","Busca e Catálogo de Dados",   "📋 Catálogo",  "#1E4D9B",
+         "Explore o inventário de ativos, filtros e metadados da organização."),
+        ("🗂️","Detalhe do Ativo de Dados",   "📋 Catálogo",  "#7C3AED",
+         "Acesse informações técnicas, responsáveis e qualidade de cada ativo."),
+        ("🏆","Qualidade de Dados",           "🏆 Qualidade", "#059669",
+         "Veja as dimensões de qualidade, domínios e indicadores registrados."),
+        ("🔗","Linhagem e Atividades",        "🔗 Linhagem",  "#B45309",
+         "Rastreie a origem, o fluxo e as transformações dos dados."),
+        ("📬","Solicitações e Tarefas",       "⚡ Meu Espaço","#DC2626",
+         "Gerencie acessos, relatos de qualidade e suas tarefas pendentes."),
+    ]
+
+    j_cols = st.columns(5, gap="small")
+    for i, (ic_j, tit_j, dest_j, cor_j, desc_j) in enumerate(JORNADAS):
+        with j_cols[i]:
+            st.markdown(f"""
+            <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
+                        overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                <div style="background:{cor_j};padding:14px 14px 12px;min-height:70px;">
+                    <div style="font-size:1.6rem;margin-bottom:5px;">{ic_j}</div>
+                    <div style="color:rgba(255,255,255,0.95);font-size:0.75rem;
+                                font-weight:700;line-height:1.3;">{tit_j}</div>
+                </div>
+                <div style="padding:10px 14px;">
+                    <div style="color:#64748B;font-size:0.68rem;line-height:1.5;
+                                min-height:44px;">{desc_j}</div>
+                </div>
+            </div>""", unsafe_allow_html=True)
+            st.markdown('<div class="atalho-btn">', unsafe_allow_html=True)
+            if st.button("→ Explorar", key=f"jrn_{i}", use_container_width=True):
+                st.session_state["pagina"] = dest_j
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
     copyright_footer()
 
