@@ -2125,6 +2125,7 @@ elif pagina == "⚡ Meu Espaço":
 
         section_divider("WORKFLOW DE ATENDIMENTO — TODAS AS SOLICITAÇÕES")
         df_tl3=load_timeline()
+        _tl3_db_fail = bool(st.session_state.get("_db_err"))
         if not df_tl3.empty:
             ETAPAS_TIPO3={"acesso":["abertura","owner","governanca"],"qualidade":["abertura","owner","governanca","resolucao"],"conceito":["abertura","owner","aprovacao"],"regra":["abertura","owner","aprovacao"]}
             sols_u=df_tl3.groupby("solicitacao_id").first().reset_index()
@@ -2148,8 +2149,12 @@ elif pagina == "⚡ Meu Espaço":
                         eh+=f'<div style="text-align:center;flex:1;background:#141414;border:1px solid #2A2A2A;border-radius:8px;padding:8px;opacity:0.4;"><div style="font-size:0.6rem;color:#9CA3AF;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">⭕</div></div>'
                     if i<len(etapas)-1: eh+=f'<div style="flex:0;color:#444444;font-size:1rem;padding:0 4px;align-self:center;">→</div>'
                 st.markdown(f'<div style="display:flex;gap:6px;">{eh}</div></div>',unsafe_allow_html=True)
+        elif _tl3_db_fail:
+            estado_vazio("⚠️", "Workflow indisponível",
+                         "Não foi possível conectar ao banco de dados. O workflow de atendimento será exibido quando a conexão for restabelecida.")
         else:
-            st.info("Nenhuma solicitação no sistema ainda.")
+            estado_vazio("📬", "Nenhuma solicitação no sistema",
+                         "As solicitações aparecerão aqui quando forem criadas pelos consultantes.")
 
         section_divider("MEUS CONCEITOS NO GLOSSÁRIO")
         df_meus = df_gloss[df_gloss["criado_por"]==usuario] if not df_gloss.empty else pd.DataFrame()
