@@ -119,6 +119,11 @@ div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
 div[data-testid="stHorizontalBlock"].topbar-nav-row,
 .topbar-nav-row{display:none !important;position:absolute !important;left:-9999px !important;}
 
+/* ── Botões JS-bridge ocultos (govnav-*) ── */
+div[data-testid="stButton"]:has(button[data-testid*="topnav"]){
+    display:none !important;position:absolute !important;left:-9999px !important;}
+
+
 /* ══════════════════════════════════════════
    MOBILE  ≤ 768 px
    ══════════════════════════════════════════ */
@@ -694,8 +699,8 @@ st.markdown("""
     var sel = 'button[data-gov-nav="'+key+'"]';
     var btn = document.querySelector(sel);
     if(btn){ btn.click(); return; }
-    // Fallback: busca por texto exato nos botões Streamlit
-    var mark = '__govnav_'+key+'__';
+    // Fallback: busca por texto "govnav-{key}" nos botões Streamlit
+    var mark = 'govnav-'+key;
     document.querySelectorAll('button').forEach(function(b){
       if(b.textContent.trim()===mark){ b.click(); }
     });
@@ -705,8 +710,8 @@ st.markdown("""
   function tagNavBtns(){
     document.querySelectorAll('button').forEach(function(b){
       var t = b.textContent.trim();
-      if(t.startsWith('__govnav_') && t.endsWith('__')){
-        var k = t.replace('__govnav_','').replace('__','');
+      if(t.startsWith('govnav-')){
+        var k = t.replace('govnav-','');
         b.setAttribute('data-gov-nav', k);
         // Oculta o contêiner do botão
         var wrap = b.closest('[data-testid="stButton"]') || b.parentElement;
@@ -778,7 +783,7 @@ _topbar_nav_map = [
     ("busca",     "🔍 Busca Global"),
 ]
 for _nav_k, _nav_p in _topbar_nav_map:
-    if st.button(f"__govnav_{_nav_k}__", key=f"__topnav_{_nav_k}__"):
+    if st.button(f"govnav-{_nav_k}", key=f"topnav-{_nav_k}"):
         st.session_state["pagina"] = _nav_p
         st.rerun()
 
