@@ -377,7 +377,7 @@ with st.sidebar:
         st.session_state["pagina"] = "🏠 Início"
 
     # ── Espaçamento inicial
-    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 
     # ── Navegação flat
     NAV_ITEMS = [
@@ -437,7 +437,7 @@ with st.sidebar:
             </div>
         </div>
     </div>""", unsafe_allow_html=True)
-    st.markdown("<div style='height:90px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:106px;'></div>", unsafe_allow_html=True)
     if st.button("↩ Trocar perfil", key="logout", use_container_width=True):
         st.session_state["usuario"] = None
         st.rerun()
@@ -538,32 +538,32 @@ if pagina == "🏠 Início":
     # A. BANNER
     # ══════════════════════════════════════════════════════════════════
     st.markdown("""
-    <div style="background:linear-gradient(105deg,#0D1B2A 45%,#0D1B2AB8 65%,#1B4A6B77 85%),
+    <div style="background:linear-gradient(105deg,#0D1B2A 40%,#0D1B2AB8 60%,#1B4A6B66 80%),
                 url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
-                border-radius:14px;padding:40px 36px 36px;margin-bottom:16px;
-                position:relative;min-height:170px;overflow:hidden;">
-        <div style="max-width:480px;">
-            <div style="color:#5A8AAA;font-size:0.65rem;letter-spacing:3px;
+                border-radius:14px;padding:38px 36px 34px;margin-bottom:16px;
+                position:relative;min-height:170px;overflow:hidden;
+                display:flex;align-items:center;justify-content:space-between;gap:24px;">
+        <div style="flex:1;min-width:0;max-width:52%;">
+            <div style="color:#5A8AAA;font-size:0.62rem;letter-spacing:3px;
                         text-transform:uppercase;margin-bottom:10px;font-weight:700;">
                 PLATAFORMA DE GOVERNANÇA DE DADOS
             </div>
-            <div style="color:#FFFFFF;font-size:1.75rem;font-weight:800;line-height:1.25;
+            <div style="color:#FFFFFF;font-size:1.7rem;font-weight:800;line-height:1.25;
                         margin-bottom:10px;font-family:'Lora',serif;letter-spacing:-0.3px;">
                 Dados bem governados<br>impulsionam grandes decisões
             </div>
-            <div style="color:#7AAABF;font-size:0.85rem;line-height:1.6;">
+            <div style="color:#7AAABF;font-size:0.84rem;line-height:1.6;">
                 Encontre, entenda, confie e aja sobre os dados da sua organização.
             </div>
         </div>
-        <div style="position:absolute;right:32px;top:50%;transform:translateY(-50%);
-                    background:rgba(13,27,42,0.88);border:1px solid #1E3A5C;
-                    border-radius:12px;padding:18px 20px;min-width:200px;
+        <div style="flex-shrink:0;background:rgba(13,27,42,0.88);border:1px solid #1E3A5C;
+                    border-radius:12px;padding:18px 20px;width:210px;
                     backdrop-filter:blur(10px);">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                <span style="font-size:1.3rem;">📊</span>
-                <span style="color:#C9A227;font-size:0.82rem;font-weight:700;">Nossa missão</span>
+                <span style="font-size:1.2rem;">📊</span>
+                <span style="color:#C9A227;font-size:0.8rem;font-weight:700;">Nossa missão</span>
             </div>
-            <div style="color:#6A8EA8;font-size:0.72rem;line-height:1.6;">
+            <div style="color:#6A8EA8;font-size:0.71rem;line-height:1.6;">
                 Transformar dados em confiança para impulsionar decisões que geram valor real para a organização.
             </div>
         </div>
