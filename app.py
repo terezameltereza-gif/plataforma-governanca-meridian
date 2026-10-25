@@ -68,13 +68,14 @@ div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
 
 /* ── Home: atalhos ── */
 .atalho-btn .stButton>button{
-    background:transparent !important;color:#0D1B2A !important;
-    border:1.5px solid #0D1B2A !important;border-radius:0 0 10px 10px !important;
+    background:#0D1B2A !important;color:#C9A227 !important;
+    border:1px solid #C9A22755 !important;border-top:none !important;
+    border-radius:0 0 10px 10px !important;
     font-weight:600 !important;font-size:0.73rem !important;
     padding:6px 12px !important;text-align:center !important;
     justify-content:center !important;width:100% !important;
-    box-shadow:none !important;border-top:none !important;}
-.atalho-btn .stButton>button:hover{background:#0D1B2A !important;color:#C9A227 !important;}
+    box-shadow:none !important;}
+.atalho-btn .stButton>button:hover{background:#C9A227 !important;color:#0D1B2A !important;}
 
 /* ── Ocultar widgets nativos Streamlit Cloud ── */
 [data-testid="stStatusWidget"],
@@ -598,22 +599,24 @@ if pagina == "🏠 Início":
     # B. ATALHOS — 5 cards horizontais
     # ══════════════════════════════════════════════════════════════════
     ATALHOS = [
-        ("📋","Catálogo de Dados",    "📋 Catálogo",   "Encontre e explore ativos de dados",    "#1E6FBF"),
-        ("📖","Glossário de Negócio", "📖 Glossário",   "Veja termos, conceitos e regras",        "#C9A227"),
-        ("🏆","Qualidade de Dados",   "🏆 Qualidade",   "Monitore a saúde e aponte problemas",   "#3FB950"),
-        ("🔗","Linhagem de Dados",    "🔗 Linhagem",    "Veja a origem e o fluxo dos dados",     "#BC8CFF"),
-        ("📬","Solicitações",         "⚡ Meu Espaço",  "Peça acessos e melhorias de qualidade", "#FF8C42"),
+        ("🗂️","Catálogo de Dados",    "📋 Catálogo",   "Encontre e explore ativos de dados"),
+        ("📖","Glossário de Negócio", "📖 Glossário",   "Veja termos, conceitos e regras"),
+        ("🛡️","Qualidade de Dados",   "🏆 Qualidade",   "Monitore a saúde e aponte problemas"),
+        ("🔗","Linhagem de Dados",    "🔗 Linhagem",    "Veja a origem e o fluxo dos dados"),
+        ("📬","Solicitações",         "⚡ Meu Espaço",  "Peça acessos e melhorias de qualidade"),
     ]
     sc_cols = st.columns(5, gap="small")
-    for i, (ic, tit, dest, desc, cor_sc) in enumerate(ATALHOS):
+    for i, (ic, tit, dest, desc) in enumerate(ATALHOS):
         with sc_cols[i]:
             st.markdown(f"""
-            <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px 10px 0 0;
-                        padding:14px 14px 10px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-                <div style="font-size:1.5rem;margin-bottom:7px;">{ic}</div>
-                <div style="color:#1A202C;font-weight:700;font-size:0.8rem;
-                            margin-bottom:4px;line-height:1.3;">{tit}</div>
-                <div style="color:#718096;font-size:0.7rem;line-height:1.4;">{desc}</div>
+            <div style="background:#0D1B2A;border:1px solid #C9A22733;
+                        border-bottom:3px solid #C9A227;
+                        border-radius:10px 10px 0 0;
+                        padding:16px 14px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.18);">
+                <div style="font-size:1.4rem;margin-bottom:8px;filter:grayscale(0.2);">{ic}</div>
+                <div style="color:#C9A227;font-weight:700;font-size:0.8rem;
+                            margin-bottom:5px;line-height:1.3;">{tit}</div>
+                <div style="color:#94A3B8;font-size:0.68rem;line-height:1.4;">{desc}</div>
             </div>""", unsafe_allow_html=True)
             st.markdown('<div class="atalho-btn">', unsafe_allow_html=True)
             if st.button(f"→ Acessar", key=f"sc_{i}", use_container_width=True):
