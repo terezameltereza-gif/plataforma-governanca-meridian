@@ -1070,6 +1070,8 @@ if pagina == "🏠 Início":
                     </div>
                     <div style="color:#64748B;font-size:0.65rem;padding-left:22px;">{desc_p}</div>
                 </div>""", unsafe_allow_html=True)
+        elif _db_fail:
+            st.markdown('<div style="color:#F85149;font-size:0.73rem;padding:16px 0;text-align:center;">⚠️ Dados indisponíveis — BD offline</div>', unsafe_allow_html=True)
         else:
             st.markdown('<div style="color:#A0A0A0;font-size:0.75rem;padding:16px 0;text-align:center;">✓ Nenhuma pendência em aberto</div>', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -1762,7 +1764,10 @@ elif pagina == "🛡️ Scorecard":
     df_links = load_links()
 
     if df_sc.empty:
-        estado_vazio("📊","Não foi possível carregar os dados","Tente recarregar a página. Se o problema persistir, contate a equipe de Governança.")
+        if bool(st.session_state.get("_db_err")):
+            estado_vazio("⚠️","Scorecard indisponível","Não foi possível conectar ao banco de dados. O scorecard será exibido quando a conexão for restabelecida.")
+        else:
+            estado_vazio("📊","Nenhum dado disponível","Registre ativos no catálogo para que o scorecard seja calculado.")
     else:
         dominios_sc = ["Todos"]+sorted([str(d) for d in df_sc["dominio"].dropna().unique() if str(d).strip() and str(d) != "nan"])
         f_dom_sc = st.selectbox("Filtrar por Domínio", dominios_sc, key="sc_dom")
