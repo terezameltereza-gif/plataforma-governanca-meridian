@@ -165,8 +165,7 @@ def _load_df(sql_str, origem):
         st.session_state["_db_err"] = str(err)
         st.error(f"Não foi possível carregar {origem}. Verifique a conexão e tente novamente.")
         return pd.DataFrame()
-    if df is not None and not df.empty:
-        st.session_state.pop("_db_err", None)
+    st.session_state.pop("_db_err", None)
     return df if df is not None else pd.DataFrame()
 
 def load_meta():
