@@ -1654,7 +1654,7 @@ elif pagina == "✏️ Curadoria":
                             erros = []
                             erros_auditoria = []
                             atualizadas = []
-                            usuario_lote = str(st.session_state.get("usuario_nome", "demo"))
+                            usuario_lote = str(usuario)
                             for _, r in sels.iterrows():
                                 schema_lote = str(r["Schema"])
                                 tabela_lote = str(r["Tabela"])
