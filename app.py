@@ -25,17 +25,26 @@ st.markdown("""
 html,body,.stApp{background:#F4F1EC !important;font-family:'Inter',sans-serif !important;}
 .main .block-container{padding-top:0 !important;max-width:100% !important;padding-left:1.5rem !important;padding-right:1.5rem !important;}
 h1,h2,h3{font-family:'Lora',serif !important;font-weight:700 !important;color:#0D1B2A !important;}
-section[data-testid="stSidebar"]{background:#0A0F1A !important;border-right:2px solid #C9A22733 !important;min-width:230px !important;}
-section[data-testid="stSidebar"] *{color:#C4B078 !important;}
-.stButton > button{background:#C9A227 !important;color:#0A0F1A !important;border:none !important;border-radius:8px !important;font-weight:700 !important;font-size:0.82rem !important;}
-section[data-testid="stSidebar"] .stButton > button{background:transparent !important;color:#6B7080 !important;border:none !important;border-radius:7px !important;font-weight:500 !important;font-size:0.82rem !important;text-align:left !important;justify-content:flex-start !important;padding:6px 10px !important;width:100% !important;box-shadow:none !important;margin-bottom:1px !important;}
-section[data-testid="stSidebar"] .stButton > button:hover{background:#1A2535 !important;color:#D4C49A !important;}
-.stTabs [data-baseweb="tab-list"]{background:#FFFFFF;border-radius:10px;padding:4px;gap:4px;border:1px solid #E8E4DC;}
-.stTabs [data-baseweb="tab"]{border-radius:7px !important;color:#6B7280 !important;padding:7px 16px !important;font-size:0.82rem !important;font-weight:600 !important;}
-.stTabs [aria-selected="true"]{background:#C9A227 !important;color:#0A0F1A !important;}
-.stSelectbox > div > div,.stTextInput > div > div > input,.stTextArea > div > div > textarea{background:#FFFFFF !important;border:1px solid #E8E4DC !important;border-radius:8px !important;color:#0D1B2A !important;}
-.stDataFrame{background:#FFFFFF !important;border-radius:10px !important;}
-div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
+section[data-testid="stSidebar"]{background:#101A2B !important;border-right:1px solid #C9A22755 !important;min-width:242px !important;}
+section[data-testid="stSidebar"] *{color:#D6C9A2 !important;}
+.stButton > button{background:#13233A !important;color:#E4C15A !important;border:1px solid #C9A22766 !important;border-radius:9px !important;font-weight:650 !important;font-size:0.82rem !important;transition:all .18s ease !important;}
+.stButton > button:hover{background:#1C304B !important;border-color:#C9A227 !important;color:#F5D778 !important;}
+/* Ação dos cartões integrada ao próprio cartão, sem faixa amarela destacada */
+div[data-testid="stVerticalBlockBorderWrapper"] .stButton > button{background:transparent !important;color:#9A7412 !important;border:0 !important;border-top:1px solid #E9E1CF !important;border-radius:0 0 9px 9px !important;text-align:left !important;justify-content:flex-start !important;padding:10px 2px 2px !important;box-shadow:none !important;}
+div[data-testid="stVerticalBlockBorderWrapper"] .stButton > button:hover{background:#F7F1E4 !important;color:#6F5208 !important;border-color:#E9E1CF !important;}
+section[data-testid="stSidebar"] .stButton > button{background:transparent !important;color:#9AA8BD !important;border:1px solid transparent !important;border-radius:7px !important;font-weight:500 !important;font-size:0.82rem !important;text-align:left !important;justify-content:flex-start !important;padding:7px 10px !important;width:100% !important;box-shadow:none !important;margin-bottom:2px !important;}
+section[data-testid="stSidebar"] .stButton > button:hover{background:#1B2B42 !important;color:#F0D77D !important;border-color:#C9A22733 !important;}
+.stTabs [data-baseweb="tab-list"]{background:#FFFFFF;border-radius:12px;padding:5px;gap:5px;border:1px solid #E7E0D2;}
+.stTabs [data-baseweb="tab"]{border-radius:8px !important;color:#657084 !important;padding:8px 16px !important;font-size:0.82rem !important;font-weight:600 !important;}
+.stTabs [aria-selected="true"]{background:#13233A !important;color:#F0D77D !important;}
+.stSelectbox > div > div,.stTextInput > div > div > input,.stTextArea > div > div > textarea{background:#FFFFFF !important;border:1px solid #E2DDCF !important;border-radius:9px !important;color:#0D1B2A !important;}
+.stDataFrame{background:#FFFFFF !important;border-radius:12px !important;}
+div[data-testid="stVerticalBlock"]{gap:0.55rem !important;}
+div[data-testid="stVerticalBlockBorderWrapper"]{background:#FFFFFF !important;border:1px solid #E6DFD0 !important;border-radius:14px !important;box-shadow:0 4px 18px rgba(13,27,42,.045) !important;padding:14px 16px 8px !important;transition:transform .18s ease,box-shadow .18s ease !important;}
+div[data-testid="stVerticalBlockBorderWrapper"]:hover{box-shadow:0 8px 26px rgba(13,27,42,.09) !important;border-color:#D6C17E !important;}
+[data-testid="stMetric"]{background:#FFFFFF;border:1px solid #E6DFD0;border-radius:12px;padding:14px 16px;box-shadow:0 3px 12px rgba(13,27,42,.035);}
+.main .block-container{padding-bottom:2.5rem !important;}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -82,9 +91,10 @@ def _is_session_err(msg: str) -> bool:
 
 @st.cache_data(ttl=300)
 def qry(sql_str):
+    cur = None
     try:
         conn = get_conn()
-        cur  = conn.cursor()
+        cur = conn.cursor()
         cur.execute(sql_str)
         cols = [d[0] for d in cur.description]
         return pd.DataFrame(cur.fetchall(), columns=cols), None
@@ -94,11 +104,18 @@ def qry(sql_str):
             try: get_conn.clear(); qry.clear()
             except: pass
         return pd.DataFrame(), err
+    finally:
+        if cur is not None:
+            try:
+                cur.close()
+            except Exception:
+                pass
 
 def exe(sql_str):
+    cur = None
     try:
         conn = get_conn()
-        cur  = conn.cursor()
+        cur = conn.cursor()
         cur.execute(sql_str)
         return True, None
     except Exception as e:
@@ -107,6 +124,12 @@ def exe(sql_str):
             try: get_conn.clear()
             except: pass
         return False, err
+    finally:
+        if cur is not None:
+            try:
+                cur.close()
+            except Exception:
+                pass
 
 def esc(v): return str(v).replace("'","''") if v else ""
 
@@ -141,87 +164,68 @@ MENU = {**MENU_BASE, **MENU_OP}
 
 # ════════════════════════════════════════════════════════════════════
 # CARREGAMENTO DE DADOS
+# qry() mantém cache de consulta; os wrappers abaixo não são cacheados,
+# para que falhas possam ser exibidas no contexto da página sem ocultá-las.
 # ════════════════════════════════════════════════════════════════════
-@st.cache_data(ttl=300)
+def _load_df(sql_str, origem):
+    df, err = qry(sql_str)
+    if err:
+        # Mantém um sinal comum para a página inicial e evita confundir erro com base vazia.
+        st.session_state["_db_err"] = str(err)
+        st.error(f"Não foi possível carregar {origem}. Verifique a conexão e tente novamente.")
+        return pd.DataFrame()
+    st.session_state.pop("_db_err", None)
+    return df if df is not None else pd.DataFrame()
+
 def load_meta():
-    df, err = qry("SELECT * FROM meridian_governanca.tabelas_metadata")
-    if err and df.empty:
-        st.session_state["_db_err"] = err
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.tabelas_metadata", "os metadados do catálogo")
 
-@st.cache_data(ttl=300)
 def load_glossario():
-    df,_ = qry("""SELECT * FROM meridian_governanca.business_glossary
+    return _load_df("""SELECT * FROM meridian_governanca.business_glossary
                   ORDER BY CASE status WHEN 'homologado' THEN 1
-                  WHEN 'em_revisao' THEN 2 ELSE 3 END, termo""")
-    return df if df is not None else pd.DataFrame()
+                  WHEN 'em_revisao' THEN 2 ELSE 3 END, termo""", "o glossário")
 
-@st.cache_data(ttl=300)
 def load_links():
-    df,_ = qry("SELECT * FROM meridian_governanca.glossary_asset_link")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.glossary_asset_link", "os relacionamentos do glossário")
 
-@st.cache_data(ttl=300)
 def load_rules():
-    df,_ = qry("SELECT * FROM meridian_governanca.business_rules")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.business_rules", "as regras de negócio")
 
-@st.cache_data(ttl=300)
 def load_sugestoes_conceitos():
-    df,_ = qry("SELECT * FROM meridian_governanca.sugestoes_conceitos ORDER BY criado_em DESC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.sugestoes_conceitos ORDER BY criado_em DESC", "as sugestões de conceitos")
 
-@st.cache_data(ttl=300)
 def load_sugestoes_regras():
-    df,_ = qry("SELECT * FROM meridian_governanca.sugestoes_regras ORDER BY criado_em DESC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.sugestoes_regras ORDER BY criado_em DESC", "as sugestões de regras")
 
-@st.cache_data(ttl=300)
 def load_timeline():
-    df,_=qry("SELECT * FROM meridian_governanca.gd_solicitacoes_timeline ORDER BY iniciado_em DESC"); return df if df is not None else pd.DataFrame()
-@st.cache_data(ttl=300)
+    return _load_df("SELECT * FROM meridian_governanca.gd_solicitacoes_timeline ORDER BY iniciado_em DESC", "a linha do tempo das solicitações")
+
 def load_sla_snap():
-    df,_=qry("SELECT * FROM meridian_governanca.gd_sla_atendimento_snapshot ORDER BY data_snapshot ASC"); return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.gd_sla_atendimento_snapshot ORDER BY data_snapshot ASC", "o histórico de SLA")
 
-@st.cache_data(ttl=300)
 def load_solicitacoes_acesso():
-    df,_ = qry("SELECT * FROM meridian_governanca.solicitacoes_acesso ORDER BY criado_em DESC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.solicitacoes_acesso ORDER BY criado_em DESC", "as solicitações de acesso")
 
-@st.cache_data(ttl=300)
 def load_quality_dimensions():
-    df,_ = qry("SELECT * FROM meridian_governanca.gd_quality_dimensions ORDER BY score_final DESC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.gd_quality_dimensions ORDER BY score_final DESC", "as dimensões de qualidade")
 
-@st.cache_data(ttl=300)
 def load_cert():
-    df,_ = qry("SELECT * FROM meridian_governanca.gd_certification ORDER BY score_qualidade DESC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.gd_certification ORDER BY score_qualidade DESC", "os dados de certificação")
 
-@st.cache_data(ttl=300)
 def load_snap():
-    df,_ = qry("SELECT * FROM meridian_governanca.gd_indicators_snapshot ORDER BY data_snapshot ASC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.gd_indicators_snapshot ORDER BY data_snapshot ASC", "os indicadores consolidados")
 
-@st.cache_data(ttl=300)
 def load_produtos():
-    df,_ = qry("SELECT * FROM meridian_governanca.produtos_dados ORDER BY status, nome")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.produtos_dados ORDER BY status, nome", "os produtos de dados")
 
-@st.cache_data(ttl=300)
 def load_produto_ativos():
-    df,_ = qry("SELECT * FROM meridian_governanca.produto_ativos")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.produto_ativos", "os vínculos entre produtos e ativos")
 
-@st.cache_data(ttl=300)
 def load_linhagem():
-    df,_ = qry("SELECT * FROM meridian_governanca.linhagem_ativos ORDER BY origem_schema, origem_tabela")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.linhagem_ativos ORDER BY origem_schema, origem_tabela", "a linhagem dos ativos")
 
-@st.cache_data(ttl=300)
 def load_solicitacoes_qualidade():
-    df,_ = qry("SELECT * FROM meridian_governanca.solicitacoes_qualidade ORDER BY criado_em DESC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.solicitacoes_qualidade ORDER BY criado_em DESC", "as solicitações de qualidade")
 
 # ════════════════════════════════════════════════════════════════════
 # COMPONENTES REUTILIZÁVEIS
@@ -314,6 +318,11 @@ with st.sidebar:
         st.session_state["usuario"] = None
 
     if not st.session_state["usuario"]:
+        st.warning(
+            "Acesso demonstrativo: escolher um nome não autentica a identidade. "
+            "Não use dados reais nem considere os perfis como controle de acesso corporativo.",
+            icon="⚠️",
+        )
         email = st.selectbox(
             "Selecione seu usuário",
             list(USUARIOS.keys()),
@@ -328,6 +337,7 @@ with st.sidebar:
             st.rerun()
         st.stop()
 
+    st.caption("AMBIENTE DEMONSTRATIVO · Autenticação corporativa ainda não configurada")
     u      = USUARIOS[st.session_state["usuario"]]
     perfil = u["perfil"]
     cor    = PERFIL_COR[perfil]
@@ -388,151 +398,142 @@ is_aprovador = perfil == "aprovador"
 # 🏠 INÍCIO — Central de Conhecimento e Descoberta
 # ════════════════════════════════════════════════════════════════════
 if pagina == "🏠 Início":
-    now_str = datetime.now().strftime("%d/%m/%Y %H:%M")
-    st.markdown(f"""
-    <div style="background:linear-gradient(135deg,#161B22,#1C2128);
-                border:1px solid #30363D;border-radius:16px;
-                padding:28px 32px;margin-bottom:20px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-                <div style="color:#E6EDF3;font-size:1.5rem;font-weight:800;margin-bottom:6px;">
-                    Plataforma de Governança de Dados</div>
-                <div style="color:#8B949E;font-size:0.85rem;max-width:560px;line-height:1.6;">
-                    Um espaço para descobrir, entender e utilizar os dados do Banco Meridian
-                    com mais clareza e confiança.</div>
-                <div style="color:#8B949E;font-size:0.78rem;max-width:560px;line-height:1.5;margin-top:6px;">
-                    Explore conceitos, dados, responsáveis, regras, qualidade e relacionamentos da organização.</div>
-                <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-                    <span style="background:#3FB95022;color:#3FB950;border-radius:20px;
-                                 padding:3px 12px;font-size:0.72rem;font-weight:600;
-                                 border:1px solid #3FB95044;">✓ Dados Confiáveis</span>
-                    <span style="background:#58A6FF22;color:#58A6FF;border-radius:20px;
-                                 padding:3px 12px;font-size:0.72rem;font-weight:600;
-                                 border:1px solid #58A6FF44;">✓ Responsabilidade Definida</span>
-                    <span style="background:#BC8CFF22;color:#BC8CFF;border-radius:20px;
-                                 padding:3px 12px;font-size:0.72rem;font-weight:600;
-                                 border:1px solid #BC8CFF44;">✓ IA Ready</span>
-                </div>
-            </div>
-            <div style="text-align:right;flex-shrink:0;">
-                <div style="color:#8B949E;font-size:0.68rem;">Última atualização</div>
-                <div style="color:#E6EDF3;font-size:0.82rem;font-weight:600;">{now_str}</div>
-                <div style="background:#3FB95022;color:#3FB950;border-radius:20px;
-                            padding:2px 10px;font-size:0.68rem;font-weight:600;
-                            border:1px solid #3FB95044;margin-top:4px;
-                            display:inline-block;">● AO VIVO</div>
-            </div>
-        </div>
-    </div>""", unsafe_allow_html=True)
-
+    # Página inicial alinhada à referência visual Governantes:
+    # hero fotográfico, atalhos horizontais, panorama executivo e tabelas de trabalho.
     df_meta  = load_meta()
     df_gloss = load_glossario()
     df_links = load_links()
     df_rules = load_rules()
 
     if df_meta.empty and st.session_state.get("_db_err"):
-        st.warning(f"⚠️ Não foi possível carregar os dados do Databricks. Verifique se o SQL Warehouse está ativo e se o token de acesso é válido. Detalhe: `{st.session_state['_db_err'][:200]}`")
+        st.warning("Não foi possível carregar os dados do Databricks. A demonstração depende de conexão e permissões válidas.")
 
-    total_ativos = len(df_meta)  if not df_meta.empty else 0
-    total_dom    = df_meta["dominio"].nunique() if not df_meta.empty else 0
+    total_ativos = len(df_meta) if not df_meta.empty else 0
+    total_dom = df_meta["dominio"].nunique() if not df_meta.empty and "dominio" in df_meta.columns else 0
     total_termos = len(df_gloss) if not df_gloss.empty else 0
     total_regras = len(df_rules) if not df_rules.empty else 0
-    tabs_link    = df_links["table_name"].nunique() if not df_links.empty else 0
-    cobertura    = round(tabs_link/max(total_ativos,1)*100)
-    cor_cob      = "#3FB950" if cobertura>=70 else "#C9A227" if cobertura>=40 else "#F85149"
+    tabs_link = df_links["table_name"].nunique() if not df_links.empty and "table_name" in df_links.columns else 0
+    cobertura = min(100, round(tabs_link / total_ativos * 100)) if total_ativos else 0
 
-    k1,k2,k3,k4,k5 = st.columns(5)
-    with k1: st.markdown(kpi(total_termos,"Conceitos de Negócio","#C9A227","📖",
-        "Definições oficiais dos principais assuntos utilizados pela organização."), unsafe_allow_html=True)
-    with k2: st.markdown(kpi(total_ativos,"Ativos de Dados","#58A6FF","🗂️",
-        "Tabelas e outros ativos de dados catalogados na plataforma."), unsafe_allow_html=True)
-    with k3: st.markdown(kpi(total_dom,"Domínios de Negócio","#BC8CFF","🏛️",
-        "Agrupamentos de dados e assuntos de negócio com responsabilidades definidas."), unsafe_allow_html=True)
-    with k4: st.markdown(kpi(total_regras,"Regras de Negócio","#3FB950","📏",
-        "Critérios documentados utilizados para definição, cálculo ou validação de informações."), unsafe_allow_html=True)
-    with k5: st.markdown(kpi(f"{cobertura}%","Dados Conectados ao Negócio",cor_cob,"🔗",
-        f"Percentual de ativos de dados que possuem relacionamento documentado com conceitos de negócio. ({tabs_link} de {total_ativos} ativos vinculados)"), unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    .block-container {padding-top: .65rem !important;}
+    .gov-hero {position:relative; overflow:hidden; border-radius:14px; min-height:172px;
+      padding:26px 30px; margin:0 0 16px 0; color:white;
+      background:linear-gradient(90deg,rgba(7,28,57,.97) 0%,rgba(9,48,88,.88) 46%,rgba(9,48,88,.18) 100%),
+      url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1800&q=85') center 48%/cover;
+      box-shadow:0 5px 18px rgba(10,40,80,.12);}
+    .gov-eyebrow {font-size:.68rem;letter-spacing:1.8px;font-weight:700;text-transform:uppercase;color:#D9C47E;margin-bottom:10px}
+    .gov-hero h2 {font-family:Inter,sans-serif!important;color:#fff!important;font-size:1.75rem!important;line-height:1.16;margin:0 0 9px 0}
+    .gov-hero p {font-size:.88rem;color:#F2F6FB;max-width:650px;margin:0;line-height:1.55}
+    .gov-mission {float:right; margin:4px 0 0 22px; padding:13px 16px; width:205px;
+      background:rgba(255,255,255,.94);color:#10294B;border-radius:10px;box-shadow:0 5px 16px #061a3322}
+    .gov-mission strong {display:block;font-size:.83rem;margin-bottom:5px}
+    .gov-mission span {font-size:.72rem;line-height:1.45;display:block}
+    .gov-section {font-size:.94rem;font-weight:800;color:#10294B;margin:9px 0 10px}
+    .gov-shortcut {background:#fff;border:1px solid #DCE6F2;border-radius:11px;padding:13px 12px;min-height:103px;box-shadow:0 2px 8px #0b2b5010}
+    .gov-shortcut b {display:block;color:#10294B;font-size:.78rem;margin:4px 0}
+    .gov-shortcut span {display:block;color:#526783;font-size:.68rem;line-height:1.4;min-height:29px}
+    .gov-shortcut .ico {font-size:1.35rem}
+    .gov-panel {background:#fff;border:1px solid #DCE6F2;border-radius:11px;padding:13px 14px;min-height:170px;box-shadow:0 2px 8px #0b2b5008}
+    .gov-panel-title {font-weight:800;color:#10294B;font-size:.82rem;margin-bottom:12px}
+    .gov-kpi {background:#FBFDFF;border:1px solid #E1EAF5;border-radius:8px;padding:11px 9px;min-height:94px}
+    .gov-kpi .value {font-size:1.25rem;font-weight:800;color:#10294B}
+    .gov-kpi .label {font-size:.66rem;color:#526783;line-height:1.35}
+    .gov-progress {height:8px;border-radius:9px;background:#EAF0F7;overflow:hidden;flex:1}
+    .gov-progress i {display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#00A88F,#5DCDB5)}
+    </style>
+    """, unsafe_allow_html=True)
 
-    section_divider("O QUE VOCÊ ENCONTRA AQUI?")
+    st.markdown(f"""
+    <div class="gov-hero">
+      <div class="gov-mission"><strong>✧ Nossa missão</strong><span>Transformar dados em confiança para impulsionar decisões que geram valor.</span></div>
+      <div class="gov-eyebrow">Bem-vinda à Governantes</div>
+      <h2>Dados bem governados<br>impulsionam grandes decisões</h2>
+      <p>Encontre, entenda, confie e aja sobre os dados da sua organização.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    cards_info = [
-        ("📖","Conceitos de Negócio","Glossário",
-         "Definições oficiais dos principais assuntos utilizados pela organização, ajudando diferentes áreas a compartilhar o mesmo entendimento."),
-        ("📏","Regras de Negócio","📖 Glossário",
-         "Critérios utilizados para definir, calcular, classificar ou validar informações utilizadas nos processos e indicadores."),
-        ("🗂️","Ativos de Dados","📋 Catálogo",
-         "Dados disponíveis para consulta e utilização, como tabelas, views e outros ativos catalogados na organização."),
-        ("🏛️","Domínios de Negócio","🏛️ Domínios",
-         "Agrupamentos de assuntos e dados relacionados a uma área de negócio, com responsabilidades claramente definidas."),
-        ("🔗","Relacionamentos","📖 Glossário",
-         "Mostram como conceitos, regras, indicadores, ativos e produtos de dados estão conectados entre si."),
-        ("🛡️","Qualidade dos Dados","🛡️ Scorecard",
-         "Mostra o quanto os dados atendem aos critérios de qualidade definidos para sua utilização confiável."),
+    # Atalhos principais em linha, como na referência
+    shortcuts = [
+        ("▤","Catálogo de Dados","Encontre e explore ativos de dados","📋 Catálogo"),
+        ("▣","Glossário de Negócio","Entenda termos, conceitos e regras","📖 Glossário"),
+        ("◇","Qualidade de Dados","Veja a saúde e aponte problemas","🏆 Qualidade"),
+        ("⌘","Linhagem de Dados","Veja a origem e o fluxo dos dados","🔗 Linhagem"),
+        ("▤","Solicitações","Peça acessos, melhorias e novos termos","⚡ Meu Espaço"),
     ]
-
-    st.markdown("""<style>
-    .nav-card-btn{display:none!important;}
-    .card-visual{background:#161B22;border:1px solid #30363D;border-top:3px solid #C9A22744;
-        border-radius:12px;padding:16px;cursor:pointer;margin-bottom:12px;
-        transition:border-color .2s,background .2s;}
-    .card-visual:hover{border-color:#C9A227;border-top-color:#C9A227;background:#1A2030;}
-    </style>""", unsafe_allow_html=True)
-
-    cols_cards = st.columns(3)
-    for i, (ic, tit, dest, desc) in enumerate(cards_info):
-        with cols_cards[i % 3]:
-            st.markdown('<div class="nav-card-btn">', unsafe_allow_html=True)
-            clicked = st.button("x", key=f"card_{i}", use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-            if clicked:
+    cols = st.columns(5, gap="small")
+    for i,(ico,title,desc,dest) in enumerate(shortcuts):
+        with cols[i]:
+            st.markdown(f'<div class="gov-shortcut"><div class="ico">{ico}</div><b>{title}</b><span>{desc}</span></div>',unsafe_allow_html=True)
+            if st.button("Abrir →",key=f"gov_shortcut_{i}",use_container_width=True):
                 st.session_state["pagina"] = dest
                 st.rerun()
-            st.markdown(f"""
-            <div class="card-visual" onclick="
-                var all=document.querySelectorAll('.nav-card-btn button');
-                if(all[{i}])all[{i}].click();">
-                <div style="font-size:1.3rem;margin-bottom:8px;">{ic}</div>
-                <div style="color:#E6EDF3;font-weight:700;font-size:0.9rem;margin-bottom:6px;">{tit}</div>
-                <div style="color:#8B949E;font-size:0.75rem;line-height:1.5;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
 
-    section_divider("COMO OS DADOS SE CONECTAM")
-    st.markdown("""
-    <div style="background:#161B22;border:1px solid #30363D;border-radius:12px;padding:20px 24px;margin-bottom:8px;">
-        <div style="color:#8B949E;font-size:0.75rem;margin-bottom:16px;">
-            Toda informação utilizada pela organização segue uma jornada — do conceito à decisão.
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <div style="background:#C9A22722;border:1px solid #C9A22744;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">CONCEITO</div>
-                <div style="color:#C9A227;font-weight:700;font-size:0.82rem;">Inadimplência</div>
-            </div>
-            <div style="color:#C9A227;font-size:1.2rem;">→</div>
-            <div style="background:#58A6FF22;border:1px solid #58A6FF44;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">REGRA</div>
-                <div style="color:#58A6FF;font-weight:700;font-size:0.82rem;">Janela 90 dias</div>
-            </div>
-            <div style="color:#C9A227;font-size:1.2rem;">→</div>
-            <div style="background:#BC8CFF22;border:1px solid #BC8CFF44;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">ATIVO</div>
-                <div style="color:#BC8CFF;font-weight:700;font-size:0.82rem;">fato_inadimplencia</div>
-            </div>
-            <div style="color:#C9A227;font-size:1.2rem;">→</div>
-            <div style="background:#3FB95022;border:1px solid #3FB95044;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">INDICADOR</div>
-                <div style="color:#3FB950;font-weight:700;font-size:0.82rem;">Taxa NPL</div>
-            </div>
-            <div style="color:#C9A227;font-size:1.2rem;">→</div>
-            <div style="background:#F8514922;border:1px solid #F8514944;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">DECISÃO</div>
-                <div style="color:#F85149;font-weight:700;font-size:0.82rem;">Gestão de Risco</div>
-            </div>
-        </div>
-    </div>""", unsafe_allow_html=True)
+    st.markdown('<div class="gov-section">Panorama geral</div>',unsafe_allow_html=True)
+    p1,p2,p3 = st.columns([1.65,1,1],gap="small")
+    with p1:
+        st.markdown('<div class="gov-panel"><div class="gov-panel-title">Indicadores da plataforma</div>',unsafe_allow_html=True)
+        kc=st.columns(4,gap="small")
+        values=[
+          (total_ativos,"Ativos de dados","▤","#E8F2FF"),
+          (total_termos,"Termos de negócio","▣","#F0ECFF"),
+          (f"{cobertura}%","Cobertura de vínculos","◇","#E2F8F0"),
+          (total_regras,"Regras de negócio","▤","#FFF0F4")]
+        for i,(val,label,ico,bg) in enumerate(values):
+            with kc[i]:
+                st.markdown(f'<div class="gov-kpi"><div style="background:{bg};display:inline-block;padding:4px 7px;border-radius:6px;margin-bottom:6px;color:#1673BA">{ico}</div><div class="value">{val}</div><div class="label">{label}</div></div>',unsafe_allow_html=True)
+        st.markdown('</div>',unsafe_allow_html=True)
+    with p2:
+        st.markdown('<div class="gov-panel"><div class="gov-panel-title">Qualidade por domínio</div>',unsafe_allow_html=True)
+        if not df_meta.empty and "dominio" in df_meta.columns:
+            doms=df_meta["dominio"].fillna("Sem domínio").astype(str).value_counts().head(5)
+            for j,(dom,n) in enumerate(doms.items()):
+                pct=min(100,round(n/max(1,total_ativos)*100))
+                st.markdown(f'<div style="display:flex;align-items:center;gap:7px;margin:10px 0;font-size:.67rem;color:#526783"><span style="width:80px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">{dom}</span><div class="gov-progress"><i style="width:{pct}%"></i></div><b style="color:#10294B">{pct}%</b></div>',unsafe_allow_html=True)
+        else:
+            st.caption("Distribuição por domínio disponível quando os metadados estiverem carregados.")
+        st.markdown('</div>',unsafe_allow_html=True)
+    with p3:
+        st.markdown('<div class="gov-panel"><div class="gov-panel-title">Status do catálogo</div>',unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:2rem;font-weight:800;color:#10294B;text-align:center;margin:14px 0 4px">{total_ativos}</div><div style="font-size:.72rem;text-align:center;color:#526783">ativos catalogados</div><div style="font-size:.7rem;color:#009B83;text-align:center;margin-top:10px">◉ {total_dom} domínios identificados</div><div style="font-size:.7rem;color:#6C63D9;text-align:center;margin-top:6px">◉ {total_termos} conceitos no glossário</div>',unsafe_allow_html=True)
+        st.markdown('</div>',unsafe_allow_html=True)
+
+    st.markdown('<div class="gov-section">Ativos e pendências</div>',unsafe_allow_html=True)
+    left,right=st.columns([1.1,1],gap="small")
+    with left:
+        st.markdown('<div class="gov-panel-title">Ativos mais acessíveis no catálogo</div>',unsafe_allow_html=True)
+        if not df_meta.empty:
+            show_cols=[c for c in ["nome_tabela","table_name","dominio","responsavel","owner","score_completude","status"] if c in df_meta.columns]
+            if show_cols:
+                st.dataframe(df_meta[show_cols].head(5),use_container_width=True,hide_index=True)
+            else:
+                st.dataframe(df_meta.head(5),use_container_width=True,hide_index=True)
+        else:
+            st.info("Os ativos aparecerão aqui quando o catálogo estiver conectado.")
+    with right:
+        st.markdown('<div class="gov-panel-title">Pendências para acompanhar</div>',unsafe_allow_html=True)
+        st.markdown(f'<div class="gov-kpi" style="min-height:90px"><div class="value">{total_regras}</div><div class="label">Regras cadastradas para revisão de negócio</div></div>',unsafe_allow_html=True)
+        st.caption("Consulte Curadoria e Auditoria para verificar registros e ações disponíveis ao seu perfil.")
+
+    st.markdown('<div class="gov-section">Explore as jornadas da plataforma</div>',unsafe_allow_html=True)
+    journeys=[
+      ("Busca e Catálogo de Dados","Encontre por nome, área ou domínio e consulte metadados.","📋 Catálogo","#2185D5"),
+      ("Glossário de Negócio","Veja definições, regras e relacionamentos com ativos.","📖 Glossário","#6554C0"),
+      ("Qualidade de Dados","Acompanhe indicadores e identifique pontos de atenção.","🏆 Qualidade","#0A9F78"),
+      ("Linhagem de Dados","Entenda relações documentadas entre ativos.","🔗 Linhagem","#F28B30"),
+      ("Solicitações e Tarefas","Acesse seu espaço para solicitações e acompanhamento.","⚡ Meu Espaço","#D94D8A"),
+    ]
+    jcols=st.columns(5,gap="small")
+    for i,(title,desc,dest,color) in enumerate(journeys):
+        with jcols[i]:
+            st.markdown(f'<div style="border-radius:8px 8px 0 0;background:{color};padding:10px;color:#fff;font-size:.72rem;font-weight:800;min-height:48px">{title}</div><div style="background:#fff;border:1px solid #DCE6F2;border-top:0;border-radius:0 0 8px 8px;padding:10px;min-height:75px;color:#526783;font-size:.68rem;line-height:1.45">{desc}</div>',unsafe_allow_html=True)
+            if st.button("Explorar →",key=f"gov_journey_{i}",use_container_width=True):
+                st.session_state["pagina"]=dest
+                st.rerun()
 
     copyright_footer()
 
-# ════════════════════════════════════════════════════════════════════
 # 📖 GLOSSÁRIO — Área de Conhecimento
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "📖 Glossário":
@@ -622,7 +623,7 @@ elif pagina == "📖 Glossário":
                             if nn and nd:
                                 gid_new = str(uuid.uuid4())
                                 ok,err = exe(f"INSERT INTO meridian_governanca.business_glossary VALUES ('{gid_new}','{esc(nn)}','{esc(nd)}','{esc(ns)}','{esc(ndo)}','{esc(na)}','{esc(nc)}','{esc(usuario)}','{esc(usuario)}','rascunho',1,false,'{esc(usuario)}',current_timestamp(),'{esc(usuario)}',current_timestamp())")
-                                if ok: st.success(f"✅ '{nn}' criado!"); st.cache_data.clear(); st.rerun()
+                                if ok: st.success(f"✅ '{nn}' criado no ambiente demonstrativo."); st.cache_data.clear(); st.rerun()
                                 else: st.error(f"Erro: {err}")
                             else: st.warning("Preencha Nome e Definição.")
                 else:
@@ -636,7 +637,7 @@ elif pagina == "📖 Glossário":
                         if st.button("📤 Enviar sugestão", key="btn_sug_conceito"):
                             if sn_nome and sn_def:
                                 ok,err = exe(f"INSERT INTO meridian_governanca.sugestoes_conceitos VALUES ('{uuid.uuid4()}','{esc(usuario)}','{esc(sn_nome)}','{esc(sn_def)}','{esc(sn_just)}','{esc(sn_area)}','{esc(sn_ex)}','pendente',null,null,current_timestamp(),current_timestamp())")
-                                if ok: st.success("✅ Sugestão enviada! A equipe de Governança irá analisar."); st.rerun()
+                                if ok: st.success("✅ Sugestão registrada no ambiente demonstrativo. A análise depende do fluxo de governança configurado."); st.rerun()
                                 else: st.error(f"Erro: {err}")
                             else: st.warning("Preencha pelo menos o nome e a definição.")
 
@@ -707,26 +708,37 @@ elif pagina == "📖 Glossário":
                         if is_curador and row["status"]=="rascunho":
                             if st.button("📤 Submeter para Revisão",key=f"gsub_{gid}",use_container_width=True):
                                 ok,_ = exe(f"UPDATE meridian_governanca.business_glossary SET status='em_revisao',atualizado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE glossary_id='{gid}'")
-                                if ok: st.success("✅ Submetido!"); st.cache_data.clear(); st.rerun()
+                                if ok:
+                                    st.success("✅ Submetido!"); st.cache_data.clear(); st.rerun()
+                                else:
+                                    st.error("Não foi possível submeter o conceito para revisão. Nenhuma alteração foi confirmada.")
 
                         if is_aprovador and row["status"]=="em_revisao":
                             ga,gr = st.columns(2)
                             with ga:
                                 if st.button("✅ Aprovar",key=f"gap_{gid}",use_container_width=True):
                                     ok,_ = exe(f"UPDATE meridian_governanca.business_glossary SET status='homologado',atualizado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE glossary_id='{gid}'")
-                                    if ok: st.success("✅ Homologado!"); st.cache_data.clear(); st.rerun()
+                                    if ok:
+                                        st.success("✅ Homologado!"); st.cache_data.clear(); st.rerun()
+                                    else:
+                                        st.error("Não foi possível homologar o conceito. Verifique o estado atual e tente novamente.")
                             with gr:
                                 if st.button("❌ Rejeitar",key=f"grej_{gid}",use_container_width=True):
                                     ok,_ = exe(f"UPDATE meridian_governanca.business_glossary SET status='rascunho',atualizado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE glossary_id='{gid}'")
-                                    if ok: st.warning("↩️ Devolvido."); st.cache_data.clear(); st.rerun()
+                                    if ok:
+                                        st.warning("↩️ Devolvido."); st.cache_data.clear(); st.rerun()
+                                    else:
+                                        st.error("Não foi possível devolver o conceito. Verifique o estado atual e tente novamente.")
                 else:
                     estado_vazio("📖","Selecione um conceito","Clique em qualquer conceito da lista para ver seus detalhes.")
 
         # ── REGRAS DE NEGÓCIO ─────────────────────────────────────
         with tabs_g[1]:
             st.markdown('<div style="color:#8B949E;font-size:0.75rem;margin-bottom:12px;">Uma regra de negócio define critérios utilizados para calcular, classificar, validar ou determinar uma informação.</div>', unsafe_allow_html=True)
-            df_rg,_ = qry("SELECT g.termo, r.nome_regra, r.descricao_regra, r.categoria FROM meridian_governanca.business_rules r JOIN meridian_governanca.business_glossary g ON r.glossary_id=g.glossary_id ORDER BY g.termo, r.categoria")
-            if not df_rg.empty:
+            df_rg, err_rg = qry("SELECT g.termo, r.nome_regra, r.descricao_regra, r.categoria FROM meridian_governanca.business_rules r JOIN meridian_governanca.business_glossary g ON r.glossary_id=g.glossary_id ORDER BY g.termo, r.categoria")
+            if err_rg:
+                st.error("Não foi possível carregar as regras de negócio. Tente novamente mais tarde.")
+            elif not df_rg.empty:
                 for _,r in df_rg.iterrows():
                     st.markdown(f"""
                     <div style="background:#161B22;border:1px solid #30363D;border-radius:8px;padding:10px 14px;margin-bottom:6px;">
@@ -754,7 +766,7 @@ elif pagina == "📖 Glossário":
                     if st.button("📤 Enviar sugestão de regra", key="btn_sug_regra"):
                         if sr_nome and sr_desc:
                             ok,err = exe(f"INSERT INTO meridian_governanca.sugestoes_regras VALUES ('{uuid.uuid4()}','{esc(usuario)}','{esc(sr_nome)}','{esc(sr_desc)}','{esc(sr_regra)}','{esc(sr_just)}','{esc(sr_conc)}','{esc(sr_ind)}','pendente',null,null,current_timestamp(),current_timestamp())")
-                            if ok: st.success("✅ Sugestão enviada!"); st.rerun()
+                            if ok: st.success("✅ Sugestão registrada no ambiente demonstrativo."); st.rerun()
                             else: st.error(f"Erro: {err}")
                         else: st.warning("Preencha pelo menos o nome e a descrição.")
 
@@ -788,8 +800,10 @@ elif pagina == "📖 Glossário":
 
         # ── HISTÓRICO ─────────────────────────────────────────────
         with tabs_g[3]:
-            df_wf,_ = qry("SELECT g.termo, w.acao, w.status_anterior, w.status_novo, w.aprovador, w.comentario, w.criado_em FROM meridian_governanca.glossary_approval_workflow w JOIN meridian_governanca.business_glossary g ON w.glossary_id=g.glossary_id ORDER BY w.criado_em DESC LIMIT 50")
-            if not df_wf.empty:
+            df_wf, err_wf = qry("SELECT g.termo, w.acao, w.status_anterior, w.status_novo, w.aprovador, w.comentario, w.criado_em FROM meridian_governanca.glossary_approval_workflow w JOIN meridian_governanca.business_glossary g ON w.glossary_id=g.glossary_id ORDER BY w.criado_em DESC LIMIT 50")
+            if err_wf:
+                st.error("Não foi possível carregar o histórico de aprovações. Tente novamente mais tarde.")
+            elif not df_wf.empty:
                 for _,r in df_wf.iterrows():
                     ts = str(r["criado_em"])[:16] if r["criado_em"] else "—"
                     st.markdown(f'<div style="background:#161B22;border:1px solid #30363D;border-radius:6px;padding:8px 12px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#C9A227;font-size:0.78rem;font-weight:700;">{r["termo"]}</span><span style="color:#8B949E;font-size:0.72rem;margin-left:8px;">{r["acao"]}</span></div><span style="color:#8B949E;font-size:0.7rem;">{ts}</span></div>', unsafe_allow_html=True)
@@ -959,7 +973,7 @@ elif pagina == "📋 Catálogo":
                             if st.button("📤 Enviar solicitação de acesso", key="btn_sol_acesso"):
                                 if sa_just:
                                     ok,err = exe(f"INSERT INTO meridian_governanca.solicitacoes_acesso VALUES ('{uuid.uuid4()}','{esc(usuario)}','{esc(tb)}','{esc(sc)}','{esc(sa_just)}','{esc(sa_tipo)}','pendente',null,null,current_timestamp(),current_timestamp())")
-                                    if ok: st.success("✅ Solicitação enviada! O responsável será notificado.")
+                                    if ok: st.success("✅ Solicitação registrada no ambiente demonstrativo. O envio de notificações ainda não está configurado.")
                                     else: st.error(f"Erro: {err}")
                                 else: st.warning("Informe o motivo da solicitação.")
 
@@ -1433,11 +1447,17 @@ elif pagina == "⚡ Meu Espaço":
                         with ca:
                             if st.button("✅ Encaminhar para Glossário",key=f"ap_conc_{r['sugestao_id']}",use_container_width=True):
                                 ok,_ = exe(f"UPDATE meridian_governanca.sugestoes_conceitos SET status='aprovado',analisado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE sugestao_id='{r['sugestao_id']}'")
-                                if ok: st.success("✅ Aprovado!"); st.cache_data.clear(); st.rerun()
+                                if ok:
+                                    st.success("✅ Aprovado!"); st.cache_data.clear(); st.rerun()
+                                else:
+                                    st.error("Não foi possível atualizar a sugestão. Nenhuma confirmação foi emitida.")
                         with cr:
                             if st.button("❌ Rejeitar",key=f"rej_conc_{r['sugestao_id']}",use_container_width=True):
                                 ok,_ = exe(f"UPDATE meridian_governanca.sugestoes_conceitos SET status='rejeitado',analisado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE sugestao_id='{r['sugestao_id']}'")
-                                if ok: st.warning("↩️ Rejeitado."); st.cache_data.clear(); st.rerun()
+                                if ok:
+                                    st.warning("↩️ Rejeitado."); st.cache_data.clear(); st.rerun()
+                                else:
+                                    st.error("Não foi possível rejeitar a sugestão. Nenhuma confirmação foi emitida.")
 
         if is_aprovador and pend_aprov>0:
             section_divider("CONCEITOS AGUARDANDO APROVAÇÃO")
@@ -1448,13 +1468,19 @@ elif pagina == "⚡ Meu Espaço":
                     with ca:
                         if st.button("✅ Aprovar",key=f"mea_{row['glossary_id']}",use_container_width=True):
                             ok,_ = exe(f"UPDATE meridian_governanca.business_glossary SET status='homologado',atualizado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE glossary_id='{row['glossary_id']}'")
-                            if ok: st.success("✅ Homologado!"); st.cache_data.clear(); st.rerun()
+                            if ok:
+                                st.success("✅ Homologado!"); st.cache_data.clear(); st.rerun()
+                            else:
+                                st.error("Não foi possível homologar o conceito. Nenhuma confirmação foi emitida.")
                     with cr:
                         motivo = st.text_input("Motivo da rejeição",key=f"mem_{row['glossary_id']}")
                         if st.button("❌ Rejeitar",key=f"mer_{row['glossary_id']}",use_container_width=True):
                             if motivo:
                                 ok,_ = exe(f"UPDATE meridian_governanca.business_glossary SET status='rascunho',atualizado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE glossary_id='{row['glossary_id']}'")
-                                if ok: st.warning("↩️ Devolvido."); st.cache_data.clear(); st.rerun()
+                                if ok:
+                                    st.warning("↩️ Devolvido."); st.cache_data.clear(); st.rerun()
+                                else:
+                                    st.error("Não foi possível devolver o conceito. Nenhuma confirmação foi emitida.")
                             else: st.warning("Informe o motivo.")
 
         section_divider("WORKFLOW DE ATENDIMENTO — TODAS AS SOLICITAÇÕES")
@@ -1638,29 +1664,66 @@ elif pagina == "✏️ Curadoria":
                             st.info("Informe pelo menos um campo para atualizar antes de aplicar.")
                         else:
                             erros = []
+                            erros_auditoria = []
                             atualizadas = []
+                            usuario_lote = str(usuario)
                             for _, r in sels.iterrows():
-                                sets = []
+                                schema_lote = str(r["Schema"])
+                                tabela_lote = str(r["Tabela"])
+                                atual = df_cur[
+                                    (df_cur["schema_name"].astype(str) == schema_lote) &
+                                    (df_cur["table_name"].astype(str) == tabela_lote)
+                                ]
+                                if atual.empty:
+                                    erros.append({"tabela": tabela_lote, "erro": "Registro não encontrado na carga atual; nenhuma alteração aplicada."})
+                                    continue
+                                anterior = atual.iloc[0]
+                                dominio_novo = l_dom or str(anterior.get("dominio") or "")
+                                owner_novo = l_own or str(anterior.get("data_owner") or "")
+                                steward_novo = l_stw or str(anterior.get("data_steward") or "")
+                                descricao_atual = str(anterior.get("descricao") or "")
+                                campos_preenchidos = sum(bool(str(v).strip()) for v in [descricao_atual, dominio_novo, owner_novo, steward_novo])
+                                score_novo = round((campos_preenchidos / 4) * 100, 1)
+                                score_anterior = anterior.get("score_completude", 0)
+                                try:
+                                    score_anterior = float(score_anterior or 0)
+                                except (TypeError, ValueError):
+                                    score_anterior = 0.0
+                                sets = [
+                                    f"score_completude={score_novo}",
+                                    "atualizado_em=current_timestamp()"
+                                ]
                                 if l_dom: sets.append(f"dominio='{esc(l_dom)}'")
                                 if l_own: sets.append(f"data_owner='{esc(l_own)}'")
                                 if l_stw: sets.append(f"data_steward='{esc(l_stw)}'")
-                                sets.append("atualizado_em=current_timestamp()")
                                 ok, err = exe(
                                     f"UPDATE meridian_governanca.tabelas_metadata "
                                     f"SET {', '.join(sets)} "
-                                    f"WHERE schema_name='{esc(r['Schema'])}' AND table_name='{esc(r['Tabela'])}'"
+                                    f"WHERE schema_name='{esc(schema_lote)}' AND table_name='{esc(tabela_lote)}'"
                                 )
-                                if ok:
-                                    atualizadas.append(str(r["Tabela"]))
-                                else:
-                                    erros.append({"tabela": str(r["Tabela"]), "erro": str(err)})
+                                if not ok:
+                                    erros.append({"tabela": tabela_lote, "erro": str(err)})
+                                    continue
+                                atualizadas.append(tabela_lote)
+                                audit_ok, audit_err = exe(
+                                    f"INSERT INTO meridian_governanca.metadata_audit "
+                                    f"VALUES ('{uuid.uuid4()}', current_timestamp(), "
+                                    f"'{esc(schema_lote)}', '{esc(tabela_lote)}', 'tabela', '', "
+                                    f"'curadoria_lote', '{score_anterior}', '{score_novo}', "
+                                    f"'manual', '{esc(usuario_lote)}', '{esc(usuario_lote[:8])}')"
+                                )
+                                if not audit_ok:
+                                    erros_auditoria.append({"tabela": tabela_lote, "erro": str(audit_err)})
                             if erros:
                                 st.error(f"{len(erros)} de {len(sels)} atualização(ões) falharam.")
                                 st.dataframe(pd.DataFrame(erros), use_container_width=True, hide_index=True)
                             if atualizadas:
-                                st.success(f"Atualizações concluídas: {len(atualizadas)} de {len(sels)}.")
+                                st.success(f"Metadados atualizados: {len(atualizadas)} de {len(sels)}.")
+                                if erros_auditoria:
+                                    st.warning(f"{len(erros_auditoria)} registro(s) de auditoria falharam. As alterações de metadados foram aplicadas; revise a trilha antes de considerar o lote reconciliado.")
+                                    st.dataframe(pd.DataFrame(erros_auditoria), use_container_width=True, hide_index=True)
                                 st.cache_data.clear()
-                                if not erros:
+                                if not erros and not erros_auditoria:
                                     st.rerun()
 
     copyright_footer()
