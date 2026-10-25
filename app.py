@@ -466,7 +466,7 @@ if pagina == "🏠 Início":
          "Agrupamentos de assuntos e dados relacionados a uma área de negócio, com responsabilidades claramente definidas."),
         ("🔗","Relacionamentos","📖 Glossário",
          "Mostram como conceitos, regras, indicadores, ativos e produtos de dados estão conectados entre si."),
-        ("🛡️","Qualidade dos Dados","🛡️ Scorecard",
+        ("🛡️","Qualidade dos Dados","🏆 Qualidade",
          "Mostra o quanto os dados atendem aos critérios de qualidade definidos para sua utilização confiável."),
     ]
 
