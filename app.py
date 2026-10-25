@@ -25,17 +25,26 @@ st.markdown("""
 html,body,.stApp{background:#F4F1EC !important;font-family:'Inter',sans-serif !important;}
 .main .block-container{padding-top:0 !important;max-width:100% !important;padding-left:1.5rem !important;padding-right:1.5rem !important;}
 h1,h2,h3{font-family:'Lora',serif !important;font-weight:700 !important;color:#0D1B2A !important;}
-section[data-testid="stSidebar"]{background:#0A0F1A !important;border-right:2px solid #C9A22733 !important;min-width:230px !important;}
-section[data-testid="stSidebar"] *{color:#C4B078 !important;}
-.stButton > button{background:#C9A227 !important;color:#0A0F1A !important;border:none !important;border-radius:8px !important;font-weight:700 !important;font-size:0.82rem !important;}
-section[data-testid="stSidebar"] .stButton > button{background:transparent !important;color:#6B7080 !important;border:none !important;border-radius:7px !important;font-weight:500 !important;font-size:0.82rem !important;text-align:left !important;justify-content:flex-start !important;padding:6px 10px !important;width:100% !important;box-shadow:none !important;margin-bottom:1px !important;}
-section[data-testid="stSidebar"] .stButton > button:hover{background:#1A2535 !important;color:#D4C49A !important;}
-.stTabs [data-baseweb="tab-list"]{background:#FFFFFF;border-radius:10px;padding:4px;gap:4px;border:1px solid #E8E4DC;}
-.stTabs [data-baseweb="tab"]{border-radius:7px !important;color:#6B7280 !important;padding:7px 16px !important;font-size:0.82rem !important;font-weight:600 !important;}
-.stTabs [aria-selected="true"]{background:#C9A227 !important;color:#0A0F1A !important;}
-.stSelectbox > div > div,.stTextInput > div > div > input,.stTextArea > div > div > textarea{background:#FFFFFF !important;border:1px solid #E8E4DC !important;border-radius:8px !important;color:#0D1B2A !important;}
-.stDataFrame{background:#FFFFFF !important;border-radius:10px !important;}
-div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
+section[data-testid="stSidebar"]{background:#101A2B !important;border-right:1px solid #C9A22755 !important;min-width:242px !important;}
+section[data-testid="stSidebar"] *{color:#D6C9A2 !important;}
+.stButton > button{background:#13233A !important;color:#E4C15A !important;border:1px solid #C9A22766 !important;border-radius:9px !important;font-weight:650 !important;font-size:0.82rem !important;transition:all .18s ease !important;}
+.stButton > button:hover{background:#1C304B !important;border-color:#C9A227 !important;color:#F5D778 !important;}
+/* Ação dos cartões integrada ao próprio cartão, sem faixa amarela destacada */
+div[data-testid="stVerticalBlockBorderWrapper"] .stButton > button{background:transparent !important;color:#9A7412 !important;border:0 !important;border-top:1px solid #E9E1CF !important;border-radius:0 0 9px 9px !important;text-align:left !important;justify-content:flex-start !important;padding:10px 2px 2px !important;box-shadow:none !important;}
+div[data-testid="stVerticalBlockBorderWrapper"] .stButton > button:hover{background:#F7F1E4 !important;color:#6F5208 !important;border-color:#E9E1CF !important;}
+section[data-testid="stSidebar"] .stButton > button{background:transparent !important;color:#9AA8BD !important;border:1px solid transparent !important;border-radius:7px !important;font-weight:500 !important;font-size:0.82rem !important;text-align:left !important;justify-content:flex-start !important;padding:7px 10px !important;width:100% !important;box-shadow:none !important;margin-bottom:2px !important;}
+section[data-testid="stSidebar"] .stButton > button:hover{background:#1B2B42 !important;color:#F0D77D !important;border-color:#C9A22733 !important;}
+.stTabs [data-baseweb="tab-list"]{background:#FFFFFF;border-radius:12px;padding:5px;gap:5px;border:1px solid #E7E0D2;}
+.stTabs [data-baseweb="tab"]{border-radius:8px !important;color:#657084 !important;padding:8px 16px !important;font-size:0.82rem !important;font-weight:600 !important;}
+.stTabs [aria-selected="true"]{background:#13233A !important;color:#F0D77D !important;}
+.stSelectbox > div > div,.stTextInput > div > div > input,.stTextArea > div > div > textarea{background:#FFFFFF !important;border:1px solid #E2DDCF !important;border-radius:9px !important;color:#0D1B2A !important;}
+.stDataFrame{background:#FFFFFF !important;border-radius:12px !important;}
+div[data-testid="stVerticalBlock"]{gap:0.55rem !important;}
+div[data-testid="stVerticalBlockBorderWrapper"]{background:#FFFFFF !important;border:1px solid #E6DFD0 !important;border-radius:14px !important;box-shadow:0 4px 18px rgba(13,27,42,.045) !important;padding:14px 16px 8px !important;transition:transform .18s ease,box-shadow .18s ease !important;}
+div[data-testid="stVerticalBlockBorderWrapper"]:hover{box-shadow:0 8px 26px rgba(13,27,42,.09) !important;border-color:#D6C17E !important;}
+[data-testid="stMetric"]{background:#FFFFFF;border:1px solid #E6DFD0;border-radius:12px;padding:14px 16px;box-shadow:0 3px 12px rgba(13,27,42,.035);}
+.main .block-container{padding-bottom:2.5rem !important;}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -391,17 +400,17 @@ is_aprovador = perfil == "aprovador"
 if pagina == "🏠 Início":
     now_str = datetime.now().strftime("%d/%m/%Y %H:%M")
     st.markdown(f"""
-    <div style="background:linear-gradient(135deg,#161B22,#1C2128);
-                border:1px solid #30363D;border-radius:16px;
-                padding:28px 32px;margin-bottom:20px;">
+    <div style="background:linear-gradient(118deg,#101A2B 0%,#182A43 72%,#24354A 100%);
+                border:1px solid #C9A22755;border-left:5px solid #C9A227;border-radius:18px;
+                padding:30px 34px;margin-bottom:24px;box-shadow:0 12px 34px rgba(13,27,42,.12);">
         <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
-                <div style="color:#E6EDF3;font-size:1.5rem;font-weight:800;margin-bottom:6px;">
+                <div style="color:#F8F5ED;font-size:1.72rem;font-weight:800;letter-spacing:-.025em;margin-bottom:8px;">
                     Plataforma de Governança de Dados</div>
-                <div style="color:#8B949E;font-size:0.85rem;max-width:560px;line-height:1.6;">
+                <div style="color:#D1D9E4;font-size:0.91rem;max-width:620px;line-height:1.7;">
                     Um espaço para descobrir, entender e utilizar os dados do Banco Meridian
                     com mais clareza e confiança.</div>
-                <div style="color:#8B949E;font-size:0.78rem;max-width:560px;line-height:1.5;margin-top:6px;">
+                <div style="color:#AAB8CA;font-size:0.8rem;max-width:620px;line-height:1.6;margin-top:8px;">
                     Explore conceitos, dados, responsáveis, regras, qualidade e relacionamentos da organização.</div>
                 <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
                     <span style="background:#3FB95022;color:#3FB950;border-radius:20px;
@@ -454,17 +463,17 @@ if pagina == "🏠 Início":
     section_divider("O QUE VOCÊ ENCONTRA AQUI?")
 
     cards_info = [
-        ("📖","Conceitos de Negócio","📖 Glossário","Explorar conceitos",
+        ("📖","Conceitos de Negócio","📖 Glossário","↗ Consultar conceitos",
          "Consulte definições de negócio para que diferentes áreas compartilhem o mesmo entendimento."),
-        ("📏","Regras de Negócio","📖 Glossário","Consultar regras",
+        ("📏","Regras de Negócio","📖 Glossário","↗ Consultar regras",
          "Entenda os critérios usados para calcular, classificar e validar informações e indicadores."),
-        ("🗂️","Ativos de Dados","📋 Catálogo","Explorar catálogo",
+        ("🗂️","Ativos de Dados","📋 Catálogo","↗ Explorar catálogo",
          "Encontre tabelas, views e outros ativos catalogados, com seus metadados e responsáveis."),
-        ("🏛️","Domínios de Negócio","🏛️ Domínios","Ver domínios",
+        ("🏛️","Domínios de Negócio","🏛️ Domínios","↗ Ver domínios",
          "Navegue pelos agrupamentos de dados e assuntos de negócio e identifique suas responsabilidades."),
-        ("🔗","Relacionamentos","🔗 Linhagem","Ver relacionamentos",
+        ("🔗","Relacionamentos","🔗 Linhagem","↗ Ver relacionamentos",
          "Explore a rastreabilidade entre origens, ativos e destinos dos dados disponíveis na plataforma."),
-        ("🛡️","Qualidade dos Dados","🏆 Qualidade","Acompanhar qualidade",
+        ("🛡️","Qualidade dos Dados","🏆 Qualidade","↗ Acompanhar qualidade",
          "Consulte indicadores e evidências de qualidade para avaliar se os dados estão adequados ao uso."),
     ]
 
