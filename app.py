@@ -725,8 +725,10 @@ elif pagina == "📖 Glossário":
         # ── REGRAS DE NEGÓCIO ─────────────────────────────────────
         with tabs_g[1]:
             st.markdown('<div style="color:#8B949E;font-size:0.75rem;margin-bottom:12px;">Uma regra de negócio define critérios utilizados para calcular, classificar, validar ou determinar uma informação.</div>', unsafe_allow_html=True)
-            df_rg,_ = qry("SELECT g.termo, r.nome_regra, r.descricao_regra, r.categoria FROM meridian_governanca.business_rules r JOIN meridian_governanca.business_glossary g ON r.glossary_id=g.glossary_id ORDER BY g.termo, r.categoria")
-            if not df_rg.empty:
+            df_rg, err_rg = qry("SELECT g.termo, r.nome_regra, r.descricao_regra, r.categoria FROM meridian_governanca.business_rules r JOIN meridian_governanca.business_glossary g ON r.glossary_id=g.glossary_id ORDER BY g.termo, r.categoria")
+            if err_rg:
+                st.error("Não foi possível carregar as regras de negócio. Tente novamente mais tarde.")
+            elif not df_rg.empty:
                 for _,r in df_rg.iterrows():
                     st.markdown(f"""
                     <div style="background:#161B22;border:1px solid #30363D;border-radius:8px;padding:10px 14px;margin-bottom:6px;">
@@ -788,8 +790,10 @@ elif pagina == "📖 Glossário":
 
         # ── HISTÓRICO ─────────────────────────────────────────────
         with tabs_g[3]:
-            df_wf,_ = qry("SELECT g.termo, w.acao, w.status_anterior, w.status_novo, w.aprovador, w.comentario, w.criado_em FROM meridian_governanca.glossary_approval_workflow w JOIN meridian_governanca.business_glossary g ON w.glossary_id=g.glossary_id ORDER BY w.criado_em DESC LIMIT 50")
-            if not df_wf.empty:
+            df_wf, err_wf = qry("SELECT g.termo, w.acao, w.status_anterior, w.status_novo, w.aprovador, w.comentario, w.criado_em FROM meridian_governanca.glossary_approval_workflow w JOIN meridian_governanca.business_glossary g ON w.glossary_id=g.glossary_id ORDER BY w.criado_em DESC LIMIT 50")
+            if err_wf:
+                st.error("Não foi possível carregar o histórico de aprovações. Tente novamente mais tarde.")
+            elif not df_wf.empty:
                 for _,r in df_wf.iterrows():
                     ts = str(r["criado_em"])[:16] if r["criado_em"] else "—"
                     st.markdown(f'<div style="background:#161B22;border:1px solid #30363D;border-radius:6px;padding:8px 12px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#C9A227;font-size:0.78rem;font-weight:700;">{r["termo"]}</span><span style="color:#8B949E;font-size:0.72rem;margin-left:8px;">{r["acao"]}</span></div><span style="color:#8B949E;font-size:0.7rem;">{ts}</span></div>', unsafe_allow_html=True)
