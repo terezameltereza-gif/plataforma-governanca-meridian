@@ -149,11 +149,13 @@ div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
 @st.cache_resource
 def get_conn():
     conn = sql.connect(
-        server_hostname = st.secrets["DATABRICKS_HOST"],
-        http_path       = st.secrets["DATABRICKS_HTTP_PATH"],
-        access_token    = st.secrets["DATABRICKS_TOKEN"],
-        catalog         = "workspace",
-        schema          = "meridian_governanca"
+        server_hostname      = st.secrets["DATABRICKS_HOST"],
+        http_path            = st.secrets["DATABRICKS_HTTP_PATH"],
+        access_token         = st.secrets["DATABRICKS_TOKEN"],
+        catalog              = "workspace",
+        schema               = "meridian_governanca",
+        socket_timeout_seconds = 12,   # falha rápida — não trava mobile
+        _connection_timeout  = 15,
     )
     return conn
 
@@ -184,6 +186,9 @@ _start_keepalive()
 def _is_session_err(msg: str) -> bool:
     return "SessionHandle" in msg or ("Session" in msg and "closed" in msg)
 
+def _is_limit_err(msg: str) -> bool:
+    return "free daily limit" in msg or "BAD_REQUEST" in msg or "daily limit" in msg.lower()
+
 @st.cache_data(ttl=300)
 def qry(sql_str):
     try:
@@ -197,6 +202,9 @@ def qry(sql_str):
         if _is_session_err(err):
             try: get_conn.clear(); qry.clear()
             except: pass
+        if _is_limit_err(err):
+            st.session_state["_db_limit"] = True
+        st.session_state["_db_err"] = err
         return pd.DataFrame(), err
 
 def exe(sql_str):
@@ -603,7 +611,10 @@ if pagina == "🏠 Início":
     df_tl     = load_timeline()
 
     if df_meta.empty and st.session_state.get("_db_err"):
-        st.warning(f"⚠️ Databricks indisponível. Detalhe: `{st.session_state['_db_err'][:200]}`")
+        if st.session_state.get("_db_limit"):
+            st.info("🕐 **Limite diário do Databricks atingido.** O warehouse estará disponível novamente a partir de amanhã. A plataforma continua acessível — os dados serão exibidos quando a conexão for restabelecida.")
+        else:
+            st.warning(f"⚠️ Databricks indisponível. Detalhe: `{st.session_state['_db_err'][:120]}`")
 
     # ── KPIs ─────────────────────────────────────────────────────────
     total_ativos = len(df_meta)  if not df_meta.empty else 0
