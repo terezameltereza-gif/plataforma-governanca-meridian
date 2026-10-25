@@ -454,39 +454,39 @@ if pagina == "🏠 Início":
     section_divider("O QUE VOCÊ ENCONTRA AQUI?")
 
     cards_info = [
-        ("📖","Conceitos de Negócio","Glossário",
-         "Definições oficiais dos principais assuntos utilizados pela organização, ajudando diferentes áreas a compartilhar o mesmo entendimento."),
-        ("📏","Regras de Negócio","📖 Glossário",
-         "Critérios utilizados para definir, calcular, classificar ou validar informações utilizadas nos processos e indicadores."),
-        ("🗂️","Ativos de Dados","📋 Catálogo",
-         "Dados disponíveis para consulta e utilização, como tabelas, views e outros ativos catalogados na organização."),
-        ("🏛️","Domínios de Negócio","🏛️ Domínios",
-         "Agrupamentos de assuntos e dados relacionados a uma área de negócio, com responsabilidades claramente definidas."),
-        ("🔗","Relacionamentos","📖 Glossário",
-         "Mostram como conceitos, regras, indicadores, ativos e produtos de dados estão conectados entre si."),
-        ("🛡️","Qualidade dos Dados","🏆 Qualidade",
-         "Mostra o quanto os dados atendem aos critérios de qualidade definidos para sua utilização confiável."),
+        ("📖","Conceitos de Negócio","📖 Glossário","Explorar conceitos",
+         "Consulte definições de negócio para que diferentes áreas compartilhem o mesmo entendimento."),
+        ("📏","Regras de Negócio","📖 Glossário","Consultar regras",
+         "Entenda os critérios usados para calcular, classificar e validar informações e indicadores."),
+        ("🗂️","Ativos de Dados","📋 Catálogo","Explorar catálogo",
+         "Encontre tabelas, views e outros ativos catalogados, com seus metadados e responsáveis."),
+        ("🏛️","Domínios de Negócio","🏛️ Domínios","Ver domínios",
+         "Navegue pelos agrupamentos de dados e assuntos de negócio e identifique suas responsabilidades."),
+        ("🔗","Relacionamentos","🔗 Linhagem","Ver relacionamentos",
+         "Explore a rastreabilidade entre origens, ativos e destinos dos dados disponíveis na plataforma."),
+        ("🛡️","Qualidade dos Dados","🏆 Qualidade","Acompanhar qualidade",
+         "Consulte indicadores e evidências de qualidade para avaliar se os dados estão adequados ao uso."),
     ]
 
-    # Cartões com controles nativos do Streamlit: acessíveis por teclado e sem
-    # JavaScript que tenta acionar botões ocultos no DOM.
-    cols_cards = st.columns(3)
-    for i, (ic, tit, dest, desc) in enumerate(cards_info):
+    # A ação fica dentro do próprio cartão para evitar a faixa/botão solto
+    # que repetia visualmente a chamada para ação abaixo de cada card.
+    cols_cards = st.columns(3, gap="medium")
+    for i, (ic, tit, dest, acao, desc) in enumerate(cards_info):
         with cols_cards[i % 3]:
-            st.markdown(f"""
-            <div style="background:#161B22;border:1px solid #30363D;
-                        border-top:3px solid #C9A22766;border-radius:12px;
-                        padding:16px;min-height:150px;margin-bottom:8px;">
-                <div style="font-size:1.3rem;margin-bottom:8px;">{ic}</div>
-                <div style="color:#E6EDF3;font-weight:700;font-size:0.9rem;
-                            margin-bottom:6px;">{tit}</div>
-                <div style="color:#8B949E;font-size:0.75rem;line-height:1.5;">{desc}</div>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button(f"Abrir {tit}", key=f"home_card_{i}",
-                         use_container_width=True):
-                st.session_state["pagina"] = dest
-                st.rerun()
+            with st.container(border=True):
+                st.markdown(f"""
+                <div style="min-height:132px;padding:4px 2px 8px;">
+                    <div style="font-size:1.45rem;margin-bottom:10px;">{ic}</div>
+                    <div style="color:#0D1B2A;font-weight:700;font-size:0.98rem;
+                                margin-bottom:8px;">{tit}</div>
+                    <div style="color:#596273;font-size:0.8rem;line-height:1.55;">{desc}</div>
+                </div>
+                """, unsafe_allow_html=True)
+                if st.button(acao, key=f"home_card_{i}", use_container_width=True):
+                    st.session_state["pagina"] = dest
+                    for k in ["gid_sel","cat_sel","dom_sel","sc_pilar"]:
+                        st.session_state.pop(k, None)
+                    st.rerun()
 
     section_divider("COMO OS DADOS SE CONECTAM")
     st.markdown("""
