@@ -748,11 +748,14 @@ if pagina == "🏠 Início":
     qual_str     = f"{qual_media}%" if qual_media is not None else ("Indisponível" if _db_fail else "—")
 
     STATUS_CLOSED = {"concluido","aprovado","cancelado","concluída","aprovada","encerrado"}
-    sol_abertas = 0
-    if not df_sol_ac.empty and "status" in df_sol_ac.columns:
-        sol_abertas += len(df_sol_ac[~df_sol_ac["status"].str.lower().isin(STATUS_CLOSED)])
-    if not df_sol_qu.empty and "status" in df_sol_qu.columns:
-        sol_abertas += len(df_sol_qu[~df_sol_qu["status"].str.lower().isin(STATUS_CLOSED)])
+    if _db_fail and df_sol_ac.empty and df_sol_qu.empty:
+        sol_abertas = "—"
+    else:
+        sol_abertas = 0
+        if not df_sol_ac.empty and "status" in df_sol_ac.columns:
+            sol_abertas += len(df_sol_ac[~df_sol_ac["status"].str.lower().isin(STATUS_CLOSED)])
+        if not df_sol_qu.empty and "status" in df_sol_qu.columns:
+            sol_abertas += len(df_sol_qu[~df_sol_qu["status"].str.lower().isin(STATUS_CLOSED)])
 
     # ══════════════════════════════════════════════════════════════════
     # A. BANNER
@@ -1183,6 +1186,7 @@ elif pagina == "📖 Glossário":
     df_g     = load_glossario()
     df_rules = load_rules()
     df_links = load_links()
+    _glos_db_fail = bool(st.session_state.get("_db_err"))
 
     if not df_g.empty:
         m1,m2,m3,m4 = st.columns(4)
@@ -1438,6 +1442,13 @@ elif pagina == "📖 Glossário":
                         for _,r in df_wfc.iterrows():
                             st.markdown(f'<div style="background:#0D1117;border:1px solid #1F1F1F;border-radius:6px;padding:7px 9px;margin-bottom:5px;"><div style="color:#E6EDF3;font-size:0.78rem;font-weight:600;">{r["termo"]}</div><div style="color:#A0A0A0;font-size:0.68rem;">{r["dominio"]}</div></div>', unsafe_allow_html=True)
                         st.markdown("</div>", unsafe_allow_html=True)
+    else:
+        if _glos_db_fail:
+            estado_vazio("⚠️", "Glossário indisponível",
+                         "Não foi possível conectar ao banco de dados. O glossário será exibido quando a conexão for restabelecida.")
+        else:
+            estado_vazio("📖", "Glossário vazio",
+                         "Nenhum conceito foi cadastrado ainda. Adicione o primeiro conceito para começar.")
 
     copyright_footer()
 
@@ -1458,6 +1469,7 @@ elif pagina == "📋 Catálogo":
     </div>""", unsafe_allow_html=True)
 
     df_cat = load_meta()
+    _cat_db_fail = bool(st.session_state.get("_db_err"))
     if not df_cat.empty:
         schemas = df_cat["schema_name"].value_counts()
         k1,k2,k3 = st.columns(3)
@@ -1599,6 +1611,13 @@ elif pagina == "📋 Catálogo":
                         if st.button("✏️ Editar metadados na Curadoria", key="btn_ir_curadoria"):
                             st.session_state["pagina"] = "✏️ Curadoria"
                             st.rerun()
+    else:
+        if _cat_db_fail:
+            estado_vazio("⚠️", "Catálogo indisponível",
+                         "Não foi possível conectar ao banco de dados. O catálogo será exibido assim que a conexão for restabelecida.")
+        else:
+            estado_vazio("📋", "Catálogo vazio",
+                         "Nenhum ativo foi catalogado ainda. Registre os primeiros ativos para começar.")
 
     copyright_footer()
 
@@ -1612,7 +1631,10 @@ elif pagina == "🏛️ Domínios":
     df_glos = load_glossario()
 
     if df_dom.empty:
-        estado_vazio("🏛️", "Nenhum domínio encontrado", "Verifique se existem ativos catalogados com domínio definido.")
+        if st.session_state.get("_db_err"):
+            estado_vazio("⚠️", "Domínios indisponíveis", "Não foi possível conectar ao banco de dados. Os domínios serão exibidos quando a conexão for restabelecida.")
+        else:
+            estado_vazio("🏛️", "Nenhum domínio encontrado", "Verifique se existem ativos catalogados com domínio definido.")
     else:
         dominios = sorted([
             str(d) for d in df_dom["dominio"].dropna().unique()
@@ -2293,6 +2315,13 @@ elif pagina == "✏️ Curadoria":
                                 st.cache_data.clear()
                                 if not erros:
                                     st.rerun()
+        else:
+            if st.session_state.get("_db_err"):
+                estado_vazio("⚠️", "Curadoria indisponível",
+                             "Não foi possível conectar ao banco de dados. A curadoria estará disponível quando a conexão for restabelecida.")
+            else:
+                estado_vazio("📋", "Nenhum ativo para curar",
+                             "Nenhum ativo foi catalogado ainda. Adicione ativos ao catálogo para começar.")
 
     copyright_footer()
 
@@ -2459,7 +2488,10 @@ elif pagina == "🏆 Qualidade":
     DIMENSOES={"completude_pct":{"nome":"Completude","icone":"📋","cor":"#58A6FF","conceito":"% de campos obrigatórios preenchidos."},"unicidade_pct":{"nome":"Unicidade","icone":"🔑","cor":"#C9A227","conceito":"% de registros únicos na chave primária."},"validade_pct":{"nome":"Validade","icone":"✅","cor":"#3FB950","conceito":"% de valores no formato e domínio esperados."},"atualidade_pct":{"nome":"Atualidade","icone":"🕐","cor":"#BC8CFF","conceito":"% de registros dentro da janela de tempo esperada."},"consistencia_pct":{"nome":"Consistência","icone":"🔗","cor":"#FF7B72","conceito":"% de registros consistentes com tabelas relacionadas."}}
     df_qual=load_quality_dimensions()
     if df_qual.empty:
-        estado_vazio("🏆","Nenhum dado de qualidade","Execute a avaliação de qualidade na Curadoria.")
+        if st.session_state.get("_db_err"):
+            estado_vazio("⚠️","Qualidade indisponível","Não foi possível conectar ao banco de dados. Os scores serão exibidos quando a conexão for restabelecida.")
+        else:
+            estado_vazio("🏆","Nenhum dado de qualidade","Execute a avaliação de qualidade na Curadoria.")
     else:
         media_geral=df_qual["score_final"].mean(); cor_mg="#3FB950" if media_geral>=80 else "#C9A227" if media_geral>=60 else "#F85149"
         st.markdown(f'<div style="background:#0A0A0A;border:1px solid #1F1F1F;border-radius:16px;padding:20px;text-align:center;margin-bottom:20px;"><div style="font-size:0.7rem;color:#A0A0A0;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">{len(df_qual)} ativos avaliados</div><div style="font-size:3.5rem;font-weight:800;color:{cor_mg};line-height:1;">{media_geral:.1f}%</div><div style="color:#A0A0A0;font-size:0.75rem;margin-top:6px;">Alta (≥80%): {len(df_qual[df_qual["nivel"]=="Alta"])} · Média (40–79%): {len(df_qual[df_qual["nivel"]=="Media"])} · Baixa (&lt;40%): {len(df_qual[df_qual["nivel"]=="Baixa"])}</div></div>',unsafe_allow_html=True)
@@ -2498,7 +2530,10 @@ elif pagina == "🥇 Certificação":
     section_divider("STATUS DE CERTIFICAÇÃO POR ATIVO")
     df_cert=load_cert()
     if df_cert.empty:
-        estado_vazio("🥇","Nenhum ativo certificado ainda","Inicie o processo de certificação na Curadoria.")
+        if st.session_state.get("_db_err"):
+            estado_vazio("⚠️","Certificação indisponível","Não foi possível conectar ao banco de dados. Os dados de certificação serão exibidos quando a conexão for restabelecida.")
+        else:
+            estado_vazio("🥇","Nenhum ativo certificado ainda","Inicie o processo de certificação na Curadoria.")
     else:
         fc1,fc2,fc3=st.columns(3)
         with fc1: f_cert_dom=st.selectbox("Domínio",["Todos"]+sorted([str(d) for d in df_cert["dominio"].dropna().unique() if str(d).strip() and str(d) != "nan"]),key="fc_dom")
@@ -2642,7 +2677,10 @@ elif pagina == "📦 Produtos":
     st.markdown("""<div style="background:#0A0A0A99;border:1px solid #1F1F1F;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#A0A0A0;font-size:0.78rem;line-height:1.6;">Um Produto de Dados é um conjunto de ativos organizados para atender a uma necessidade específica do negócio, com finalidade, responsável e certificação definidos.</div></div>""",unsafe_allow_html=True)
     df_prod=load_produtos(); df_pat=load_produto_ativos()
     if df_prod.empty:
-        estado_vazio("📦","Nenhum produto cadastrado","Os produtos de dados serão exibidos aqui quando cadastrados pela equipe de Governança.")
+        if st.session_state.get("_db_err"):
+            estado_vazio("⚠️","Produtos indisponíveis","Não foi possível conectar ao banco de dados. Os produtos serão exibidos quando a conexão for restabelecida.")
+        else:
+            estado_vazio("📦","Nenhum produto cadastrado","Os produtos de dados serão exibidos aqui quando cadastrados pela equipe de Governança.")
     else:
         ativos_total=df_pat["table_name"].nunique() if not df_pat.empty else 0
         k1,k2,k3,k4=st.columns(4)
