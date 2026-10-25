@@ -470,31 +470,25 @@ if pagina == "🏠 Início":
          "Mostra o quanto os dados atendem aos critérios de qualidade definidos para sua utilização confiável."),
     ]
 
-    st.markdown("""<style>
-    .nav-card-btn{display:none!important;}
-    .card-visual{background:#161B22;border:1px solid #30363D;border-top:3px solid #C9A22744;
-        border-radius:12px;padding:16px;cursor:pointer;margin-bottom:12px;
-        transition:border-color .2s,background .2s;}
-    .card-visual:hover{border-color:#C9A227;border-top-color:#C9A227;background:#1A2030;}
-    </style>""", unsafe_allow_html=True)
-
+    # Cartões com controles nativos do Streamlit: acessíveis por teclado e sem
+    # JavaScript que tenta acionar botões ocultos no DOM.
     cols_cards = st.columns(3)
     for i, (ic, tit, dest, desc) in enumerate(cards_info):
         with cols_cards[i % 3]:
-            st.markdown('<div class="nav-card-btn">', unsafe_allow_html=True)
-            clicked = st.button("x", key=f"card_{i}", use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-            if clicked:
+            st.markdown(f"""
+            <div style="background:#161B22;border:1px solid #30363D;
+                        border-top:3px solid #C9A22766;border-radius:12px;
+                        padding:16px;min-height:150px;margin-bottom:8px;">
+                <div style="font-size:1.3rem;margin-bottom:8px;">{ic}</div>
+                <div style="color:#E6EDF3;font-weight:700;font-size:0.9rem;
+                            margin-bottom:6px;">{tit}</div>
+                <div style="color:#8B949E;font-size:0.75rem;line-height:1.5;">{desc}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button(f"Abrir {tit}", key=f"home_card_{i}",
+                         use_container_width=True):
                 st.session_state["pagina"] = dest
                 st.rerun()
-            st.markdown(f"""
-            <div class="card-visual" onclick="
-                var all=document.querySelectorAll('.nav-card-btn button');
-                if(all[{i}])all[{i}].click();">
-                <div style="font-size:1.3rem;margin-bottom:8px;">{ic}</div>
-                <div style="color:#E6EDF3;font-weight:700;font-size:0.9rem;margin-bottom:6px;">{tit}</div>
-                <div style="color:#8B949E;font-size:0.75rem;line-height:1.5;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
 
     section_divider("COMO OS DADOS SE CONECTAM")
     st.markdown("""
