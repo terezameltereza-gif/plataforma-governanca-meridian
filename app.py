@@ -115,6 +115,10 @@ div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
 /* ── Journey cards ── */
 .nav-card-btn{display:none !important;}
 
+/* ── Botões de navegação ocultos da topbar ── */
+div[data-testid="stHorizontalBlock"].topbar-nav-row,
+.topbar-nav-row{display:none !important;position:absolute !important;left:-9999px !important;}
+
 /* ══════════════════════════════════════════
    MOBILE  ≤ 768 px
    ══════════════════════════════════════════ */
@@ -556,6 +560,7 @@ with st.sidebar:
     # ── Navegação flat
     NAV_ITEMS = [
         ("🏠", "Início",                "🏠 Início"),
+        ("🔍", "Busca Global",          "🔍 Busca Global"),
         ("📋", "Catálogo de Dados",     "📋 Catálogo"),
         ("📖", "Glossário de Negócio",  "📖 Glossário"),
         ("🏆", "Qualidade de Dados",    "🏆 Qualidade"),
@@ -648,15 +653,15 @@ st.markdown(f"""
     </div>
     <!-- Jornadas -->
     <div class="topbar-jornadas" style="display:flex;align-items:center;gap:6px;margin:0 12px;">
-        <span onclick="window.location.href='?nav=descobrir'" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Catálogo e descoberta de ativos">🔍 Descobrir</span>
-        <span onclick="window.location.href='?nav=entender'" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Glossário e definições">📖 Entender</span>
-        <span onclick="window.location.href='?nav=confiar'" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Qualidade e scorecard">🛡️ Confiar</span>
-        <span onclick="window.location.href='?nav=agir'" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Curadoria e solicitações">⚡ Agir</span>
-        <span onclick="window.location.href='?nav=decidir'" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Indicadores e gestão">📊 Decidir</span>
+        <span onclick="__govNav('descobrir')" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Catálogo e descoberta de ativos">🔍 Descobrir</span>
+        <span onclick="__govNav('entender')" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Glossário e definições">📖 Entender</span>
+        <span onclick="__govNav('confiar')" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Qualidade e scorecard">🛡️ Confiar</span>
+        <span onclick="__govNav('agir')" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Curadoria e solicitações">⚡ Agir</span>
+        <span onclick="__govNav('decidir')" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Indicadores e gestão">📊 Decidir</span>
     </div>
     <!-- Busca -->
     <div class="topbar-busca" style="flex:1;max-width:380px;">
-        <div onclick="window.location.href='?nav=descobrir'" style="background:#141414;border:1px solid #C9A22733;border-radius:8px;
+        <div onclick="__govNav('busca')" style="background:#141414;border:1px solid #C9A22733;border-radius:8px;
                     padding:6px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;">
             <span style="color:#555555;font-size:12px;">🔍</span>
             <span style="color:#555555;font-size:0.78rem;">Buscar dados, termos, regras...</span>
@@ -680,6 +685,49 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# ── Função JS __govNav: clica nos botões Streamlit ocultos sem reload ──
+st.markdown("""
+<script>
+(function(){
+  function __govNav(key){
+    // Encontra o botão oculto pelo atributo data-gov-nav
+    var sel = 'button[data-gov-nav="'+key+'"]';
+    var btn = document.querySelector(sel);
+    if(btn){ btn.click(); return; }
+    // Fallback: busca por texto exato nos botões Streamlit
+    var mark = '__govnav_'+key+'__';
+    document.querySelectorAll('button').forEach(function(b){
+      if(b.textContent.trim()===mark){ b.click(); }
+    });
+  }
+  window.__govNav = __govNav;
+  // Injeta atributos nos botões ocultos assim que o DOM carregar
+  function tagNavBtns(){
+    document.querySelectorAll('button').forEach(function(b){
+      var t = b.textContent.trim();
+      if(t.startsWith('__govnav_') && t.endsWith('__')){
+        var k = t.replace('__govnav_','').replace('__','');
+        b.setAttribute('data-gov-nav', k);
+        // Oculta o contêiner do botão
+        var wrap = b.closest('[data-testid="stButton"]') || b.parentElement;
+        if(wrap){ wrap.style.cssText='position:absolute;left:-9999px;width:0;height:0;overflow:hidden'; }
+      }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', tagNavBtns);
+  setTimeout(tagNavBtns, 200);
+  setTimeout(tagNavBtns, 600);
+  setTimeout(tagNavBtns, 1500);
+  // Re-aplica após cada rerun do Streamlit (MutationObserver)
+  var _obs = new MutationObserver(function(ml){
+    ml.forEach(function(m){
+      if(m.addedNodes.length){ tagNavBtns(); }
+    });
+  });
+  _obs.observe(document.body, {childList:true, subtree:true});
+})();
+</script>
+""", unsafe_allow_html=True)
 
 # ── Badge ambiente demo ───────────────────────────────────────────────
 st.markdown("""
@@ -695,23 +743,44 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── Navegação via topbar (jornadas + busca) ──────────────────────────
+# Mapa de chave de jornada → página interna
 _NAV_JORNADAS = {
     "descobrir": "📋 Catálogo",
     "entender":  "📖 Glossário",
     "confiar":   "🏆 Qualidade",
     "agir":      "⚡ Meu Espaço",
     "decidir":   "📊 Indicadores",
+    "busca":     "🔍 Busca Global",
+    # aliases para query-param legado (mantidos para compatibilidade)
     "catalogo":  "📋 Catálogo",
     "glossario": "📖 Glossário",
     "qualidade": "🏆 Qualidade",
     "linhagem":  "🔗 Linhagem",
     "espacomeu": "⚡ Meu Espaço",
 }
+
+# Fallback: query params (mantido para deep-links externos — não causa reload interno)
 _qp_nav = st.query_params.get("nav", "")
 if _qp_nav in _NAV_JORNADAS:
     st.session_state["pagina"] = _NAV_JORNADAS[_qp_nav]
     st.query_params.clear()
     st.rerun()
+
+# ── Botões ocultos de navegação da topbar ────────────────────────────
+# Renderizados fora de qualquer coluna; o JS da topbar os clica diretamente.
+# O CSS os remove da viewport sem remover do DOM (para o Streamlit funcionar).
+_topbar_nav_map = [
+    ("descobrir", "📋 Catálogo"),
+    ("entender",  "📖 Glossário"),
+    ("confiar",   "🏆 Qualidade"),
+    ("agir",      "⚡ Meu Espaço"),
+    ("decidir",   "📊 Indicadores"),
+    ("busca",     "🔍 Busca Global"),
+]
+for _nav_k, _nav_p in _topbar_nav_map:
+    if st.button(f"__govnav_{_nav_k}__", key=f"__topnav_{_nav_k}__"):
+        st.session_state["pagina"] = _nav_p
+        st.rerun()
 
 pagina       = st.session_state.get("pagina","🏠 Início")
 usuario      = st.session_state["usuario"]
@@ -805,7 +874,7 @@ if pagina == "🏠 Início":
         ("📬","Solicitações",         "espacomeu",  "Peça acessos e melhorias de qualidade"),
     ]
     _cards_html = "".join([
-        f"""<div onclick="window.location.href='?nav={nav_key}'"
+        f"""<div onclick="__govNav('{nav_key}')"
              style="background:#0A0A0A;border:1px solid #C9A22733;
                     border-bottom:3px solid #C9A227;border-radius:10px;
                     padding:18px 14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.18);
@@ -956,7 +1025,7 @@ if pagina == "🏠 Início":
             ))
             fig_donut.add_annotation(
                 text=f"<b>{total_sol}</b>",
-                x=0.5, y=0.55, showarrow=False, font=dict(size=22, color="#0A0A0A"))
+                x=0.5, y=0.55, showarrow=False, font=dict(size=22, color="#FFFFFF"))
             fig_donut.add_annotation(
                 text="total", x=0.5, y=0.4, showarrow=False,
                 font=dict(size=10, color="#A0A0A0"))
@@ -2613,37 +2682,37 @@ elif pagina == "🥇 Certificação":
                         for col, (nome, atendido) in zip(crit_cols, criterios):
                             with col:
                                 st.write(("✓ " if atendido else "✕ ") + nome)
-            if is_aprovador and row["status_cert"]=="em_analise":
-                ca2,cr2=st.columns(2)
-                with ca2:
-                    if st.button(f"✅ Certificar {row['table_name']}",key=f"cert_ap_{row['cert_id']}",use_container_width=True):
-                        ok_cert, err_cert = exe(
-                            f"UPDATE meridian_governanca.gd_certification "
-                            f"SET status_cert='certificado',certificado_por='{esc(usuario)}',"
-                            f"certificado_em=current_timestamp(),valido_ate=date_add(current_date(),365) "
-                            f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='em_analise'"
-                        )
-                        if not ok_cert:
-                            st.error("Não foi possível atualizar o registro de certificação. Nenhuma confirmação foi emitida.")
-                            st.caption(f"Detalhe técnico: {err_cert}")
-                        else:
-                            st.success("✅ Certificado! O registro foi atualizado.")
-                            st.cache_data.clear()
-                            st.rerun()
-                with cr2:
-                    if st.button(f"❌ Rejeitar",key=f"cert_rej_{row['cert_id']}",use_container_width=True):
-                        ok_rej, err_rej = exe(
-                            f"UPDATE meridian_governanca.gd_certification "
-                            f"SET status_cert='pendente',certificado_por='{esc(usuario)}',certificado_em=current_timestamp() "
-                            f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='em_analise'"
-                        )
-                        if ok_rej:
-                            st.warning("↩️ Devolvido.")
-                            st.cache_data.clear()
-                            st.rerun()
-                        else:
-                            st.error("Não foi possível devolver a certificação.")
-                            st.caption(f"Detalhe técnico: {err_rej}")
+                if is_aprovador and row["status_cert"]=="em_analise":
+                    ca2,cr2=st.columns(2)
+                    with ca2:
+                        if st.button(f"✅ Certificar {row['table_name']}",key=f"cert_ap_{row['cert_id']}",use_container_width=True):
+                            ok_cert, err_cert = exe(
+                                f"UPDATE meridian_governanca.gd_certification "
+                                f"SET status_cert='certificado',certificado_por='{esc(usuario)}',"
+                                f"certificado_em=current_timestamp(),valido_ate=date_add(current_date(),365) "
+                                f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='em_analise'"
+                            )
+                            if not ok_cert:
+                                st.error("Não foi possível atualizar o registro de certificação. Nenhuma confirmação foi emitida.")
+                                st.caption(f"Detalhe técnico: {err_cert}")
+                            else:
+                                st.success("✅ Certificado! O registro foi atualizado.")
+                                st.cache_data.clear()
+                                st.rerun()
+                    with cr2:
+                        if st.button(f"❌ Rejeitar",key=f"cert_rej_{row['cert_id']}",use_container_width=True):
+                            ok_rej, err_rej = exe(
+                                f"UPDATE meridian_governanca.gd_certification "
+                                f"SET status_cert='pendente',certificado_por='{esc(usuario)}',certificado_em=current_timestamp() "
+                                f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='em_analise'"
+                            )
+                            if ok_rej:
+                                st.warning("↩️ Devolvido.")
+                                st.cache_data.clear()
+                                st.rerun()
+                            else:
+                                st.error("Não foi possível devolver a certificação.")
+                                st.caption(f"Detalhe técnico: {err_rej}")
     copyright_footer()
 
 # ════════════════════════════════════════════════════════════════════
@@ -2759,4 +2828,153 @@ elif pagina == "📦 Produtos":
                         st.markdown('</div>',unsafe_allow_html=True)
             else:
                 estado_vazio("📦","Selecione um produto","Clique em qualquer produto para ver detalhes e ativos vinculados.")
+    copyright_footer()
+
+# ════════════════════════════════════════════════════════════════════
+# 🔍 BUSCA GLOBAL — Pesquisa unificada em todos os acervos
+# ════════════════════════════════════════════════════════════════════
+elif pagina == "🔍 Busca Global":
+    st.markdown("## 🔍 Busca Global")
+    st.markdown('<p style="color:#888;font-size:0.85rem;margin-top:-6px;margin-bottom:18px;">Pesquise em ativos, termos, regras, domínios e responsáveis de uma só vez.</p>', unsafe_allow_html=True)
+
+    _bg_db_fail = bool(st.session_state.get("_db_err"))
+
+    # ── Campo de busca ──────────────────────────────────────────────
+    _busca_q = st.text_input(
+        "O que você está procurando?",
+        placeholder="Ex.: cliente, faturamento, lgpd, Ana Lima...",
+        key="busca_global_query",
+        label_visibility="collapsed",
+    )
+
+    if not _busca_q or not _busca_q.strip():
+        st.markdown("""
+        <div style="background:#0A0A0A;border:1px solid #1F1F1F;border-radius:10px;padding:28px;text-align:center;margin-top:24px;">
+            <div style="font-size:2rem;margin-bottom:8px;">🔍</div>
+            <div style="color:#C8D6E5;font-weight:700;font-size:1rem;margin-bottom:4px;">Digite algo para começar</div>
+            <div style="color:#555;font-size:0.82rem;">Busca em ativos do catálogo, termos do glossário, regras de negócio, domínios e produtos.</div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        _q = _busca_q.strip()
+        _q_lower = _q.lower()
+
+        if _bg_db_fail:
+            st.warning("⚠️ Banco de dados indisponível. A busca pode estar incompleta ou retornar zero resultados.")
+
+        # ── Carrega fontes de dados ─────────────────────────────────
+        _bg_meta    = load_meta()
+        _bg_gloss   = load_glossario()
+        _bg_rules   = load_rules()
+        _bg_produtos = load_produtos()
+
+        # ── Resultados por fonte ────────────────────────────────────
+        _resultados = []
+
+        # 1. Ativos do catálogo (tabelas_metadata)
+        if not _bg_meta.empty:
+            _cols_cat = [c for c in ["table_name","descricao","dominio","schema_name","data_owner"] if c in _bg_meta.columns]
+            _mask_cat = _bg_meta[_cols_cat].apply(
+                lambda col: col.astype(str).str.lower().str.contains(_q_lower, na=False)
+            ).any(axis=1)
+            for _, row in _bg_meta[_mask_cat].head(20).iterrows():
+                _resultados.append({
+                    "tipo": "📊 Ativo",
+                    "titulo": str(row.get("table_name","—")),
+                    "subtitulo": f'{row.get("schema_name","—")} · {row.get("dominio","—")}',
+                    "detalhe": str(row.get("descricao",""))[:120] or "Sem descrição.",
+                    "nav_pagina": "📋 Catálogo",
+                    "cor": "#58A6FF",
+                })
+
+        # 2. Termos do glossário (business_glossary)
+        if not _bg_gloss.empty:
+            _cols_gl = [c for c in ["termo","definicao","dominio","responsavel","sinonimos"] if c in _bg_gloss.columns]
+            _mask_gl = _bg_gloss[_cols_gl].apply(
+                lambda col: col.astype(str).str.lower().str.contains(_q_lower, na=False)
+            ).any(axis=1)
+            for _, row in _bg_gloss[_mask_gl].head(20).iterrows():
+                _resultados.append({
+                    "tipo": "📖 Termo",
+                    "titulo": str(row.get("termo","—")),
+                    "subtitulo": f'Domínio: {row.get("dominio","—")} · Responsável: {row.get("responsavel","—")}',
+                    "detalhe": str(row.get("definicao",""))[:120] or "Sem definição.",
+                    "nav_pagina": "📖 Glossário",
+                    "cor": "#C9A227",
+                })
+
+        # 3. Regras de negócio (business_rules)
+        if not _bg_rules.empty:
+            _cols_ru = [c for c in ["nome","descricao","dominio","responsavel","categoria"] if c in _bg_rules.columns]
+            _mask_ru = _bg_rules[_cols_ru].apply(
+                lambda col: col.astype(str).str.lower().str.contains(_q_lower, na=False)
+            ).any(axis=1)
+            for _, row in _bg_rules[_mask_ru].head(20).iterrows():
+                _resultados.append({
+                    "tipo": "📋 Regra",
+                    "titulo": str(row.get("nome","—")),
+                    "subtitulo": f'Domínio: {row.get("dominio","—")} · Cat.: {row.get("categoria","—")}',
+                    "detalhe": str(row.get("descricao",""))[:120] or "Sem descrição.",
+                    "nav_pagina": "📋 Catálogo",
+                    "cor": "#3FB950",
+                })
+
+        # 4. Produtos de dados (produtos_dados)
+        if not _bg_produtos.empty:
+            _cols_pr = [c for c in ["nome","finalidade","descricao","dominio","responsavel"] if c in _bg_produtos.columns]
+            _mask_pr = _bg_produtos[_cols_pr].apply(
+                lambda col: col.astype(str).str.lower().str.contains(_q_lower, na=False)
+            ).any(axis=1)
+            for _, row in _bg_produtos[_mask_pr].head(10).iterrows():
+                _resultados.append({
+                    "tipo": "📦 Produto",
+                    "titulo": str(row.get("nome","—")),
+                    "subtitulo": f'Domínio: {row.get("dominio","—")} · {row.get("status","—")}',
+                    "detalhe": str(row.get("finalidade",""))[:120] or str(row.get("descricao",""))[:120] or "Sem descrição.",
+                    "nav_pagina": "📦 Produtos",
+                    "cor": "#F97316",
+                })
+
+        # ── Exibe resultados ────────────────────────────────────────
+        _total = len(_resultados)
+        if _total == 0:
+            estado_vazio("🔍", f'Nenhum resultado para "{_q}"',
+                         "Tente outros termos ou verifique a ortografia. A busca cobre ativos, termos, regras e produtos.")
+        else:
+            st.markdown(
+                f'<div style="color:#888;font-size:0.8rem;margin-bottom:14px;">'
+                f'<span style="color:#C9A227;font-weight:700;">{_total}</span> resultado{"s" if _total!=1 else ""} '
+                f'para <em>"{_q}"</em></div>',
+                unsafe_allow_html=True
+            )
+
+            # Filtro por tipo
+            _tipos_disp = sorted(set(r["tipo"] for r in _resultados))
+            _tipo_sel = st.selectbox("Filtrar por tipo:", ["Todos"] + _tipos_disp, key="busca_tipo_filtro")
+            if _tipo_sel != "Todos":
+                _resultados = [r for r in _resultados if r["tipo"] == _tipo_sel]
+
+            # Cards de resultado
+            for _idx_res, _res in enumerate(_resultados):
+                _nav_lbl = _res["nav_pagina"]
+                st.markdown(f"""
+                <div style="background:#0A0A0A;border:1px solid #1F1F1F;border-radius:10px;
+                            padding:14px 18px;margin-bottom:8px;
+                            border-left:3px solid {_res['cor']};">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                        <span style="background:{_res['cor']}22;color:{_res['cor']};
+                                     border-radius:4px;padding:2px 8px;font-size:0.67rem;
+                                     font-weight:700;">{_res['tipo']}</span>
+                        <span style="color:#E6EDF3;font-weight:700;font-size:0.92rem;">{_res['titulo']}</span>
+                    </div>
+                    <div style="color:#888;font-size:0.72rem;margin-bottom:6px;">{_res['subtitulo']}</div>
+                    <div style="color:#AAAAAA;font-size:0.78rem;line-height:1.5;">{_res['detalhe']}</div>
+                </div>
+                """, unsafe_allow_html=True)
+                # Botão para navegar à página do resultado
+                if st.button(f"Ir para {_nav_lbl}", key=f"busca_nav_{_idx_res}",
+                             use_container_width=False):
+                    st.session_state["pagina"] = _nav_lbl
+                    st.rerun()
+
     copyright_footer()
