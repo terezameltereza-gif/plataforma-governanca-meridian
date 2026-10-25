@@ -1652,29 +1652,66 @@ elif pagina == "✏️ Curadoria":
                             st.info("Informe pelo menos um campo para atualizar antes de aplicar.")
                         else:
                             erros = []
+                            erros_auditoria = []
                             atualizadas = []
+                            usuario_lote = str(st.session_state.get("usuario_nome", "demo"))
                             for _, r in sels.iterrows():
-                                sets = []
+                                schema_lote = str(r["Schema"])
+                                tabela_lote = str(r["Tabela"])
+                                atual = df_cur[
+                                    (df_cur["schema_name"].astype(str) == schema_lote) &
+                                    (df_cur["table_name"].astype(str) == tabela_lote)
+                                ]
+                                if atual.empty:
+                                    erros.append({"tabela": tabela_lote, "erro": "Registro não encontrado na carga atual; nenhuma alteração aplicada."})
+                                    continue
+                                anterior = atual.iloc[0]
+                                dominio_novo = l_dom or str(anterior.get("dominio") or "")
+                                owner_novo = l_own or str(anterior.get("data_owner") or "")
+                                steward_novo = l_stw or str(anterior.get("data_steward") or "")
+                                descricao_atual = str(anterior.get("descricao") or "")
+                                campos_preenchidos = sum(bool(str(v).strip()) for v in [descricao_atual, dominio_novo, owner_novo, steward_novo])
+                                score_novo = round((campos_preenchidos / 4) * 100, 1)
+                                score_anterior = anterior.get("score_completude", 0)
+                                try:
+                                    score_anterior = float(score_anterior or 0)
+                                except (TypeError, ValueError):
+                                    score_anterior = 0.0
+                                sets = [
+                                    f"score_completude={score_novo}",
+                                    "atualizado_em=current_timestamp()"
+                                ]
                                 if l_dom: sets.append(f"dominio='{esc(l_dom)}'")
                                 if l_own: sets.append(f"data_owner='{esc(l_own)}'")
                                 if l_stw: sets.append(f"data_steward='{esc(l_stw)}'")
-                                sets.append("atualizado_em=current_timestamp()")
                                 ok, err = exe(
                                     f"UPDATE meridian_governanca.tabelas_metadata "
                                     f"SET {', '.join(sets)} "
-                                    f"WHERE schema_name='{esc(r['Schema'])}' AND table_name='{esc(r['Tabela'])}'"
+                                    f"WHERE schema_name='{esc(schema_lote)}' AND table_name='{esc(tabela_lote)}'"
                                 )
-                                if ok:
-                                    atualizadas.append(str(r["Tabela"]))
-                                else:
-                                    erros.append({"tabela": str(r["Tabela"]), "erro": str(err)})
+                                if not ok:
+                                    erros.append({"tabela": tabela_lote, "erro": str(err)})
+                                    continue
+                                atualizadas.append(tabela_lote)
+                                audit_ok, audit_err = exe(
+                                    "INSERT INTO meridian_governanca.metadata_audit "
+                                    "VALUES (uuid(), current_timestamp(), "
+                                    f"'{esc(schema_lote)}', '{esc(tabela_lote)}', 'tabela', '', "
+                                    f"'curadoria_lote', {score_anterior}, {score_novo}, "
+                                    f"'manual', '{esc(usuario_lote)}', '{esc(usuario_lote[:8])}')"
+                                )
+                                if not audit_ok:
+                                    erros_auditoria.append({"tabela": tabela_lote, "erro": str(audit_err)})
                             if erros:
                                 st.error(f"{len(erros)} de {len(sels)} atualização(ões) falharam.")
                                 st.dataframe(pd.DataFrame(erros), use_container_width=True, hide_index=True)
                             if atualizadas:
-                                st.success(f"Atualizações concluídas: {len(atualizadas)} de {len(sels)}.")
+                                st.success(f"Metadados atualizados: {len(atualizadas)} de {len(sels)}.")
+                                if erros_auditoria:
+                                    st.warning(f"{len(erros_auditoria)} registro(s) de auditoria falharam. As alterações de metadados foram aplicadas; revise a trilha antes de considerar o lote reconciliado.")
+                                    st.dataframe(pd.DataFrame(erros_auditoria), use_container_width=True, hide_index=True)
                                 st.cache_data.clear()
-                                if not erros:
+                                if not erros and not erros_auditoria:
                                     st.rerun()
 
     copyright_footer()
