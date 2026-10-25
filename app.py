@@ -82,9 +82,10 @@ def _is_session_err(msg: str) -> bool:
 
 @st.cache_data(ttl=300)
 def qry(sql_str):
+    cur = None
     try:
         conn = get_conn()
-        cur  = conn.cursor()
+        cur = conn.cursor()
         cur.execute(sql_str)
         cols = [d[0] for d in cur.description]
         return pd.DataFrame(cur.fetchall(), columns=cols), None
@@ -94,11 +95,18 @@ def qry(sql_str):
             try: get_conn.clear(); qry.clear()
             except: pass
         return pd.DataFrame(), err
+    finally:
+        if cur is not None:
+            try:
+                cur.close()
+            except Exception:
+                pass
 
 def exe(sql_str):
+    cur = None
     try:
         conn = get_conn()
-        cur  = conn.cursor()
+        cur = conn.cursor()
         cur.execute(sql_str)
         return True, None
     except Exception as e:
@@ -107,6 +115,12 @@ def exe(sql_str):
             try: get_conn.clear()
             except: pass
         return False, err
+    finally:
+        if cur is not None:
+            try:
+                cur.close()
+            except Exception:
+                pass
 
 def esc(v): return str(v).replace("'","''") if v else ""
 
