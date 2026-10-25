@@ -398,142 +398,142 @@ is_aprovador = perfil == "aprovador"
 # 🏠 INÍCIO — Central de Conhecimento e Descoberta
 # ════════════════════════════════════════════════════════════════════
 if pagina == "🏠 Início":
-    now_str = datetime.now().strftime("%d/%m/%Y %H:%M")
-    st.markdown(f"""
-    <div style="background:linear-gradient(118deg,#101A2B 0%,#182A43 72%,#24354A 100%);
-                border:1px solid #C9A22755;border-left:5px solid #C9A227;border-radius:18px;
-                padding:30px 34px;margin-bottom:24px;box-shadow:0 12px 34px rgba(13,27,42,.12);">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-                <div style="color:#F8F5ED;font-size:1.72rem;font-weight:800;letter-spacing:-.025em;margin-bottom:8px;">
-                    Plataforma de Governança de Dados</div>
-                <div style="color:#D1D9E4;font-size:0.91rem;max-width:620px;line-height:1.7;">
-                    Um espaço para descobrir, entender e utilizar os dados do Banco Meridian
-                    com mais clareza e confiança.</div>
-                <div style="color:#AAB8CA;font-size:0.8rem;max-width:620px;line-height:1.6;margin-top:8px;">
-                    Explore conceitos, dados, responsáveis, regras, qualidade e relacionamentos da organização.</div>
-                <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-                    <span style="background:#3FB95022;color:#3FB950;border-radius:20px;
-                                 padding:3px 12px;font-size:0.72rem;font-weight:600;
-                                 border:1px solid #3FB95044;">✓ Cenário demonstrativo</span>
-                    <span style="background:#58A6FF22;color:#58A6FF;border-radius:20px;
-                                 padding:3px 12px;font-size:0.72rem;font-weight:600;
-                                 border:1px solid #58A6FF44;">✓ Responsáveis documentados</span>
-                    <span style="background:#BC8CFF22;color:#BC8CFF;border-radius:20px;
-                                 padding:3px 12px;font-size:0.72rem;font-weight:600;
-                                 border:1px solid #BC8CFF44;">✓ Exemplos fictícios</span>
-                </div>
-            </div>
-            <div style="text-align:right;flex-shrink:0;">
-                <div style="color:#8B949E;font-size:0.68rem;">Página renderizada em</div>
-                <div style="color:#E6EDF3;font-size:0.82rem;font-weight:600;">{now_str}</div>
-                <div style="color:#8B949E;font-size:0.65rem;margin-top:4px;">Este horário não comprova atualização dos dados.</div>
-            </div>
-        </div>
-    </div>""", unsafe_allow_html=True)
-
+    # Página inicial alinhada à referência visual Governantes:
+    # hero fotográfico, atalhos horizontais, panorama executivo e tabelas de trabalho.
     df_meta  = load_meta()
     df_gloss = load_glossario()
     df_links = load_links()
     df_rules = load_rules()
 
     if df_meta.empty and st.session_state.get("_db_err"):
-        st.warning(f"⚠️ Não foi possível carregar os dados do Databricks. Verifique se o SQL Warehouse está ativo e se o token de acesso é válido. Detalhe: `{st.session_state['_db_err'][:200]}`")
+        st.warning("Não foi possível carregar os dados do Databricks. A demonstração depende de conexão e permissões válidas.")
 
-    total_ativos = len(df_meta)  if not df_meta.empty else 0
-    total_dom    = df_meta["dominio"].nunique() if not df_meta.empty else 0
+    total_ativos = len(df_meta) if not df_meta.empty else 0
+    total_dom = df_meta["dominio"].nunique() if not df_meta.empty and "dominio" in df_meta.columns else 0
     total_termos = len(df_gloss) if not df_gloss.empty else 0
     total_regras = len(df_rules) if not df_rules.empty else 0
-    tabs_link    = df_links["table_name"].nunique() if not df_links.empty else 0
-    cobertura    = min(100, round(tabs_link/total_ativos*100)) if total_ativos > 0 else 0
-    cor_cob      = "#3FB950" if cobertura>=70 else "#C9A227" if cobertura>=40 else "#F85149"
+    tabs_link = df_links["table_name"].nunique() if not df_links.empty and "table_name" in df_links.columns else 0
+    cobertura = min(100, round(tabs_link / total_ativos * 100)) if total_ativos else 0
 
-    k1,k2,k3,k4,k5 = st.columns(5)
-    with k1: st.markdown(kpi(total_termos,"Conceitos de Negócio","#C9A227","📖",
-        "Definições oficiais dos principais assuntos utilizados pela organização."), unsafe_allow_html=True)
-    with k2: st.markdown(kpi(total_ativos,"Ativos de Dados","#58A6FF","🗂️",
-        "Tabelas e outros ativos de dados catalogados na plataforma."), unsafe_allow_html=True)
-    with k3: st.markdown(kpi(total_dom,"Domínios de Negócio","#BC8CFF","🏛️",
-        "Agrupamentos de dados e assuntos de negócio com responsabilidades definidas."), unsafe_allow_html=True)
-    with k4: st.markdown(kpi(total_regras,"Regras de Negócio","#3FB950","📏",
-        "Critérios documentados utilizados para definição, cálculo ou validação de informações."), unsafe_allow_html=True)
-    with k5: st.markdown(kpi(f"{cobertura}%","Dados Conectados ao Negócio",cor_cob,"🔗",
-        f"Percentual de ativos de dados que possuem relacionamento documentado com conceitos de negócio. ({tabs_link} de {total_ativos} ativos vinculados)"), unsafe_allow_html=True)
-
-    section_divider("O QUE VOCÊ ENCONTRA AQUI?")
-
-    cards_info = [
-        ("📖","Conceitos de Negócio","📖 Glossário","↗ Consultar conceitos",
-         "Consulte definições de negócio para que diferentes áreas compartilhem o mesmo entendimento."),
-        ("📏","Regras de Negócio","📖 Glossário","↗ Consultar regras",
-         "Entenda os critérios usados para calcular, classificar e validar informações e indicadores."),
-        ("🗂️","Ativos de Dados","📋 Catálogo","↗ Explorar catálogo",
-         "Encontre tabelas, views e outros ativos catalogados, com seus metadados e responsáveis."),
-        ("🏛️","Domínios de Negócio","🏛️ Domínios","↗ Ver domínios",
-         "Navegue pelos agrupamentos de dados e assuntos de negócio e identifique suas responsabilidades."),
-        ("🔗","Relacionamentos","🔗 Linhagem","↗ Ver relacionamentos",
-         "Explore a rastreabilidade entre origens, ativos e destinos dos dados disponíveis na plataforma."),
-        ("🛡️","Qualidade dos Dados","🏆 Qualidade","↗ Acompanhar qualidade",
-         "Consulte indicadores e evidências de qualidade para avaliar se os dados estão adequados ao uso."),
-    ]
-
-    # A ação fica dentro do próprio cartão para evitar a faixa/botão solto
-    # que repetia visualmente a chamada para ação abaixo de cada card.
-    cols_cards = st.columns(3, gap="medium")
-    for i, (ic, tit, dest, acao, desc) in enumerate(cards_info):
-        with cols_cards[i % 3]:
-            with st.container(border=True):
-                st.markdown(f"""
-                <div style="min-height:132px;padding:4px 2px 8px;">
-                    <div style="font-size:1.45rem;margin-bottom:10px;">{ic}</div>
-                    <div style="color:#0D1B2A;font-weight:700;font-size:0.98rem;
-                                margin-bottom:8px;">{tit}</div>
-                    <div style="color:#596273;font-size:0.8rem;line-height:1.55;">{desc}</div>
-                </div>
-                """, unsafe_allow_html=True)
-                if st.button(acao, key=f"home_card_{i}", use_container_width=True):
-                    st.session_state["pagina"] = dest
-                    for k in ["gid_sel","cat_sel","dom_sel","sc_pilar"]:
-                        st.session_state.pop(k, None)
-                    st.rerun()
-
-    section_divider("COMO OS DADOS SE CONECTAM")
     st.markdown("""
-    <div style="background:#161B22;border:1px solid #30363D;border-radius:12px;padding:20px 24px;margin-bottom:8px;">
-        <div style="color:#8B949E;font-size:0.75rem;margin-bottom:16px;">
-            Exemplo ilustrativo de uma jornada do conceito à decisão; não representa uma linhagem verificada do ambiente.
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <div style="background:#C9A22722;border:1px solid #C9A22744;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">CONCEITO</div>
-                <div style="color:#C9A227;font-weight:700;font-size:0.82rem;">Inadimplência</div>
-            </div>
-            <div style="color:#C9A227;font-size:1.2rem;">→</div>
-            <div style="background:#58A6FF22;border:1px solid #58A6FF44;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">REGRA</div>
-                <div style="color:#58A6FF;font-weight:700;font-size:0.82rem;">Janela 90 dias</div>
-            </div>
-            <div style="color:#C9A227;font-size:1.2rem;">→</div>
-            <div style="background:#BC8CFF22;border:1px solid #BC8CFF44;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">ATIVO</div>
-                <div style="color:#BC8CFF;font-weight:700;font-size:0.82rem;">fato_inadimplencia</div>
-            </div>
-            <div style="color:#C9A227;font-size:1.2rem;">→</div>
-            <div style="background:#3FB95022;border:1px solid #3FB95044;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">INDICADOR</div>
-                <div style="color:#3FB950;font-weight:700;font-size:0.82rem;">Taxa NPL</div>
-            </div>
-            <div style="color:#C9A227;font-size:1.2rem;">→</div>
-            <div style="background:#F8514922;border:1px solid #F8514944;border-radius:8px;padding:10px 16px;text-align:center;">
-                <div style="font-size:0.6rem;color:#8B949E;margin-bottom:2px;">DECISÃO</div>
-                <div style="color:#F85149;font-weight:700;font-size:0.82rem;">Gestão de Risco</div>
-            </div>
-        </div>
-    </div>""", unsafe_allow_html=True)
+    <style>
+    .block-container {padding-top: .65rem !important;}
+    .gov-hero {position:relative; overflow:hidden; border-radius:14px; min-height:172px;
+      padding:26px 30px; margin:0 0 16px 0; color:white;
+      background:linear-gradient(90deg,rgba(7,28,57,.97) 0%,rgba(9,48,88,.88) 46%,rgba(9,48,88,.18) 100%),
+      url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1800&q=85') center 48%/cover;
+      box-shadow:0 5px 18px rgba(10,40,80,.12);}
+    .gov-eyebrow {font-size:.68rem;letter-spacing:1.8px;font-weight:700;text-transform:uppercase;color:#D9C47E;margin-bottom:10px}
+    .gov-hero h2 {font-family:Inter,sans-serif!important;color:#fff!important;font-size:1.75rem!important;line-height:1.16;margin:0 0 9px 0}
+    .gov-hero p {font-size:.88rem;color:#F2F6FB;max-width:650px;margin:0;line-height:1.55}
+    .gov-mission {float:right; margin:4px 0 0 22px; padding:13px 16px; width:205px;
+      background:rgba(255,255,255,.94);color:#10294B;border-radius:10px;box-shadow:0 5px 16px #061a3322}
+    .gov-mission strong {display:block;font-size:.83rem;margin-bottom:5px}
+    .gov-mission span {font-size:.72rem;line-height:1.45;display:block}
+    .gov-section {font-size:.94rem;font-weight:800;color:#10294B;margin:9px 0 10px}
+    .gov-shortcut {background:#fff;border:1px solid #DCE6F2;border-radius:11px;padding:13px 12px;min-height:103px;box-shadow:0 2px 8px #0b2b5010}
+    .gov-shortcut b {display:block;color:#10294B;font-size:.78rem;margin:4px 0}
+    .gov-shortcut span {display:block;color:#526783;font-size:.68rem;line-height:1.4;min-height:29px}
+    .gov-shortcut .ico {font-size:1.35rem}
+    .gov-panel {background:#fff;border:1px solid #DCE6F2;border-radius:11px;padding:13px 14px;min-height:170px;box-shadow:0 2px 8px #0b2b5008}
+    .gov-panel-title {font-weight:800;color:#10294B;font-size:.82rem;margin-bottom:12px}
+    .gov-kpi {background:#FBFDFF;border:1px solid #E1EAF5;border-radius:8px;padding:11px 9px;min-height:94px}
+    .gov-kpi .value {font-size:1.25rem;font-weight:800;color:#10294B}
+    .gov-kpi .label {font-size:.66rem;color:#526783;line-height:1.35}
+    .gov-progress {height:8px;border-radius:9px;background:#EAF0F7;overflow:hidden;flex:1}
+    .gov-progress i {display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#00A88F,#5DCDB5)}
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div class="gov-hero">
+      <div class="gov-mission"><strong>✧ Nossa missão</strong><span>Transformar dados em confiança para impulsionar decisões que geram valor.</span></div>
+      <div class="gov-eyebrow">Bem-vinda à Governantes</div>
+      <h2>Dados bem governados<br>impulsionam grandes decisões</h2>
+      <p>Encontre, entenda, confie e aja sobre os dados da sua organização.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Atalhos principais em linha, como na referência
+    shortcuts = [
+        ("▤","Catálogo de Dados","Encontre e explore ativos de dados","📋 Catálogo"),
+        ("▣","Glossário de Negócio","Entenda termos, conceitos e regras","📖 Glossário"),
+        ("◇","Qualidade de Dados","Veja a saúde e aponte problemas","🏆 Qualidade"),
+        ("⌘","Linhagem de Dados","Veja a origem e o fluxo dos dados","🔗 Linhagem"),
+        ("▤","Solicitações","Peça acessos, melhorias e novos termos","⚡ Meu Espaço"),
+    ]
+    cols = st.columns(5, gap="small")
+    for i,(ico,title,desc,dest) in enumerate(shortcuts):
+        with cols[i]:
+            st.markdown(f'<div class="gov-shortcut"><div class="ico">{ico}</div><b>{title}</b><span>{desc}</span></div>',unsafe_allow_html=True)
+            if st.button("Abrir →",key=f"gov_shortcut_{i}",use_container_width=True):
+                st.session_state["pagina"] = dest
+                st.rerun()
+
+    st.markdown('<div class="gov-section">Panorama geral</div>',unsafe_allow_html=True)
+    p1,p2,p3 = st.columns([1.65,1,1],gap="small")
+    with p1:
+        st.markdown('<div class="gov-panel"><div class="gov-panel-title">Indicadores da plataforma</div>',unsafe_allow_html=True)
+        kc=st.columns(4,gap="small")
+        values=[
+          (total_ativos,"Ativos de dados","▤","#E8F2FF"),
+          (total_termos,"Termos de negócio","▣","#F0ECFF"),
+          (f"{cobertura}%","Cobertura de vínculos","◇","#E2F8F0"),
+          (total_regras,"Regras de negócio","▤","#FFF0F4")]
+        for i,(val,label,ico,bg) in enumerate(values):
+            with kc[i]:
+                st.markdown(f'<div class="gov-kpi"><div style="background:{bg};display:inline-block;padding:4px 7px;border-radius:6px;margin-bottom:6px;color:#1673BA">{ico}</div><div class="value">{val}</div><div class="label">{label}</div></div>',unsafe_allow_html=True)
+        st.markdown('</div>',unsafe_allow_html=True)
+    with p2:
+        st.markdown('<div class="gov-panel"><div class="gov-panel-title">Qualidade por domínio</div>',unsafe_allow_html=True)
+        if not df_meta.empty and "dominio" in df_meta.columns:
+            doms=df_meta["dominio"].fillna("Sem domínio").astype(str).value_counts().head(5)
+            for j,(dom,n) in enumerate(doms.items()):
+                pct=min(100,round(n/max(1,total_ativos)*100))
+                st.markdown(f'<div style="display:flex;align-items:center;gap:7px;margin:10px 0;font-size:.67rem;color:#526783"><span style="width:80px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">{dom}</span><div class="gov-progress"><i style="width:{pct}%"></i></div><b style="color:#10294B">{pct}%</b></div>',unsafe_allow_html=True)
+        else:
+            st.caption("Distribuição por domínio disponível quando os metadados estiverem carregados.")
+        st.markdown('</div>',unsafe_allow_html=True)
+    with p3:
+        st.markdown('<div class="gov-panel"><div class="gov-panel-title">Status do catálogo</div>',unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:2rem;font-weight:800;color:#10294B;text-align:center;margin:14px 0 4px">{total_ativos}</div><div style="font-size:.72rem;text-align:center;color:#526783">ativos catalogados</div><div style="font-size:.7rem;color:#009B83;text-align:center;margin-top:10px">◉ {total_dom} domínios identificados</div><div style="font-size:.7rem;color:#6C63D9;text-align:center;margin-top:6px">◉ {total_termos} conceitos no glossário</div>',unsafe_allow_html=True)
+        st.markdown('</div>',unsafe_allow_html=True)
+
+    st.markdown('<div class="gov-section">Ativos e pendências</div>',unsafe_allow_html=True)
+    left,right=st.columns([1.1,1],gap="small")
+    with left:
+        st.markdown('<div class="gov-panel-title">Ativos mais acessíveis no catálogo</div>',unsafe_allow_html=True)
+        if not df_meta.empty:
+            show_cols=[c for c in ["nome_tabela","table_name","dominio","responsavel","owner","score_completude","status"] if c in df_meta.columns]
+            if show_cols:
+                st.dataframe(df_meta[show_cols].head(5),use_container_width=True,hide_index=True)
+            else:
+                st.dataframe(df_meta.head(5),use_container_width=True,hide_index=True)
+        else:
+            st.info("Os ativos aparecerão aqui quando o catálogo estiver conectado.")
+    with right:
+        st.markdown('<div class="gov-panel-title">Pendências para acompanhar</div>',unsafe_allow_html=True)
+        st.markdown(f'<div class="gov-kpi" style="min-height:90px"><div class="value">{total_regras}</div><div class="label">Regras cadastradas para revisão de negócio</div></div>',unsafe_allow_html=True)
+        st.caption("Consulte Curadoria e Auditoria para verificar registros e ações disponíveis ao seu perfil.")
+
+    st.markdown('<div class="gov-section">Explore as jornadas da plataforma</div>',unsafe_allow_html=True)
+    journeys=[
+      ("Busca e Catálogo de Dados","Encontre por nome, área ou domínio e consulte metadados.","📋 Catálogo","#2185D5"),
+      ("Glossário de Negócio","Veja definições, regras e relacionamentos com ativos.","📖 Glossário","#6554C0"),
+      ("Qualidade de Dados","Acompanhe indicadores e identifique pontos de atenção.","🏆 Qualidade","#0A9F78"),
+      ("Linhagem de Dados","Entenda relações documentadas entre ativos.","🔗 Linhagem","#F28B30"),
+      ("Solicitações e Tarefas","Acesse seu espaço para solicitações e acompanhamento.","⚡ Meu Espaço","#D94D8A"),
+    ]
+    jcols=st.columns(5,gap="small")
+    for i,(title,desc,dest,color) in enumerate(journeys):
+        with jcols[i]:
+            st.markdown(f'<div style="border-radius:8px 8px 0 0;background:{color};padding:10px;color:#fff;font-size:.72rem;font-weight:800;min-height:48px">{title}</div><div style="background:#fff;border:1px solid #DCE6F2;border-top:0;border-radius:0 0 8px 8px;padding:10px;min-height:75px;color:#526783;font-size:.68rem;line-height:1.45">{desc}</div>',unsafe_allow_html=True)
+            if st.button("Explorar →",key=f"gov_journey_{i}",use_container_width=True):
+                st.session_state["pagina"]=dest
+                st.rerun()
 
     copyright_footer()
 
-# ════════════════════════════════════════════════════════════════════
 # 📖 GLOSSÁRIO — Área de Conhecimento
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "📖 Glossário":
