@@ -306,6 +306,11 @@ with st.sidebar:
         st.session_state["usuario"] = None
 
     if not st.session_state["usuario"]:
+        st.warning(
+            "Acesso demonstrativo: escolher um nome não autentica a identidade. "
+            "Não use dados reais nem considere os perfis como controle de acesso corporativo.",
+            icon="⚠️",
+        )
         email = st.selectbox(
             "Selecione seu usuário",
             list(USUARIOS.keys()),
@@ -320,6 +325,7 @@ with st.sidebar:
             st.rerun()
         st.stop()
 
+    st.caption("AMBIENTE DEMONSTRATIVO · Autenticação corporativa ainda não configurada")
     u      = USUARIOS[st.session_state["usuario"]]
     perfil = u["perfil"]
     cor    = PERFIL_COR[perfil]
