@@ -68,13 +68,13 @@ div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
 
 /* ── Home: atalhos ── */
 .atalho-btn .stButton>button{
-    background:transparent !important;color:#1E4D9B !important;
-    border:1.5px solid #1E4D9B !important;border-radius:0 0 10px 10px !important;
+    background:transparent !important;color:#0D1B2A !important;
+    border:1.5px solid #0D1B2A !important;border-radius:0 0 10px 10px !important;
     font-weight:600 !important;font-size:0.73rem !important;
     padding:6px 12px !important;text-align:center !important;
     justify-content:center !important;width:100% !important;
     box-shadow:none !important;border-top:none !important;}
-.atalho-btn .stButton>button:hover{background:#EBF0FF !important;color:#1A3B8C !important;}
+.atalho-btn .stButton>button:hover{background:#0D1B2A !important;color:#C9A227 !important;}
 
 /* ── Ocultar widgets nativos Streamlit Cloud ── */
 [data-testid="stStatusWidget"],
