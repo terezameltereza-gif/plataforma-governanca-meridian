@@ -185,9 +185,14 @@ div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
   .demo-badge{bottom:60px !important;right:8px !important;}
 
   /* Colunas Streamlit: forçar empilhamento em telas muito estreitas */
-  @media (max-width:480px){
-    [data-testid="column"]{min-width:100% !important;flex:1 1 100% !important;}
-  }
+  /* (regra movida para root level — CSS não suporta @media aninhado) */
+}
+
+/* ══════════════════════════════════════════
+   MOBILE EXTRA-ESTREITO  ≤ 480 px
+   ══════════════════════════════════════════ */
+@media (max-width:480px){
+  [data-testid="column"]{min-width:100% !important;flex:1 1 100% !important;}
 }
 
 /* ══════════════════════════════════════════
@@ -254,12 +259,14 @@ def _is_limit_err(msg: str) -> bool:
 
 @st.cache_data(ttl=300)
 def qry(sql_str):
+    cur = None
     try:
         conn = get_conn()
         cur  = conn.cursor()
         cur.execute(sql_str)
         cols = [d[0] for d in cur.description]
-        return pd.DataFrame(cur.fetchall(), columns=cols), None
+        rows = cur.fetchall()
+        return pd.DataFrame(rows, columns=cols), None
     except Exception as e:
         err = str(e)
         if _is_session_err(err):
@@ -269,8 +276,13 @@ def qry(sql_str):
             st.session_state["_db_limit"] = True
         st.session_state["_db_err"] = err
         return pd.DataFrame(), err
+    finally:
+        if cur is not None:
+            try: cur.close()
+            except: pass
 
 def exe(sql_str):
+    cur = None
     try:
         conn = get_conn()
         cur  = conn.cursor()
@@ -282,6 +294,10 @@ def exe(sql_str):
             try: get_conn.clear()
             except: pass
         return False, err
+    finally:
+        if cur is not None:
+            try: cur.close()
+            except: pass
 
 def esc(v): return str(v).replace("'","''") if v else ""
 
@@ -390,8 +406,8 @@ def load_produto_ativos():
 
 @st.cache_data(ttl=300)
 def load_linhagem():
-    df,_ = qry("SELECT * FROM meridian_governanca.linhagem_ativos ORDER BY origem_schema, origem_tabela")
-    return df if df is not None else pd.DataFrame()
+    df, err = qry("SELECT * FROM meridian_governanca.linhagem_ativos ORDER BY origem_schema, origem_tabela")
+    return (df if df is not None else pd.DataFrame()), err
 
 @st.cache_data(ttl=300)
 def load_solicitacoes_qualidade():
@@ -634,7 +650,7 @@ st.markdown(f"""
     </div>
     <!-- Usuário -->
     <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0;">
-        <span style="color:#555555;font-size:1rem;cursor:pointer;" title="Notificações">🔔</span>
+        <span style="color:#555555;font-size:1rem;" title="Sem notificações pendentes">🔔</span>
         <div style="text-align:right;display:none;">
             <div style="color:#C8D6E5;font-size:0.75rem;font-weight:700;line-height:1.2;">{_nome_tb}</div>
             <div style="color:{_cor_tb};font-size:0.65rem;line-height:1.2;">{_perf_lbl}</div>
@@ -711,10 +727,11 @@ if pagina == "🏠 Início":
             st.warning(f"⚠️ Databricks indisponível. Detalhe: `{st.session_state['_db_err'][:120]}`")
 
     # ── KPIs ─────────────────────────────────────────────────────────
-    total_ativos = len(df_meta)  if not df_meta.empty else 0
-    total_termos = len(df_gloss) if not df_gloss.empty else 0
+    _db_fail = bool(st.session_state.get("_db_err"))
+    total_ativos = len(df_meta)  if not df_meta.empty else ("—" if _db_fail else 0)
+    total_termos = len(df_gloss) if not df_gloss.empty else ("—" if _db_fail else 0)
     qual_media   = round(df_qual["score_final"].mean(), 1) if not df_qual.empty and "score_final" in df_qual.columns else None
-    qual_str     = f"{qual_media}%" if qual_media is not None else "—"
+    qual_str     = f"{qual_media}%" if qual_media is not None else ("Indisponível" if _db_fail else "—")
 
     STATUS_CLOSED = {"concluido","aprovado","cancelado","concluída","aprovada","encerrado"}
     sol_abertas = 0
@@ -2555,9 +2572,12 @@ elif pagina == "🥇 Certificação":
 elif pagina == "🔗 Linhagem":
     page_header("🔗","Linhagem de Dados","Rastreie a origem e o destino de cada ativo — do dado bruto ao produto final.")
     st.markdown("""<div style="background:#0A0A0A99;border:1px solid #1F1F1F;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#A0A0A0;font-size:0.78rem;line-height:1.6;">A linhagem mostra como os dados fluem entre as camadas: Bronze (bruto) → Prata (tratado) → Ouro (pronto para uso).</div></div>""",unsafe_allow_html=True)
-    df_lin=load_linhagem()
+    df_lin, _lin_err = load_linhagem()
     if df_lin.empty:
-        estado_vazio("🔗","Nenhuma linhagem cadastrada","A linhagem será exibida quando os relacionamentos entre ativos forem registrados.")
+        if _lin_err:
+            estado_vazio("⚠️","Linhagem indisponível","Não foi possível conectar ao banco de dados. Verifique a conexão e tente novamente.")
+        else:
+            estado_vazio("🔗","Nenhuma linhagem cadastrada","A linhagem será exibida quando os relacionamentos entre ativos forem registrados.")
     else:
         CAMADA_COR={"bronze":"#CD7F32","prata":"#A8A9AD","ouro":"#C9A227"}
         CAMADA_X={"bronze":0.5,"prata":2.5,"ouro":4.5}
