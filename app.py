@@ -406,13 +406,13 @@ if pagina == "🏠 Início":
                 <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
                     <span style="background:#3FB95022;color:#3FB950;border-radius:20px;
                                  padding:3px 12px;font-size:0.72rem;font-weight:600;
-                                 border:1px solid #3FB95044;">✓ Dados Confiáveis</span>
+                                 border:1px solid #3FB95044;">✓ Cenário demonstrativo</span>
                     <span style="background:#58A6FF22;color:#58A6FF;border-radius:20px;
                                  padding:3px 12px;font-size:0.72rem;font-weight:600;
-                                 border:1px solid #58A6FF44;">✓ Responsabilidade Definida</span>
+                                 border:1px solid #58A6FF44;">✓ Responsáveis documentados</span>
                     <span style="background:#BC8CFF22;color:#BC8CFF;border-radius:20px;
                                  padding:3px 12px;font-size:0.72rem;font-weight:600;
-                                 border:1px solid #BC8CFF44;">✓ IA Ready</span>
+                                 border:1px solid #BC8CFF44;">✓ Exemplos fictícios</span>
                 </div>
             </div>
             <div style="text-align:right;flex-shrink:0;">
