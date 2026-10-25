@@ -874,7 +874,7 @@ if pagina == "🏠 Início":
         ("📬","Solicitações",         "espacomeu",  "Peça acessos e melhorias de qualidade"),
     ]
     _cards_html = "".join([
-        f"""<div onclick="window.location.href='?nav={nav_key}'"
+        f"""<div onclick="__govNav('{nav_key}')"
              style="background:#0A0A0A;border:1px solid #C9A22733;
                     border-bottom:3px solid #C9A227;border-radius:10px;
                     padding:18px 14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.18);
@@ -1025,7 +1025,7 @@ if pagina == "🏠 Início":
             ))
             fig_donut.add_annotation(
                 text=f"<b>{total_sol}</b>",
-                x=0.5, y=0.55, showarrow=False, font=dict(size=22, color="#0A0A0A"))
+                x=0.5, y=0.55, showarrow=False, font=dict(size=22, color="#FFFFFF"))
             fig_donut.add_annotation(
                 text="total", x=0.5, y=0.4, showarrow=False,
                 font=dict(size=10, color="#A0A0A0"))
@@ -2682,37 +2682,37 @@ elif pagina == "🥇 Certificação":
                         for col, (nome, atendido) in zip(crit_cols, criterios):
                             with col:
                                 st.write(("✓ " if atendido else "✕ ") + nome)
-            if is_aprovador and row["status_cert"]=="em_analise":
-                ca2,cr2=st.columns(2)
-                with ca2:
-                    if st.button(f"✅ Certificar {row['table_name']}",key=f"cert_ap_{row['cert_id']}",use_container_width=True):
-                        ok_cert, err_cert = exe(
-                            f"UPDATE meridian_governanca.gd_certification "
-                            f"SET status_cert='certificado',certificado_por='{esc(usuario)}',"
-                            f"certificado_em=current_timestamp(),valido_ate=date_add(current_date(),365) "
-                            f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='em_analise'"
-                        )
-                        if not ok_cert:
-                            st.error("Não foi possível atualizar o registro de certificação. Nenhuma confirmação foi emitida.")
-                            st.caption(f"Detalhe técnico: {err_cert}")
-                        else:
-                            st.success("✅ Certificado! O registro foi atualizado.")
-                            st.cache_data.clear()
-                            st.rerun()
-                with cr2:
-                    if st.button(f"❌ Rejeitar",key=f"cert_rej_{row['cert_id']}",use_container_width=True):
-                        ok_rej, err_rej = exe(
-                            f"UPDATE meridian_governanca.gd_certification "
-                            f"SET status_cert='pendente',certificado_por='{esc(usuario)}',certificado_em=current_timestamp() "
-                            f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='em_analise'"
-                        )
-                        if ok_rej:
-                            st.warning("↩️ Devolvido.")
-                            st.cache_data.clear()
-                            st.rerun()
-                        else:
-                            st.error("Não foi possível devolver a certificação.")
-                            st.caption(f"Detalhe técnico: {err_rej}")
+                if is_aprovador and row["status_cert"]=="em_analise":
+                    ca2,cr2=st.columns(2)
+                    with ca2:
+                        if st.button(f"✅ Certificar {row['table_name']}",key=f"cert_ap_{row['cert_id']}",use_container_width=True):
+                            ok_cert, err_cert = exe(
+                                f"UPDATE meridian_governanca.gd_certification "
+                                f"SET status_cert='certificado',certificado_por='{esc(usuario)}',"
+                                f"certificado_em=current_timestamp(),valido_ate=date_add(current_date(),365) "
+                                f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='em_analise'"
+                            )
+                            if not ok_cert:
+                                st.error("Não foi possível atualizar o registro de certificação. Nenhuma confirmação foi emitida.")
+                                st.caption(f"Detalhe técnico: {err_cert}")
+                            else:
+                                st.success("✅ Certificado! O registro foi atualizado.")
+                                st.cache_data.clear()
+                                st.rerun()
+                    with cr2:
+                        if st.button(f"❌ Rejeitar",key=f"cert_rej_{row['cert_id']}",use_container_width=True):
+                            ok_rej, err_rej = exe(
+                                f"UPDATE meridian_governanca.gd_certification "
+                                f"SET status_cert='pendente',certificado_por='{esc(usuario)}',certificado_em=current_timestamp() "
+                                f"WHERE cert_id='{esc(row['cert_id'])}' AND status_cert='em_analise'"
+                            )
+                            if ok_rej:
+                                st.warning("↩️ Devolvido.")
+                                st.cache_data.clear()
+                                st.rerun()
+                            else:
+                                st.error("Não foi possível devolver a certificação.")
+                                st.caption(f"Detalhe técnico: {err_rej}")
     copyright_footer()
 
 # ════════════════════════════════════════════════════════════════════
