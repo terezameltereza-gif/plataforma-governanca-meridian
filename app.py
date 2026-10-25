@@ -26,7 +26,22 @@ html,body,.stApp{background:#0F0F0F !important;font-family:'Inter',sans-serif !i
 h1,h2,h3{font-family:'Lora',serif !important;font-weight:700 !important;color:#0A0A0A !important;}
 
 /* ── Topbar fixa ── */
-header[data-testid="stHeader"]{display:none !important;}
+header[data-testid="stHeader"]{
+    background:transparent !important;
+    height:0 !important;
+    overflow:visible !important;
+    border:none !important;}
+header[data-testid="stHeader"] > *:not([data-testid="collapsedControl"]){display:none !important;}
+/* Sidebar toggle: sempre visível e acima da topbar */
+[data-testid="collapsedControl"]{
+    display:flex !important;
+    position:fixed !important;
+    top:10px !important;
+    left:4px !important;
+    z-index:999999 !important;
+    background:#0A0A0A !important;
+    border:1px solid #C9A22755 !important;
+    border-radius:6px !important;}
 .gov-topbar{
     position:fixed !important;top:0 !important;left:0 !important;right:0 !important;
     height:52px !important;background:#0A0A0A !important;z-index:99999 !important;
@@ -466,11 +481,19 @@ with st.sidebar:
         st.markdown("""
         <div style="padding:28px 16px 16px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
-                <div style="width:34px;height:34px;border-radius:8px;background:#C9A22722;border:1px solid #C9A22744;
-                            display:flex;align-items:center;justify-content:center;
-                            font-family:Lora,serif;font-weight:700;font-size:16px;color:#C9A227;">G</div>
+                <svg width="34" height="34" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+                  <circle cx="20" cy="20" r="19" stroke="#C9A227" stroke-width="1.8" fill="#0A0A0A"/>
+                  <circle cx="20" cy="20" r="15.5" stroke="#C9A227" stroke-width="0.9" fill="none"/>
+                  <text x="20" y="22" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="13" font-weight="bold" fill="#C9A227">G</text>
+                  <circle cx="14" cy="30" r="1.8" fill="#C9A227"/>
+                  <path d="M11.5 36 Q14 33 16.5 36" stroke="#C9A227" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                  <circle cx="20" cy="29.5" r="1.8" fill="#C9A227"/>
+                  <path d="M17.5 35.5 Q20 32.5 22.5 35.5" stroke="#C9A227" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                  <circle cx="26" cy="30" r="1.8" fill="#C9A227"/>
+                  <path d="M23.5 36 Q26 33 28.5 36" stroke="#C9A227" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                </svg>
                 <div>
-                    <div style="font-family:Lora,serif;font-size:13px;font-weight:700;color:#E2D4A8;letter-spacing:1.5px;">Governantes</div>
+                    <div style="font-family:Lora,serif;font-size:13px;font-weight:700;color:#E2D4A8;letter-spacing:1.5px;">Governantes<sup style="font-size:7px;color:#C9A227;">®</sup></div>
                     <div style="font-size:8.5px;color:#555555;letter-spacing:0.8px;text-transform:uppercase;">Governança de Dados</div>
                 </div>
             </div>
@@ -603,7 +626,7 @@ st.markdown(f"""
     </div>
     <!-- Busca -->
     <div class="topbar-busca" style="flex:1;max-width:380px;">
-        <div onclick="window.location.href='?nav=descobrir'" style="background:#141414;border:1px solid #1E3A5A;border-radius:8px;
+        <div onclick="window.location.href='?nav=descobrir'" style="background:#141414;border:1px solid #C9A22733;border-radius:8px;
                     padding:6px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;">
             <span style="color:#555555;font-size:12px;">🔍</span>
             <span style="color:#555555;font-size:0.78rem;">Buscar dados, termos, regras...</span>
@@ -1913,10 +1936,10 @@ elif pagina == "⚡ Meu Espaço":
                         hg=tl_e.get("horas_gastas"); sl_h=tl_e.get("sla_horas",0)
                         dn=tl_e.get("dentro_sla",True); hg_txt=f"{hg:.0f}h/{sl_h}h" if hg is not None else "—"
                         cs2="#15803D" if dn else "#B91C1C"
-                        eh+=f'<div style="text-align:center;flex:1;background:{"#F0FDF4" if se=="concluido" else "#FFF0F0" if se=="atrasado" else "#F4F1EC"};border-radius:8px;padding:8px;"><div style="font-size:0.6rem;color:#9CA3AF;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">{ie}</div><div style="font-size:0.6rem;color:{cs2};font-weight:600;">{hg_txt}</div></div>'
+                        eh+=f'<div style="text-align:center;flex:1;background:{"#0D2117" if se=="concluido" else "#1F0808" if se=="atrasado" else "#141414"};border:1px solid {"#1F4731" if se=="concluido" else "#4A1010" if se=="atrasado" else "#2A2A2A"};border-radius:8px;padding:8px;"><div style="font-size:0.6rem;color:#9CA3AF;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">{ie}</div><div style="font-size:0.6rem;color:{cs2};font-weight:600;">{hg_txt}</div></div>'
                     else:
-                        eh+=f'<div style="text-align:center;flex:1;background:#F4F1EC;border-radius:8px;padding:8px;opacity:0.4;"><div style="font-size:0.6rem;color:#9CA3AF;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">⭕</div><div style="font-size:0.6rem;color:#9CA3AF;">—</div></div>'
-                    if i<len(etapas)-1: eh+=f'<div style="flex:0;color:#E8E4DC;font-size:1rem;padding:0 4px;align-self:center;">→</div>'
+                        eh+=f'<div style="text-align:center;flex:1;background:#141414;border:1px solid #2A2A2A;border-radius:8px;padding:8px;opacity:0.4;"><div style="font-size:0.6rem;color:#9CA3AF;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">⭕</div><div style="font-size:0.6rem;color:#9CA3AF;">—</div></div>'
+                    if i<len(etapas)-1: eh+=f'<div style="flex:0;color:#444444;font-size:1rem;padding:0 4px;align-self:center;">→</div>'
                 st.markdown(f'<div style="display:flex;gap:6px;">{eh}</div></div>',unsafe_allow_html=True)
 
         section_divider("MINHAS SOLICITAÇÕES DE ACESSO")
@@ -2054,10 +2077,10 @@ elif pagina == "⚡ Meu Espaço":
                         dn=tl_e.get("dentro_sla",True); resp=str(tl_e.get("responsavel","")).split("@")[0]
                         hg_txt=f"{hg:.0f}h/{sl_h}h" if hg is not None else "—"
                         cs_t="#15803D" if dn else "#B91C1C"
-                        eh+=f'<div style="text-align:center;flex:1;background:{"#F0FDF4" if se=="concluido" else "#FFF0F0" if se=="atrasado" else "#F4F1EC"};border-radius:8px;padding:8px;"><div style="font-size:0.6rem;color:#9CA3AF;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">{ie}</div><div style="font-size:0.65rem;color:#0A0A0A;font-weight:600;">{resp}</div><div style="font-size:0.6rem;color:{cs_t};">{hg_txt}</div></div>'
+                        eh+=f'<div style="text-align:center;flex:1;background:{"#0D2117" if se=="concluido" else "#1F0808" if se=="atrasado" else "#141414"};border:1px solid {"#1F4731" if se=="concluido" else "#4A1010" if se=="atrasado" else "#2A2A2A"};border-radius:8px;padding:8px;"><div style="font-size:0.6rem;color:#9CA3AF;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">{ie}</div><div style="font-size:0.65rem;color:#E6EDF3;font-weight:600;">{resp}</div><div style="font-size:0.6rem;color:{cs_t};">{hg_txt}</div></div>'
                     else:
-                        eh+=f'<div style="text-align:center;flex:1;background:#F4F1EC;border-radius:8px;padding:8px;opacity:0.4;"><div style="font-size:0.6rem;color:#9CA3AF;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">⭕</div></div>'
-                    if i<len(etapas)-1: eh+=f'<div style="flex:0;color:#E8E4DC;font-size:1rem;padding:0 4px;align-self:center;">→</div>'
+                        eh+=f'<div style="text-align:center;flex:1;background:#141414;border:1px solid #2A2A2A;border-radius:8px;padding:8px;opacity:0.4;"><div style="font-size:0.6rem;color:#9CA3AF;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">⭕</div></div>'
+                    if i<len(etapas)-1: eh+=f'<div style="flex:0;color:#444444;font-size:1rem;padding:0 4px;align-self:center;">→</div>'
                 st.markdown(f'<div style="display:flex;gap:6px;">{eh}</div></div>',unsafe_allow_html=True)
         else:
             st.info("Nenhuma solicitação no sistema ainda.")
