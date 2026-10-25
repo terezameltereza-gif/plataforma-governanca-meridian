@@ -31,8 +31,10 @@ header[data-testid="stHeader"]{
     height:0 !important;
     overflow:visible !important;
     border:none !important;}
-header[data-testid="stHeader"] > *:not([data-testid="collapsedControl"]){display:none !important;}
-/* Sidebar toggle: sempre visível e acima da topbar */
+/* Oculta elementos do header exceto o toolbar (contém o botão de expandir sidebar) */
+header[data-testid="stHeader"] > *:not([data-testid="stToolbar"]):not([data-testid="collapsedControl"]){display:none !important;}
+/* Sidebar toggle (stExpandSidebarButton — Streamlit ≥ 1.40) e fallback collapsedControl */
+[data-testid="stExpandSidebarButton"],
 [data-testid="collapsedControl"]{
     display:flex !important;
     position:fixed !important;
@@ -42,6 +44,18 @@ header[data-testid="stHeader"] > *:not([data-testid="collapsedControl"]){display
     background:#0A0A0A !important;
     border:1px solid #C9A22755 !important;
     border-radius:6px !important;}
+/* Toolbar (container do toggle): posicionado fixo, sem área visível além do botão */
+[data-testid="stToolbar"]{
+    position:fixed !important;
+    top:0 !important;
+    left:0 !important;
+    height:52px !important;
+    width:52px !important;
+    overflow:visible !important;
+    z-index:999998 !important;
+    background:transparent !important;
+    pointer-events:none !important;}
+[data-testid="stToolbar"] > *{pointer-events:auto !important;}
 .gov-topbar{
     position:fixed !important;top:0 !important;left:0 !important;right:0 !important;
     height:52px !important;background:#0A0A0A !important;z-index:99999 !important;
