@@ -577,9 +577,8 @@ if pagina == "🏠 Início":
                         text-transform:uppercase;margin-bottom:10px;font-weight:700;">
                 PLATAFORMA DE GOVERNANÇA DE DADOS
             </div>
-            <div style="color:#FFFFFF;font-size:1.65rem;font-weight:800;line-height:1.25;
-                        margin-bottom:10px;font-family:'Lora',serif;letter-spacing:-0.3px;
-                        white-space:nowrap;">
+            <div style="color:#FFFFFF;font-size:clamp(1.1rem,2.2vw,1.55rem);font-weight:800;line-height:1.25;
+                        margin-bottom:10px;font-family:'Lora',serif;letter-spacing:-0.3px;">
                 Dados bem governados impulsionam grandes decisões
             </div>
             <div style="color:#7AAABF;font-size:0.84rem;line-height:1.6;">
@@ -634,7 +633,7 @@ if pagina == "🏠 Início":
     # ══════════════════════════════════════════════════════════════════
     st.markdown("""
     <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
-                color:#475569;border-bottom:1px solid #E2E8F0;padding-bottom:8px;
+                color:#C9A227;border-bottom:1px solid #C9A22733;padding-bottom:8px;
                 margin-bottom:12px;">Panorama Geral</div>
     """, unsafe_allow_html=True)
 
@@ -643,10 +642,10 @@ if pagina == "🏠 Início":
     # ── KPI tiles ────────────────────────────────────────────────────
     with pan_left:
         st.markdown("""
-        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
-                    padding:16px 18px;height:100%;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+        <div style="background:#0D1B2A;border:1px solid #C9A22733;border-radius:12px;
+                    padding:16px 18px;height:100%;box-shadow:0 2px 8px rgba(0,0,0,0.18);">
             <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1px;color:#475569;margin-bottom:14px;">Indicadores</div>
+                        letter-spacing:1px;color:#C9A227;margin-bottom:14px;">Indicadores</div>
         """, unsafe_allow_html=True)
 
         _db_ok = not bool(st.session_state.get("_db_err"))
@@ -660,12 +659,12 @@ if pagina == "🏠 Início":
         for val, lbl, cor_k, ic_k, fonte in kpi_data:
             st.markdown(f"""
             <div style="display:flex;align-items:center;gap:10px;padding:9px 0;
-                        border-bottom:1px solid #F1F5F9;">
-                <div style="width:34px;height:34px;border-radius:8px;background:{cor_k}14;
+                        border-bottom:1px solid #1A3A5C;">
+                <div style="width:34px;height:34px;border-radius:8px;background:{cor_k}22;
                             display:flex;align-items:center;justify-content:center;
                             font-size:1rem;flex-shrink:0;">{ic_k}</div>
                 <div style="flex:1;min-width:0;">
-                    <div style="color:#64748B;font-size:0.65rem;">{lbl}</div>
+                    <div style="color:#94A3B8;font-size:0.65rem;">{lbl}</div>
                     <div style="color:{cor_k};font-size:1.35rem;font-weight:800;line-height:1.2;">{val}</div>
                     <div style="color:#94A3B8;font-size:0.58rem;margin-top:1px;">{fonte} · {_upd}</div>
                 </div>
@@ -675,10 +674,10 @@ if pagina == "🏠 Início":
     # ── Qualidade por Domínio ────────────────────────────────────────
     with pan_mid:
         st.markdown("""
-        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
-                    padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+        <div style="background:#0D1B2A;border:1px solid #C9A22733;border-radius:12px;
+                    padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.18);">
             <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1px;color:#475569;margin-bottom:12px;">Qualidade por Domínio</div>
+                        letter-spacing:1px;color:#C9A227;margin-bottom:12px;">Qualidade por Domínio</div>
         """, unsafe_allow_html=True)
 
         if not df_qual.empty and "dominio" in df_qual.columns and "score_final" in df_qual.columns:
@@ -694,14 +693,14 @@ if pagina == "🏠 Início":
                 st.markdown(f"""
                 <div style="margin-bottom:9px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-                        <div style="color:#334155;font-size:0.73rem;font-weight:600;
+                        <div style="color:#E2E8F0;font-size:0.73rem;font-weight:600;
                                     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%;">{row['dominio']}</div>
                         <div style="display:flex;align-items:center;gap:6px;">
                             <div style="color:#94A3B8;font-size:0.6rem;">{n} reg.</div>
                             <div style="color:{cor_bar};font-size:0.73rem;font-weight:800;">{sc}%</div>
                         </div>
                     </div>
-                    <div style="background:#F1F5F9;border-radius:99px;height:5px;overflow:hidden;">
+                    <div style="background:#1A3A5C;border-radius:99px;height:5px;overflow:hidden;">
                         <div style="width:{sc}%;height:100%;background:{cor_bar};border-radius:99px;"></div>
                     </div>
                 </div>""", unsafe_allow_html=True)
@@ -715,10 +714,10 @@ if pagina == "🏠 Início":
     # ── Rosca Solicitações ───────────────────────────────────────────
     with pan_right:
         st.markdown("""
-        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
-                    padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+        <div style="background:#0D1B2A;border:1px solid #C9A22733;border-radius:12px;
+                    padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.18);">
             <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1px;color:#475569;margin-bottom:10px;">Status das Solicitações</div>
+                        letter-spacing:1px;color:#C9A227;margin-bottom:10px;">Status das Solicitações</div>
         """, unsafe_allow_html=True)
 
         frames = []
@@ -764,8 +763,8 @@ if pagina == "🏠 Início":
                 st.markdown(f"""
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                     <div style="width:8px;height:8px;border-radius:50%;background:{cor_l};flex-shrink:0;"></div>
-                    <div style="color:#475569;font-size:0.67rem;flex:1;">{row['status']}</div>
-                    <div style="color:#0D1B2A;font-size:0.73rem;font-weight:700;">{row['total']}</div>
+                    <div style="color:#94A3B8;font-size:0.67rem;flex:1;">{row['status']}</div>
+                    <div style="color:#E2E8F0;font-size:0.73rem;font-weight:700;">{row['total']}</div>
                 </div>""", unsafe_allow_html=True)
         elif st.session_state.get("_db_err"):
             st.markdown('<div style="color:#F85149;font-size:0.78rem;padding:20px 0;text-align:center;">⚠️ Erro de conexão com Databricks</div>', unsafe_allow_html=True)
@@ -780,8 +779,9 @@ if pagina == "🏠 Início":
     # D. ÁREA OPERACIONAL — 3 colunas
     # ══════════════════════════════════════════════════════════════════
     st.markdown("""
-    <div style="font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;
-                color:#94A3B8;margin-bottom:10px;">Área Operacional</div>
+    <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+                color:#C9A227;border-bottom:1px solid #C9A22733;padding-bottom:8px;
+                margin-bottom:12px;">Área Operacional</div>
     """, unsafe_allow_html=True)
 
     op1, op2, op3 = st.columns(3, gap="small")
@@ -789,11 +789,11 @@ if pagina == "🏠 Início":
     # ── Ativos de destaque ────────────────────────────────────────────
     with op1:
         st.markdown("""
-        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
-                    padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+        <div style="background:#0D1B2A;border:1px solid #C9A22733;border-radius:12px;
+                    padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.18);">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                 <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
-                            letter-spacing:1.5px;color:#94A3B8;">Ativos em Destaque</div>
+                            letter-spacing:1.5px;color:#C9A227;">Ativos em Destaque</div>
                 <span style="font-size:0.6rem;color:#94A3B8;font-style:italic;">por qualidade</span>
             </div>
         """, unsafe_allow_html=True)
@@ -809,10 +809,10 @@ if pagina == "🏠 Início":
             for _, row in exibir_ativos.iterrows():
                 st.markdown(f"""
                 <div style="display:flex;align-items:center;gap:8px;padding:7px 0;
-                            border-bottom:1px solid #F8FAFC;">
+                            border-bottom:1px solid #1A3A5C;">
                     <span style="font-size:0.9rem;">🗂️</span>
                     <div style="flex:1;min-width:0;">
-                        <div style="color:#1E293B;font-size:0.72rem;font-weight:600;
+                        <div style="color:#E2E8F0;font-size:0.72rem;font-weight:600;
                                     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{row['table_name']}</div>
                         <div style="color:#94A3B8;font-size:0.63rem;">{row['dominio']}</div>
                     </div>
@@ -824,10 +824,10 @@ if pagina == "🏠 Início":
     # ── Pendências dos meus dados ─────────────────────────────────────
     with op2:
         st.markdown("""
-        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
-                    padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+        <div style="background:#0D1B2A;border:1px solid #C9A22733;border-radius:12px;
+                    padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.18);">
             <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1.5px;color:#94A3B8;margin-bottom:10px;">Pendências Abertas</div>
+                        letter-spacing:1.5px;color:#C9A227;margin-bottom:10px;">Pendências Abertas</div>
         """, unsafe_allow_html=True)
 
         pendencias = []
@@ -852,10 +852,10 @@ if pagina == "🏠 Início":
                 cor_p = STATUS_COR_PILL.get(status_p.lower(),"#94A3B8")
                 tipo_ic = "📬" if tipo_p=="Acesso" else "🛡️"
                 st.markdown(f"""
-                <div style="padding:7px 0;border-bottom:1px solid #F8FAFC;">
+                <div style="padding:7px 0;border-bottom:1px solid #1A3A5C;">
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
                         <span style="font-size:0.85rem;">{tipo_ic}</span>
-                        <span style="color:#1E293B;font-size:0.71rem;font-weight:600;">{tipo_p}</span>
+                        <span style="color:#E2E8F0;font-size:0.71rem;font-weight:600;">{tipo_p}</span>
                         <span style="background:{cor_p}18;color:{cor_p};border-radius:20px;
                                      padding:1px 7px;font-size:0.6rem;font-weight:700;margin-left:auto;">{status_p}</span>
                     </div>
@@ -868,10 +868,10 @@ if pagina == "🏠 Início":
     # ── Últimas atividades ────────────────────────────────────────────
     with op3:
         st.markdown("""
-        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
-                    padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+        <div style="background:#0D1B2A;border:1px solid #C9A22733;border-radius:12px;
+                    padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.18);">
             <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1.5px;color:#94A3B8;margin-bottom:10px;">Últimas Atividades</div>
+                        letter-spacing:1.5px;color:#C9A227;margin-bottom:10px;">Últimas Atividades</div>
         """, unsafe_allow_html=True)
 
         if not df_tl.empty:
@@ -891,11 +891,11 @@ if pagina == "🏠 Início":
                 cor_a = "#3FB950" if "conclu" in status_a.lower() or "aprova" in status_a.lower() \
                         else "#F97316" if "penden" in status_a.lower() else "#94A3B8"
                 st.markdown(f"""
-                <div style="padding:7px 0;border-bottom:1px solid #F8FAFC;display:flex;align-items:flex-start;gap:8px;">
+                <div style="padding:7px 0;border-bottom:1px solid #1A3A5C;display:flex;align-items:flex-start;gap:8px;">
                     <div style="width:7px;height:7px;border-radius:50%;background:{cor_a};
                                 margin-top:4px;flex-shrink:0;"></div>
                     <div style="flex:1;min-width:0;">
-                        <div style="color:#1E293B;font-size:0.71rem;font-weight:600;
+                        <div style="color:#E2E8F0;font-size:0.71rem;font-weight:600;
                                     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{tipo_a}</div>
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
                             <span style="color:#94A3B8;font-size:0.62rem;">{responsavel}</span>
