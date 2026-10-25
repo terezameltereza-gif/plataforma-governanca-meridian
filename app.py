@@ -85,6 +85,61 @@ div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
 
 /* ── Journey cards ── */
 .nav-card-btn{display:none !important;}
+
+/* ══════════════════════════════════════════
+   MOBILE  ≤ 768 px
+   ══════════════════════════════════════════ */
+@media (max-width:768px){
+
+  /* Topbar: compacta, esconde jornadas e busca */
+  .gov-topbar{
+    height:48px !important;
+    padding:0 14px !important;
+    gap:10px !important;}
+  .gov-topbar .topbar-jornadas,
+  .gov-topbar .topbar-busca{display:none !important;}
+  .gov-topbar .topbar-logo{min-width:0 !important;}
+
+  /* Main: compensa topbar menor */
+  .main .block-container{
+    padding-top:60px !important;
+    padding-left:0.8rem !important;
+    padding-right:0.8rem !important;}
+
+  /* Sidebar: overlay nativo do Streamlit — remove margin-top para não deslocar */
+  section[data-testid="stSidebar"]{
+    margin-top:0 !important;
+    min-width:0 !important;}
+
+  /* Atalhos mobile: grid 2×3 via classe injetada */
+  .atalhos-grid{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:10px !important;}
+
+  /* Banner: empilha verticalmente, esconde card de missão */
+  .banner-missao{display:none !important;}
+  .banner-inner{flex-direction:column !important;gap:16px !important;}
+
+  /* Tabs: fonte menor, padding menor */
+  .stTabs [data-baseweb="tab"]{
+    padding:5px 10px !important;
+    font-size:0.75rem !important;}
+
+  /* Textos genéricos */
+  h1{font-size:1.1rem !important;}
+  h2{font-size:0.95rem !important;}
+}
+
+/* ══════════════════════════════════════════
+   TABLET  769 – 1024 px
+   ══════════════════════════════════════════ */
+@media (min-width:769px) and (max-width:1024px){
+  .gov-topbar .topbar-busca{max-width:200px !important;}
+  .main .block-container{
+    padding-left:1rem !important;
+    padding-right:1rem !important;}
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -464,7 +519,7 @@ _cor_tb   = PERFIL_COR.get(_perf_tb, "#58A6FF")
 st.markdown(f"""
 <div class="gov-topbar">
     <!-- Logo -->
-    <div style="display:flex;align-items:center;gap:10px;min-width:190px;">
+    <div class="topbar-logo" style="display:flex;align-items:center;gap:10px;min-width:190px;">
         <div style="width:30px;height:30px;border-radius:7px;background:#C9A22722;border:1px solid #C9A22744;
                     display:flex;align-items:center;justify-content:center;
                     font-family:Lora,serif;font-weight:700;font-size:15px;color:#C9A227;flex-shrink:0;">G</div>
@@ -474,7 +529,7 @@ st.markdown(f"""
         </div>
     </div>
     <!-- Jornadas -->
-    <div style="display:flex;align-items:center;gap:6px;margin:0 12px;">
+    <div class="topbar-jornadas" style="display:flex;align-items:center;gap:6px;margin:0 12px;">
         <span onclick="window.location.href='?nav=descobrir'" style="color:#7AAABF;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Catálogo e descoberta de ativos">🔍 Descobrir</span>
         <span onclick="window.location.href='?nav=entender'" style="color:#7AAABF;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Glossário e definições">📖 Entender</span>
         <span onclick="window.location.href='?nav=confiar'" style="color:#7AAABF;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Qualidade e scorecard">🛡️ Confiar</span>
@@ -482,7 +537,7 @@ st.markdown(f"""
         <span onclick="window.location.href='?nav=decidir'" style="color:#7AAABF;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Indicadores e gestão">📊 Decidir</span>
     </div>
     <!-- Busca -->
-    <div style="flex:1;max-width:380px;">
+    <div class="topbar-busca" style="flex:1;max-width:380px;">
         <div onclick="window.location.href='?nav=descobrir'" style="background:#162035;border:1px solid #1E3A5A;border-radius:8px;
                     padding:6px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;">
             <span style="color:#3A5068;font-size:12px;">🔍</span>
@@ -571,7 +626,8 @@ if pagina == "🏠 Início":
                 url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
                 border-radius:14px;padding:36px 36px 32px;margin-bottom:16px;
                 position:relative;min-height:160px;overflow:hidden;
-                display:flex;align-items:center;justify-content:space-between;gap:32px;">
+                display:flex;align-items:center;justify-content:space-between;gap:32px;"
+             class="banner-inner">
         <div style="flex:1;min-width:0;">
             <div style="color:#5A8AAA;font-size:0.62rem;letter-spacing:3px;
                         text-transform:uppercase;margin-bottom:10px;font-weight:700;">
@@ -585,7 +641,7 @@ if pagina == "🏠 Início":
                 Encontre, entenda, confie e aja sobre os dados da sua organização.
             </div>
         </div>
-        <div style="flex-shrink:0;background:rgba(13,27,42,0.88);border:1px solid #1E3A5C;
+        <div class="banner-missao" style="flex-shrink:0;background:rgba(13,27,42,0.88);border:1px solid #1E3A5C;
                     border-radius:12px;padding:18px 20px;width:190px;
                     backdrop-filter:blur(10px);">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
@@ -609,22 +665,26 @@ if pagina == "🏠 Início":
         ("🔗","Linhagem de Dados",    "linhagem",   "Veja a origem e o fluxo dos dados"),
         ("📬","Solicitações",         "espacomeu",  "Peça acessos e melhorias de qualidade"),
     ]
-    sc_cols = st.columns(5, gap="small")
-    for i, (ic, tit, nav_key, desc) in enumerate(ATALHOS):
-        with sc_cols[i]:
-            st.markdown(f"""
-            <div onclick="window.location.href='?nav={nav_key}'"
-                 style="background:#0D1B2A;border:1px solid #C9A22733;
-                        border-bottom:3px solid #C9A227;border-radius:10px;
-                        padding:18px 14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.18);
-                        cursor:pointer;transition:all 0.2s;"
-                 onmouseover="this.style.background='#1A2E45'"
-                 onmouseout="this.style.background='#0D1B2A'">
-                <div style="font-size:1.4rem;margin-bottom:8px;">{ic}</div>
-                <div style="color:#C9A227;font-weight:700;font-size:0.8rem;
-                            margin-bottom:5px;line-height:1.3;">{tit}</div>
-                <div style="color:#94A3B8;font-size:0.68rem;line-height:1.4;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
+    _cards_html = "".join([
+        f"""<div onclick="window.location.href='?nav={nav_key}'"
+             style="background:#0D1B2A;border:1px solid #C9A22733;
+                    border-bottom:3px solid #C9A227;border-radius:10px;
+                    padding:18px 14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.18);
+                    cursor:pointer;transition:all 0.2s;"
+             onmouseover="this.style.background='#1A2E45'"
+             onmouseout="this.style.background='#0D1B2A'">
+            <div style="font-size:1.4rem;margin-bottom:8px;">{ic}</div>
+            <div style="color:#C9A227;font-weight:700;font-size:0.8rem;
+                        margin-bottom:5px;line-height:1.3;">{tit}</div>
+            <div style="color:#94A3B8;font-size:0.68rem;line-height:1.4;">{desc}</div>
+        </div>"""
+        for ic, tit, nav_key, desc in ATALHOS
+    ])
+    st.markdown(f"""
+    <div class="atalhos-grid"
+         style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+        {_cards_html}
+    </div>""", unsafe_allow_html=True)
 
     st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
 
