@@ -514,6 +514,11 @@ _NAV_JORNADAS = {
     "confiar":   "🏆 Qualidade",
     "agir":      "⚡ Meu Espaço",
     "decidir":   "📊 Indicadores",
+    "catalogo":  "📋 Catálogo",
+    "glossario": "📖 Glossário",
+    "qualidade": "🏆 Qualidade",
+    "linhagem":  "🔗 Linhagem",
+    "espacomeu": "⚡ Meu Espaço",
 }
 _qp_nav = st.query_params.get("nav", "")
 if _qp_nav in _NAV_JORNADAS:
@@ -599,30 +604,28 @@ if pagina == "🏠 Início":
     # B. ATALHOS — 5 cards horizontais
     # ══════════════════════════════════════════════════════════════════
     ATALHOS = [
-        ("🗂️","Catálogo de Dados",    "📋 Catálogo",   "Encontre e explore ativos de dados"),
-        ("📖","Glossário de Negócio", "📖 Glossário",   "Veja termos, conceitos e regras"),
-        ("🛡️","Qualidade de Dados",   "🏆 Qualidade",   "Monitore a saúde e aponte problemas"),
-        ("🔗","Linhagem de Dados",    "🔗 Linhagem",    "Veja a origem e o fluxo dos dados"),
-        ("📬","Solicitações",         "⚡ Meu Espaço",  "Peça acessos e melhorias de qualidade"),
+        ("🗂️","Catálogo de Dados",    "catalogo",   "Encontre e explore ativos de dados"),
+        ("📖","Glossário de Negócio", "glossario",  "Veja termos, conceitos e regras"),
+        ("🛡️","Qualidade de Dados",   "qualidade",  "Monitore a saúde e aponte problemas"),
+        ("🔗","Linhagem de Dados",    "linhagem",   "Veja a origem e o fluxo dos dados"),
+        ("📬","Solicitações",         "espacomeu",  "Peça acessos e melhorias de qualidade"),
     ]
     sc_cols = st.columns(5, gap="small")
-    for i, (ic, tit, dest, desc) in enumerate(ATALHOS):
+    for i, (ic, tit, nav_key, desc) in enumerate(ATALHOS):
         with sc_cols[i]:
             st.markdown(f"""
-            <div style="background:#0D1B2A;border:1px solid #C9A22733;
-                        border-bottom:3px solid #C9A227;
-                        border-radius:10px 10px 0 0;
-                        padding:16px 14px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.18);">
-                <div style="font-size:1.4rem;margin-bottom:8px;filter:grayscale(0.2);">{ic}</div>
+            <div onclick="window.location.href='?nav={nav_key}'"
+                 style="background:#0D1B2A;border:1px solid #C9A22733;
+                        border-bottom:3px solid #C9A227;border-radius:10px;
+                        padding:18px 14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.18);
+                        cursor:pointer;transition:all 0.2s;"
+                 onmouseover="this.style.background='#1A2E45'"
+                 onmouseout="this.style.background='#0D1B2A'">
+                <div style="font-size:1.4rem;margin-bottom:8px;">{ic}</div>
                 <div style="color:#C9A227;font-weight:700;font-size:0.8rem;
                             margin-bottom:5px;line-height:1.3;">{tit}</div>
                 <div style="color:#94A3B8;font-size:0.68rem;line-height:1.4;">{desc}</div>
             </div>""", unsafe_allow_html=True)
-            st.markdown('<div class="atalho-btn">', unsafe_allow_html=True)
-            if st.button(f"→ Acessar", key=f"sc_{i}", use_container_width=True):
-                st.session_state["pagina"] = dest
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
 
