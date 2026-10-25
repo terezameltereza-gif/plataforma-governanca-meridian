@@ -100,35 +100,79 @@ div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
   .gov-topbar .topbar-busca{display:none !important;}
   .gov-topbar .topbar-logo{min-width:0 !important;}
 
-  /* Main: compensa topbar menor */
+  /* Main: compensa topbar menor, sem rolagem horizontal */
   .main .block-container{
     padding-top:60px !important;
-    padding-left:0.8rem !important;
-    padding-right:0.8rem !important;}
+    padding-left:0.75rem !important;
+    padding-right:0.75rem !important;
+    overflow-x:hidden !important;}
 
-  /* Sidebar: overlay nativo do Streamlit — remove margin-top para não deslocar */
+  /* Impede rolagem horizontal global */
+  html,body{overflow-x:hidden !important;max-width:100vw !important;}
+
+  /* Sidebar: overlay nativo do Streamlit */
   section[data-testid="stSidebar"]{
     margin-top:0 !important;
     min-width:0 !important;}
 
-  /* Atalhos mobile: grid 2×3 via classe injetada */
+  /* Atalhos: 2 colunas no mobile */
   .atalhos-grid{
     display:grid !important;
     grid-template-columns:1fr 1fr !important;
     gap:10px !important;}
 
-  /* Banner: empilha verticalmente, esconde card de missão */
+  /* Jornadas inferiores: 1 coluna (empilhadas) */
+  .jornadas-grid{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:8px !important;}
+
+  /* KPI panorama: 1 coluna */
+  .kpi-panorama{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:10px !important;}
+
+  /* Banner: empilha, esconde card de missão */
   .banner-missao{display:none !important;}
-  .banner-inner{flex-direction:column !important;gap:16px !important;}
+  .banner-inner{
+    flex-direction:column !important;
+    gap:16px !important;
+    padding:20px 16px 18px !important;}
 
-  /* Tabs: fonte menor, padding menor */
+  /* Tabelas: rolagem horizontal contida na região */
+  .stDataFrame,[data-testid="stDataFrame"]{
+    overflow-x:auto !important;
+    max-width:100% !important;}
+  .stDataFrame table{min-width:0 !important;font-size:0.72rem !important;}
+
+  /* Gráficos Plotly: ocupam largura toda */
+  .stPlotlyChart{width:100% !important;overflow-x:hidden !important;}
+
+  /* Tabs: fonte e padding menores */
   .stTabs [data-baseweb="tab"]{
-    padding:5px 10px !important;
-    font-size:0.75rem !important;}
+    padding:5px 8px !important;
+    font-size:0.72rem !important;}
+  .stTabs [data-baseweb="tab-list"]{
+    flex-wrap:wrap !important;gap:4px !important;}
 
-  /* Textos genéricos */
-  h1{font-size:1.1rem !important;}
-  h2{font-size:0.95rem !important;}
+  /* Textos */
+  h1{font-size:1.05rem !important;}
+  h2{font-size:0.9rem !important;}
+
+  /* Formulários: campos full-width */
+  .stTextInput>div>div>input,
+  .stSelectbox>div>div,
+  .stTextArea>div>div>textarea{
+    font-size:16px !important;}  /* evita zoom automático iOS */
+
+  /* Badge DEMO: menor no mobile */
+  .demo-badge{bottom:60px !important;right:8px !important;}
+
+  /* Colunas Streamlit: forçar empilhamento em telas muito estreitas */
+  @media (max-width:480px){
+    [data-testid="column"]{min-width:100% !important;flex:1 1 100% !important;}
+  }
 }
 
 /* ══════════════════════════════════════════
@@ -139,6 +183,10 @@ div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
   .main .block-container{
     padding-left:1rem !important;
     padding-right:1rem !important;}
+  .atalhos-grid{
+    grid-template-columns:repeat(3,1fr) !important;}
+  .jornadas-grid{
+    grid-template-columns:repeat(3,1fr) !important;}
 }
 </style>
 """, unsafe_allow_html=True)
@@ -582,7 +630,7 @@ st.markdown(f"""
 
 # ── Badge ambiente demo ───────────────────────────────────────────────
 st.markdown("""
-<div style="position:fixed;bottom:16px;right:16px;z-index:9999;
+<div class="demo-badge" style="position:fixed;bottom:16px;right:16px;z-index:9999;
             background:#0A0A0A;border:1px solid #C9A22766;border-radius:6px;
             padding:4px 10px;display:flex;align-items:center;gap:6px;
             box-shadow:0 2px 8px rgba(0,0,0,0.4);">
@@ -1034,6 +1082,8 @@ if pagina == "🏠 Início":
          "Gerencie acessos, relatos de qualidade e suas tarefas pendentes."),
     ]
 
+    # Wrapper mobile-responsivo para jornadas (CSS grid via classe)
+    st.markdown('<div class="jornadas-outer">', unsafe_allow_html=True)
     j_cols = st.columns(5, gap="small")
     for i, (ic_j, tit_j, dest_j, cor_j, desc_j) in enumerate(JORNADAS):
         with j_cols[i]:
@@ -1055,6 +1105,7 @@ if pagina == "🏠 Início":
                 st.session_state["pagina"] = dest_j
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)  # fecha jornadas-outer
 
     copyright_footer()
 
