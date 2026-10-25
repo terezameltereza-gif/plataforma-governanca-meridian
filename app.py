@@ -415,12 +415,9 @@ if pagina == "🏠 Início":
                 </div>
             </div>
             <div style="text-align:right;flex-shrink:0;">
-                <div style="color:#8B949E;font-size:0.68rem;">Última atualização</div>
+                <div style="color:#8B949E;font-size:0.68rem;">Página renderizada em</div>
                 <div style="color:#E6EDF3;font-size:0.82rem;font-weight:600;">{now_str}</div>
-                <div style="background:#3FB95022;color:#3FB950;border-radius:20px;
-                            padding:2px 10px;font-size:0.68rem;font-weight:600;
-                            border:1px solid #3FB95044;margin-top:4px;
-                            display:inline-block;">● AO VIVO</div>
+                <div style="color:#8B949E;font-size:0.65rem;margin-top:4px;">Este horário não comprova atualização dos dados.</div>
             </div>
         </div>
     </div>""", unsafe_allow_html=True)
@@ -494,7 +491,7 @@ if pagina == "🏠 Início":
     st.markdown("""
     <div style="background:#161B22;border:1px solid #30363D;border-radius:12px;padding:20px 24px;margin-bottom:8px;">
         <div style="color:#8B949E;font-size:0.75rem;margin-bottom:16px;">
-            Toda informação utilizada pela organização segue uma jornada — do conceito à decisão.
+            Exemplo ilustrativo de uma jornada do conceito à decisão; não representa uma linhagem verificada do ambiente.
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <div style="background:#C9A22722;border:1px solid #C9A22744;border-radius:8px;padding:10px 16px;text-align:center;">
