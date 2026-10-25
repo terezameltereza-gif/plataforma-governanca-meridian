@@ -56,12 +56,12 @@ section[data-testid="stSidebar"] .stButton>button:hover{background:#162035 !impo
     padding-left:1.5rem !important;padding-right:1.5rem !important;}
 
 /* ── Componentes gerais ── */
-.stButton>button{background:#1E4D9B !important;color:#FFFFFF !important;border:none !important;
+.stButton>button{background:#0D1B2A !important;color:#FFFFFF !important;border:none !important;
     border-radius:8px !important;font-weight:600 !important;font-size:0.82rem !important;}
-.stButton>button:hover{background:#1A4280 !important;}
+.stButton>button:hover{background:#C9A227 !important;color:#0D1B2A !important;}
 .stTabs [data-baseweb="tab-list"]{background:#FFFFFF;border-radius:10px;padding:4px;gap:4px;border:1px solid #E2E8F0;}
 .stTabs [data-baseweb="tab"]{border-radius:7px !important;color:#6B7280 !important;padding:7px 16px !important;font-size:0.82rem !important;font-weight:600 !important;}
-.stTabs [aria-selected="true"]{background:#1E4D9B !important;color:#FFFFFF !important;}
+.stTabs [aria-selected="true"]{background:#0D1B2A !important;color:#C9A227 !important;}
 .stSelectbox>div>div,.stTextInput>div>div>input,.stTextArea>div>div>textarea{background:#FFFFFF !important;border:1px solid #E2E8F0 !important;border-radius:8px !important;color:#0D1B2A !important;}
 .stDataFrame{background:#FFFFFF !important;border-radius:10px !important;}
 div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
@@ -413,8 +413,8 @@ with st.sidebar:
         is_active = st.session_state["pagina"] == dest
         if is_active:
             st.markdown(f"""
-            <div style="background:linear-gradient(90deg,#1E4D9B22,#1E4D9B0A);
-                        border-left:3px solid #1E4D9B;border-radius:0 7px 7px 0;
+            <div style="background:linear-gradient(90deg,#C9A22722,#C9A2270A);
+                        border-left:3px solid #C9A227;border-radius:0 7px 7px 0;
                         padding:8px 14px;display:flex;align-items:center;gap:10px;
                         margin:1px 8px 1px 0;font-size:0.81rem;font-weight:700;color:#FFFFFF;">
                 <span style="font-size:0.9rem;">{icon}</span><span>{label}</span>
@@ -643,13 +643,15 @@ if pagina == "🏠 Início":
                         letter-spacing:1px;color:#475569;margin-bottom:14px;">Indicadores</div>
         """, unsafe_allow_html=True)
 
+        _db_ok = not bool(st.session_state.get("_db_err"))
+        _upd   = datetime.now().strftime("%H:%M") if _db_ok else "indisponível"
         kpi_data = [
-            (total_ativos,  "Ativos de Dados",      "#1E4D9B", "🗂️"),
-            (total_termos,  "Termos de Negócio",    "#C9A227", "📖"),
-            (qual_str,      "Qualidade Média",       "#3FB950", "🛡️"),
-            (sol_abertas,   "Solicitações em Aberto","#F97316", "📬"),
+            (total_ativos,  "Ativos de Dados",       "#0D1B2A", "🗂️", "tabelas_metadata"),
+            (total_termos,  "Termos de Negócio",     "#C9A227", "📖", "gd_glossario"),
+            (qual_str,      "Qualidade Média",        "#3FB950", "🛡️", "gd_quality_dimensions"),
+            (sol_abertas,   "Solicitações em Aberto", "#F97316", "📬", "solicitacoes_*"),
         ]
-        for val, lbl, cor_k, ic_k in kpi_data:
+        for val, lbl, cor_k, ic_k, fonte in kpi_data:
             st.markdown(f"""
             <div style="display:flex;align-items:center;gap:10px;padding:9px 0;
                         border-bottom:1px solid #F1F5F9;">
@@ -659,6 +661,7 @@ if pagina == "🏠 Início":
                 <div style="flex:1;min-width:0;">
                     <div style="color:#64748B;font-size:0.65rem;">{lbl}</div>
                     <div style="color:{cor_k};font-size:1.35rem;font-weight:800;line-height:1.2;">{val}</div>
+                    <div style="color:#94A3B8;font-size:0.58rem;margin-top:1px;">{fonte} · {_upd}</div>
                 </div>
             </div>""", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -673,26 +676,33 @@ if pagina == "🏠 Início":
         """, unsafe_allow_html=True)
 
         if not df_qual.empty and "dominio" in df_qual.columns and "score_final" in df_qual.columns:
-            dom_qual = df_qual.groupby("dominio")["score_final"].mean().reset_index()
+            dom_qual = df_qual.groupby("dominio").agg(
+                score_final=("score_final","mean"),
+                total=("score_final","count")
+            ).reset_index()
             dom_qual = dom_qual.sort_values("score_final", ascending=False).head(7)
-            CORES_DOM = ["#1E4D9B","#3FB950","#BC8CFF","#F97316","#C9A227","#F85149","#58A6FF"]
             for idx, row in dom_qual.iterrows():
-                sc = round(float(row["score_final"]), 1)
-                cor_d = CORES_DOM[idx % len(CORES_DOM)]
+                sc    = round(float(row["score_final"]), 1)
+                n     = int(row["total"])
                 cor_bar = "#3FB950" if sc >= 80 else "#C9A227" if sc >= 60 else "#F85149"
                 st.markdown(f"""
                 <div style="margin-bottom:9px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
                         <div style="color:#334155;font-size:0.73rem;font-weight:600;
-                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65%;">{row['dominio']}</div>
-                        <div style="color:{cor_bar};font-size:0.73rem;font-weight:800;margin-left:6px;">{sc}%</div>
+                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%;">{row['dominio']}</div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <div style="color:#94A3B8;font-size:0.6rem;">{n} reg.</div>
+                            <div style="color:{cor_bar};font-size:0.73rem;font-weight:800;">{sc}%</div>
+                        </div>
                     </div>
                     <div style="background:#F1F5F9;border-radius:99px;height:5px;overflow:hidden;">
                         <div style="width:{sc}%;height:100%;background:{cor_bar};border-radius:99px;"></div>
                     </div>
                 </div>""", unsafe_allow_html=True)
+        elif st.session_state.get("_db_err"):
+            st.markdown('<div style="color:#F85149;font-size:0.78rem;padding:20px 0;text-align:center;">⚠️ Erro de conexão com Databricks</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div style="color:#94A3B8;font-size:0.78rem;padding:20px 0;text-align:center;">Dados não disponíveis</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#94A3B8;font-size:0.78rem;padding:20px 0;text-align:center;">Nenhum dado de qualidade encontrado</div>', unsafe_allow_html=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -716,8 +726,8 @@ if pagina == "🏠 Início":
             status_counts.columns = ["status","total"]
             STATUS_COLORS = {
                 "pendente":"#F97316","em_analise":"#3B82F6","aprovado":"#3FB950",
-                "concluido":"#1E4D9B","cancelado":"#94A3B8","em_revisao":"#BC8CFF",
-                "reprovado":"#F85149","concluída":"#1E4D9B","aprovada":"#3FB950",
+                "concluido":"#3FB950","cancelado":"#94A3B8","em_revisao":"#BC8CFF",
+                "reprovado":"#F85149","concluída":"#3FB950","aprovada":"#3FB950",
             }
             cores_rosca = [STATUS_COLORS.get(s,"#CBD5E1") for s in status_counts["status"]]
             total_sol = status_counts["total"].sum()
@@ -751,8 +761,10 @@ if pagina == "🏠 Início":
                     <div style="color:#475569;font-size:0.67rem;flex:1;">{row['status']}</div>
                     <div style="color:#0D1B2A;font-size:0.73rem;font-weight:700;">{row['total']}</div>
                 </div>""", unsafe_allow_html=True)
+        elif st.session_state.get("_db_err"):
+            st.markdown('<div style="color:#F85149;font-size:0.78rem;padding:20px 0;text-align:center;">⚠️ Erro de conexão com Databricks</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div style="color:#94A3B8;font-size:0.78rem;padding:20px 0;text-align:center;">Sem solicitações registradas</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#94A3B8;font-size:0.78rem;padding:20px 0;text-align:center;">Nenhuma solicitação registrada</div>', unsafe_allow_html=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -900,7 +912,7 @@ if pagina == "🏠 Início":
     """, unsafe_allow_html=True)
 
     JORNADAS = [
-        ("📋","Busca e Catálogo de Dados",   "📋 Catálogo",  "#1E4D9B",
+        ("📋","Busca e Catálogo de Dados",   "📋 Catálogo",  "#0D1B2A",
          "Explore o inventário de ativos, filtros e metadados da organização."),
         ("🗂️","Detalhe do Ativo de Dados",   "📋 Catálogo",  "#7C3AED",
          "Acesse informações técnicas, responsáveis e qualidade de cada ativo."),
