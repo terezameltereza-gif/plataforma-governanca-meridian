@@ -474,16 +474,16 @@ st.markdown(f"""
     </div>
     <!-- Jornadas -->
     <div style="display:flex;align-items:center;gap:6px;margin:0 12px;">
-        <span style="color:#2A4A6A;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Catálogo e descoberta de ativos">🔍 Descobrir</span>
-        <span style="color:#2A4A6A;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Glossário e definições">📖 Entender</span>
-        <span style="color:#2A4A6A;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Qualidade e scorecard">🛡️ Confiar</span>
-        <span style="color:#2A4A6A;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Curadoria e solicitações">⚡ Agir</span>
-        <span style="color:#2A4A6A;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Indicadores e gestão">📊 Decidir</span>
+        <span onclick="window.location.href='?nav=descobrir'" style="color:#7AAABF;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Catálogo e descoberta de ativos">🔍 Descobrir</span>
+        <span onclick="window.location.href='?nav=entender'" style="color:#7AAABF;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Glossário e definições">📖 Entender</span>
+        <span onclick="window.location.href='?nav=confiar'" style="color:#7AAABF;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Qualidade e scorecard">🛡️ Confiar</span>
+        <span onclick="window.location.href='?nav=agir'" style="color:#7AAABF;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Curadoria e solicitações">⚡ Agir</span>
+        <span onclick="window.location.href='?nav=decidir'" style="color:#7AAABF;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1A3A5C;cursor:pointer;white-space:nowrap;" title="Indicadores e gestão">📊 Decidir</span>
     </div>
     <!-- Busca -->
     <div style="flex:1;max-width:380px;">
-        <div style="background:#162035;border:1px solid #1E3A5A;border-radius:8px;
-                    padding:6px 14px;display:flex;align-items:center;gap:8px;">
+        <div onclick="window.location.href='?nav=descobrir'" style="background:#162035;border:1px solid #1E3A5A;border-radius:8px;
+                    padding:6px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;">
             <span style="color:#3A5068;font-size:12px;">🔍</span>
             <span style="color:#3A5068;font-size:0.78rem;">Buscar dados, termos, regras...</span>
         </div>
@@ -505,6 +505,20 @@ st.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# ── Navegação via topbar (jornadas + busca) ──────────────────────────
+_NAV_JORNADAS = {
+    "descobrir": "📋 Catálogo",
+    "entender":  "📖 Glossário",
+    "confiar":   "🏆 Qualidade",
+    "agir":      "⚡ Meu Espaço",
+    "decidir":   "📊 Indicadores",
+}
+_qp_nav = st.query_params.get("nav", "")
+if _qp_nav in _NAV_JORNADAS:
+    st.session_state["pagina"] = _NAV_JORNADAS[_qp_nav]
+    st.query_params.clear()
+    st.rerun()
 
 pagina       = st.session_state.get("pagina","🏠 Início")
 usuario      = st.session_state["usuario"]
