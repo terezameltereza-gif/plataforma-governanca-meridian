@@ -1694,10 +1694,10 @@ elif pagina == "✏️ Curadoria":
                                     continue
                                 atualizadas.append(tabela_lote)
                                 audit_ok, audit_err = exe(
-                                    "INSERT INTO meridian_governanca.metadata_audit "
-                                    "VALUES (uuid(), current_timestamp(), "
+                                    f"INSERT INTO meridian_governanca.metadata_audit "
+                                    f"VALUES ('{uuid.uuid4()}', current_timestamp(), "
                                     f"'{esc(schema_lote)}', '{esc(tabela_lote)}', 'tabela', '', "
-                                    f"'curadoria_lote', {score_anterior}, {score_novo}, "
+                                    f"'curadoria_lote', '{score_anterior}', '{score_novo}', "
                                     f"'manual', '{esc(usuario_lote)}', '{esc(usuario_lote[:8])}')"
                                 )
                                 if not audit_ok:
