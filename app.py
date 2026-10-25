@@ -614,7 +614,7 @@ elif pagina == "📖 Glossário":
                             if nn and nd:
                                 gid_new = str(uuid.uuid4())
                                 ok,err = exe(f"INSERT INTO meridian_governanca.business_glossary VALUES ('{gid_new}','{esc(nn)}','{esc(nd)}','{esc(ns)}','{esc(ndo)}','{esc(na)}','{esc(nc)}','{esc(usuario)}','{esc(usuario)}','rascunho',1,false,'{esc(usuario)}',current_timestamp(),'{esc(usuario)}',current_timestamp())")
-                                if ok: st.success(f"✅ '{nn}' criado!"); st.cache_data.clear(); st.rerun()
+                                if ok: st.success(f"✅ '{nn}' criado no ambiente demonstrativo."); st.cache_data.clear(); st.rerun()
                                 else: st.error(f"Erro: {err}")
                             else: st.warning("Preencha Nome e Definição.")
                 else:
@@ -628,7 +628,7 @@ elif pagina == "📖 Glossário":
                         if st.button("📤 Enviar sugestão", key="btn_sug_conceito"):
                             if sn_nome and sn_def:
                                 ok,err = exe(f"INSERT INTO meridian_governanca.sugestoes_conceitos VALUES ('{uuid.uuid4()}','{esc(usuario)}','{esc(sn_nome)}','{esc(sn_def)}','{esc(sn_just)}','{esc(sn_area)}','{esc(sn_ex)}','pendente',null,null,current_timestamp(),current_timestamp())")
-                                if ok: st.success("✅ Sugestão enviada! A equipe de Governança irá analisar."); st.rerun()
+                                if ok: st.success("✅ Sugestão registrada no ambiente demonstrativo. A análise depende do fluxo de governança configurado."); st.rerun()
                                 else: st.error(f"Erro: {err}")
                             else: st.warning("Preencha pelo menos o nome e a definição.")
 
@@ -757,7 +757,7 @@ elif pagina == "📖 Glossário":
                     if st.button("📤 Enviar sugestão de regra", key="btn_sug_regra"):
                         if sr_nome and sr_desc:
                             ok,err = exe(f"INSERT INTO meridian_governanca.sugestoes_regras VALUES ('{uuid.uuid4()}','{esc(usuario)}','{esc(sr_nome)}','{esc(sr_desc)}','{esc(sr_regra)}','{esc(sr_just)}','{esc(sr_conc)}','{esc(sr_ind)}','pendente',null,null,current_timestamp(),current_timestamp())")
-                            if ok: st.success("✅ Sugestão enviada!"); st.rerun()
+                            if ok: st.success("✅ Sugestão registrada no ambiente demonstrativo."); st.rerun()
                             else: st.error(f"Erro: {err}")
                         else: st.warning("Preencha pelo menos o nome e a descrição.")
 
@@ -964,7 +964,7 @@ elif pagina == "📋 Catálogo":
                             if st.button("📤 Enviar solicitação de acesso", key="btn_sol_acesso"):
                                 if sa_just:
                                     ok,err = exe(f"INSERT INTO meridian_governanca.solicitacoes_acesso VALUES ('{uuid.uuid4()}','{esc(usuario)}','{esc(tb)}','{esc(sc)}','{esc(sa_just)}','{esc(sa_tipo)}','pendente',null,null,current_timestamp(),current_timestamp())")
-                                    if ok: st.success("✅ Solicitação enviada! O responsável será notificado.")
+                                    if ok: st.success("✅ Solicitação registrada no ambiente demonstrativo. O envio de notificações ainda não está configurado.")
                                     else: st.error(f"Erro: {err}")
                                 else: st.warning("Informe o motivo da solicitação.")
 
