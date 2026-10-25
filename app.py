@@ -698,18 +698,27 @@ elif pagina == "📖 Glossário":
                         if is_curador and row["status"]=="rascunho":
                             if st.button("📤 Submeter para Revisão",key=f"gsub_{gid}",use_container_width=True):
                                 ok,_ = exe(f"UPDATE meridian_governanca.business_glossary SET status='em_revisao',atualizado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE glossary_id='{gid}'")
-                                if ok: st.success("✅ Submetido!"); st.cache_data.clear(); st.rerun()
+                                if ok:
+                                    st.success("✅ Submetido!"); st.cache_data.clear(); st.rerun()
+                                else:
+                                    st.error("Não foi possível submeter o conceito para revisão. Nenhuma alteração foi confirmada.")
 
                         if is_aprovador and row["status"]=="em_revisao":
                             ga,gr = st.columns(2)
                             with ga:
                                 if st.button("✅ Aprovar",key=f"gap_{gid}",use_container_width=True):
                                     ok,_ = exe(f"UPDATE meridian_governanca.business_glossary SET status='homologado',atualizado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE glossary_id='{gid}'")
-                                    if ok: st.success("✅ Homologado!"); st.cache_data.clear(); st.rerun()
+                                    if ok:
+                                        st.success("✅ Homologado!"); st.cache_data.clear(); st.rerun()
+                                    else:
+                                        st.error("Não foi possível homologar o conceito. Verifique o estado atual e tente novamente.")
                             with gr:
                                 if st.button("❌ Rejeitar",key=f"grej_{gid}",use_container_width=True):
                                     ok,_ = exe(f"UPDATE meridian_governanca.business_glossary SET status='rascunho',atualizado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE glossary_id='{gid}'")
-                                    if ok: st.warning("↩️ Devolvido."); st.cache_data.clear(); st.rerun()
+                                    if ok:
+                                        st.warning("↩️ Devolvido."); st.cache_data.clear(); st.rerun()
+                                    else:
+                                        st.error("Não foi possível devolver o conceito. Verifique o estado atual e tente novamente.")
                 else:
                     estado_vazio("📖","Selecione um conceito","Clique em qualquer conceito da lista para ver seus detalhes.")
 
@@ -1424,11 +1433,17 @@ elif pagina == "⚡ Meu Espaço":
                         with ca:
                             if st.button("✅ Encaminhar para Glossário",key=f"ap_conc_{r['sugestao_id']}",use_container_width=True):
                                 ok,_ = exe(f"UPDATE meridian_governanca.sugestoes_conceitos SET status='aprovado',analisado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE sugestao_id='{r['sugestao_id']}'")
-                                if ok: st.success("✅ Aprovado!"); st.cache_data.clear(); st.rerun()
+                                if ok:
+                                    st.success("✅ Aprovado!"); st.cache_data.clear(); st.rerun()
+                                else:
+                                    st.error("Não foi possível atualizar a sugestão. Nenhuma confirmação foi emitida.")
                         with cr:
                             if st.button("❌ Rejeitar",key=f"rej_conc_{r['sugestao_id']}",use_container_width=True):
                                 ok,_ = exe(f"UPDATE meridian_governanca.sugestoes_conceitos SET status='rejeitado',analisado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE sugestao_id='{r['sugestao_id']}'")
-                                if ok: st.warning("↩️ Rejeitado."); st.cache_data.clear(); st.rerun()
+                                if ok:
+                                    st.warning("↩️ Rejeitado."); st.cache_data.clear(); st.rerun()
+                                else:
+                                    st.error("Não foi possível rejeitar a sugestão. Nenhuma confirmação foi emitida.")
 
         if is_aprovador and pend_aprov>0:
             section_divider("CONCEITOS AGUARDANDO APROVAÇÃO")
@@ -1439,13 +1454,19 @@ elif pagina == "⚡ Meu Espaço":
                     with ca:
                         if st.button("✅ Aprovar",key=f"mea_{row['glossary_id']}",use_container_width=True):
                             ok,_ = exe(f"UPDATE meridian_governanca.business_glossary SET status='homologado',atualizado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE glossary_id='{row['glossary_id']}'")
-                            if ok: st.success("✅ Homologado!"); st.cache_data.clear(); st.rerun()
+                            if ok:
+                                st.success("✅ Homologado!"); st.cache_data.clear(); st.rerun()
+                            else:
+                                st.error("Não foi possível homologar o conceito. Nenhuma confirmação foi emitida.")
                     with cr:
                         motivo = st.text_input("Motivo da rejeição",key=f"mem_{row['glossary_id']}")
                         if st.button("❌ Rejeitar",key=f"mer_{row['glossary_id']}",use_container_width=True):
                             if motivo:
                                 ok,_ = exe(f"UPDATE meridian_governanca.business_glossary SET status='rascunho',atualizado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE glossary_id='{row['glossary_id']}'")
-                                if ok: st.warning("↩️ Devolvido."); st.cache_data.clear(); st.rerun()
+                                if ok:
+                                    st.warning("↩️ Devolvido."); st.cache_data.clear(); st.rerun()
+                                else:
+                                    st.error("Não foi possível devolver o conceito. Nenhuma confirmação foi emitida.")
                             else: st.warning("Informe o motivo.")
 
         section_divider("WORKFLOW DE ATENDIMENTO — TODAS AS SOLICITAÇÕES")
