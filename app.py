@@ -436,7 +436,7 @@ if pagina == "🏠 Início":
     total_termos = len(df_gloss) if not df_gloss.empty else 0
     total_regras = len(df_rules) if not df_rules.empty else 0
     tabs_link    = df_links["table_name"].nunique() if not df_links.empty else 0
-    cobertura    = min(100, round(tabs_link/max(total_ativos,1)*100))
+    cobertura    = min(100, round(tabs_link/total_ativos*100)) if total_ativos > 0 else 0
     cor_cob      = "#3FB950" if cobertura>=70 else "#C9A227" if cobertura>=40 else "#F85149"
 
     k1,k2,k3,k4,k5 = st.columns(5)
