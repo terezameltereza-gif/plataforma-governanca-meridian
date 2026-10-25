@@ -2022,6 +2022,7 @@ elif pagina == "⚡ Meu Espaço":
 
     # ── CURADOR / APROVADOR ───────────────────────────────────────
     else:
+        _meu_db_fail = bool(st.session_state.get("_db_err"))
         pend_aprov  = len(df_gloss[df_gloss["status"]=="em_revisao"]) if not df_gloss.empty else 0
         sem_desc    = len(df_meta[df_meta["descricao"]==""]) if not df_meta.empty else 0
         sem_owner   = len(df_meta[df_meta["data_owner"]==""]) if not df_meta.empty else 0
@@ -2055,10 +2056,17 @@ elif pagina == "⚡ Meu Espaço":
                 tem_acao = True
                 st.markdown(f'<div style="background:#0A0A0A;border:1px solid #1F1F1F;border-radius:8px;padding:11px 16px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:10px;"><span style="background:{cor_a}22;color:{cor_a};border-radius:4px;padding:2px 8px;font-size:0.65rem;font-weight:700;">{tipo}</span><span style="color:#E6EDF3;font-size:0.82rem;">{msg}</span></div><span style="color:#A0A0A0;font-size:0.72rem;">{dest}</span></div>', unsafe_allow_html=True)
         if not tem_acao:
-            st.markdown('<div style="color:#3FB950;font-size:0.85rem;padding:12px;">✅ Nenhuma pendência no momento. Tudo em dia!</div>', unsafe_allow_html=True)
+            if _meu_db_fail and df_meta.empty and df_gloss.empty:
+                estado_vazio("⚠️", "Dados indisponíveis",
+                             "Não foi possível conectar ao banco de dados. As pendências serão exibidas quando a conexão for restabelecida.")
+            else:
+                st.markdown('<div style="color:#3FB950;font-size:0.85rem;padding:12px;">✅ Nenhuma pendência no momento. Tudo em dia!</div>', unsafe_allow_html=True)
 
         section_divider("MINHAS RESPONSABILIDADES")
-        if not df_meta.empty:
+        if df_meta.empty and _meu_db_fail:
+            estado_vazio("⚠️", "Responsabilidades indisponíveis",
+                         "Não foi possível conectar ao banco de dados. Suas responsabilidades serão exibidas quando a conexão for restabelecida.")
+        elif not df_meta.empty:
             k1,k2,k3,k4 = st.columns(4)
             with k1: st.markdown(kpi(len(df_meta[df_meta["data_owner"]==usuario]),"Como Responsável (Owner)","#C9A227",tooltip="Ativos pelos quais você é o Data Owner."), unsafe_allow_html=True)
             with k2: st.markdown(kpi(len(df_meta[df_meta["data_steward"]==usuario]),"Como Gestor (Steward)","#58A6FF",tooltip="Ativos pelos quais você é o Data Steward."), unsafe_allow_html=True)
@@ -2407,8 +2415,14 @@ elif pagina == "📊 Indicadores":
         meses_map = {"Todos":0,"Jan":1,"Fev":2,"Mar":3,"Abr":4,"Mai":5,"Jun":6,"Jul":7,"Ago":8,"Set":9,"Out":10,"Nov":11,"Dez":12}
         fi_mes = st.selectbox("Mês", list(meses_map.keys()), key="ind_mes")
 
+    _ind_db_fail = bool(st.session_state.get("_db_err"))
     if df_snap.empty:
-        st.info("Nenhum snapshot disponível.")
+        if _ind_db_fail:
+            estado_vazio("⚠️", "Indicadores indisponíveis",
+                         "Não foi possível conectar ao banco de dados. Os indicadores de governança serão exibidos quando a conexão for restabelecida.")
+        else:
+            estado_vazio("📊", "Nenhum snapshot disponível",
+                         "Os indicadores serão exibidos após o primeiro snapshot de governança ser gerado.")
     else:
         df_sn = df_snap[df_snap["dominio"]==(fi_dom if fi_dom!="Todos" else "Todos")] if fi_dom!="Todos" else df_snap[df_snap["dominio"]=="Todos"]
         if fi_ano!="Todos":
@@ -2456,7 +2470,14 @@ elif pagina == "📊 Indicadores":
                 with col: st.markdown(kpi(row["qtd"],label_c,cor_c),unsafe_allow_html=True)
 
     # ── PAINEL DE SLA ──────────────────────────────────────────────
-    if not df_sla.empty:
+    if df_sla.empty:
+        if _ind_db_fail:
+            estado_vazio("⚠️", "SLA indisponível",
+                         "Não foi possível carregar os dados de SLA. A seção será exibida quando a conexão for restabelecida.")
+        else:
+            estado_vazio("📋", "Nenhum dado de SLA",
+                         "Os dados de SLA serão exibidos após o registro das primeiras solicitações.")
+    elif not df_sla.empty:
         st.markdown(f'<div style="display:flex;align-items:center;gap:10px;margin:16px 0 12px;"><div style="height:1px;background:#E8E4DC;flex:1;"></div><span style="color:#9CA3AF;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">SLA E ATENDIMENTO DE SOLICITAÇÕES</span><div style="height:1px;background:#E8E4DC;flex:1;"></div></div>',unsafe_allow_html=True)
         df_slaf=df_sla.copy()
         if fi_dom!="Todos": df_slaf=df_slaf[df_slaf["dominio"]==fi_dom]
