@@ -155,87 +155,65 @@ MENU = {**MENU_BASE, **MENU_OP}
 
 # ════════════════════════════════════════════════════════════════════
 # CARREGAMENTO DE DADOS
+# qry() mantém cache de consulta; os wrappers abaixo não são cacheados,
+# para que falhas possam ser exibidas no contexto da página sem ocultá-las.
 # ════════════════════════════════════════════════════════════════════
-@st.cache_data(ttl=300)
+def _load_df(sql_str, origem):
+    df, err = qry(sql_str)
+    if err:
+        st.error(f"Não foi possível carregar {origem}. Verifique a conexão e tente novamente.")
+        return pd.DataFrame()
+    return df if df is not None else pd.DataFrame()
+
 def load_meta():
-    df, err = qry("SELECT * FROM meridian_governanca.tabelas_metadata")
-    if err and df.empty:
-        st.session_state["_db_err"] = err
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.tabelas_metadata", "os metadados do catálogo")
 
-@st.cache_data(ttl=300)
 def load_glossario():
-    df,_ = qry("""SELECT * FROM meridian_governanca.business_glossary
+    return _load_df("""SELECT * FROM meridian_governanca.business_glossary
                   ORDER BY CASE status WHEN 'homologado' THEN 1
-                  WHEN 'em_revisao' THEN 2 ELSE 3 END, termo""")
-    return df if df is not None else pd.DataFrame()
+                  WHEN 'em_revisao' THEN 2 ELSE 3 END, termo""", "o glossário")
 
-@st.cache_data(ttl=300)
 def load_links():
-    df,_ = qry("SELECT * FROM meridian_governanca.glossary_asset_link")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.glossary_asset_link", "os relacionamentos do glossário")
 
-@st.cache_data(ttl=300)
 def load_rules():
-    df,_ = qry("SELECT * FROM meridian_governanca.business_rules")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.business_rules", "as regras de negócio")
 
-@st.cache_data(ttl=300)
 def load_sugestoes_conceitos():
-    df,_ = qry("SELECT * FROM meridian_governanca.sugestoes_conceitos ORDER BY criado_em DESC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.sugestoes_conceitos ORDER BY criado_em DESC", "as sugestões de conceitos")
 
-@st.cache_data(ttl=300)
 def load_sugestoes_regras():
-    df,_ = qry("SELECT * FROM meridian_governanca.sugestoes_regras ORDER BY criado_em DESC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.sugestoes_regras ORDER BY criado_em DESC", "as sugestões de regras")
 
-@st.cache_data(ttl=300)
 def load_timeline():
-    df,_=qry("SELECT * FROM meridian_governanca.gd_solicitacoes_timeline ORDER BY iniciado_em DESC"); return df if df is not None else pd.DataFrame()
-@st.cache_data(ttl=300)
+    return _load_df("SELECT * FROM meridian_governanca.gd_solicitacoes_timeline ORDER BY iniciado_em DESC", "a linha do tempo das solicitações")
+
 def load_sla_snap():
-    df,_=qry("SELECT * FROM meridian_governanca.gd_sla_atendimento_snapshot ORDER BY data_snapshot ASC"); return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.gd_sla_atendimento_snapshot ORDER BY data_snapshot ASC", "o histórico de SLA")
 
-@st.cache_data(ttl=300)
 def load_solicitacoes_acesso():
-    df,_ = qry("SELECT * FROM meridian_governanca.solicitacoes_acesso ORDER BY criado_em DESC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.solicitacoes_acesso ORDER BY criado_em DESC", "as solicitações de acesso")
 
-@st.cache_data(ttl=300)
 def load_quality_dimensions():
-    df,_ = qry("SELECT * FROM meridian_governanca.gd_quality_dimensions ORDER BY score_final DESC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.gd_quality_dimensions ORDER BY score_final DESC", "as dimensões de qualidade")
 
-@st.cache_data(ttl=300)
 def load_cert():
-    df,_ = qry("SELECT * FROM meridian_governanca.gd_certification ORDER BY score_qualidade DESC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.gd_certification ORDER BY score_qualidade DESC", "os dados de certificação")
 
-@st.cache_data(ttl=300)
 def load_snap():
-    df,_ = qry("SELECT * FROM meridian_governanca.gd_indicators_snapshot ORDER BY data_snapshot ASC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.gd_indicators_snapshot ORDER BY data_snapshot ASC", "os indicadores consolidados")
 
-@st.cache_data(ttl=300)
 def load_produtos():
-    df,_ = qry("SELECT * FROM meridian_governanca.produtos_dados ORDER BY status, nome")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.produtos_dados ORDER BY status, nome", "os produtos de dados")
 
-@st.cache_data(ttl=300)
 def load_produto_ativos():
-    df,_ = qry("SELECT * FROM meridian_governanca.produto_ativos")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.produto_ativos", "os vínculos entre produtos e ativos")
 
-@st.cache_data(ttl=300)
 def load_linhagem():
-    df,_ = qry("SELECT * FROM meridian_governanca.linhagem_ativos ORDER BY origem_schema, origem_tabela")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.linhagem_ativos ORDER BY origem_schema, origem_tabela", "a linhagem dos ativos")
 
-@st.cache_data(ttl=300)
 def load_solicitacoes_qualidade():
-    df,_ = qry("SELECT * FROM meridian_governanca.solicitacoes_qualidade ORDER BY criado_em DESC")
-    return df if df is not None else pd.DataFrame()
+    return _load_df("SELECT * FROM meridian_governanca.solicitacoes_qualidade ORDER BY criado_em DESC", "as solicitações de qualidade")
 
 # ════════════════════════════════════════════════════════════════════
 # COMPONENTES REUTILIZÁVEIS
