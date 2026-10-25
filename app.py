@@ -37,7 +37,10 @@ header[data-testid="stHeader"]{display:none !important;}
 section[data-testid="stSidebar"]{
     background:#0D1B2A !important;border-right:1px solid #1A3A5C !important;
     min-width:220px !important;margin-top:52px !important;padding-top:0 !important;}
-section[data-testid="stSidebar"] > div{padding-top:0 !important;}
+section[data-testid="stSidebar"] > div{padding-top:0 !important;overflow-y:auto !important;}
+section[data-testid="stSidebar"] > div::-webkit-scrollbar{width:4px;}
+section[data-testid="stSidebar"] > div::-webkit-scrollbar-track{background:#0D1B2A;}
+section[data-testid="stSidebar"] > div::-webkit-scrollbar-thumb{background:#2A3D5C;border-radius:4px;}
 section[data-testid="stSidebar"] *{color:#6B8299 !important;}
 section[data-testid="stSidebar"] .stButton>button{
     background:transparent !important;color:#8DAFC8 !important;border:none !important;
@@ -65,13 +68,19 @@ div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
 
 /* ── Home: atalhos ── */
 .atalho-btn .stButton>button{
-    background:#FFFFFF !important;color:#1A202C !important;
-    border:1px solid #E2E8F0 !important;border-radius:0 0 10px 10px !important;
+    background:transparent !important;color:#1E4D9B !important;
+    border:1.5px solid #1E4D9B !important;border-radius:0 0 10px 10px !important;
     font-weight:600 !important;font-size:0.73rem !important;
     padding:6px 12px !important;text-align:center !important;
     justify-content:center !important;width:100% !important;
-    box-shadow:none !important;border-top:1px solid #E8EDF5 !important;}
-.atalho-btn .stButton>button:hover{background:#F0F4FF !important;color:#1E4D9B !important;}
+    box-shadow:none !important;border-top:none !important;}
+.atalho-btn .stButton>button:hover{background:#EBF0FF !important;color:#1A3B8C !important;}
+
+/* ── Ocultar widgets nativos Streamlit Cloud ── */
+[data-testid="stStatusWidget"],
+.st-emotion-cache-zq5wmm,
+.stChatFloatingInputContainer,
+[data-testid="chatAvatarIcon-assistant"]{display:none !important;}
 
 /* ── Journey cards ── */
 .nav-card-btn{display:none !important;}
@@ -540,27 +549,28 @@ if pagina == "🏠 Início":
     st.markdown("""
     <div style="background:linear-gradient(105deg,#0D1B2A 40%,#0D1B2AB8 60%,#1B4A6B66 80%),
                 url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
-                border-radius:14px;padding:38px 36px 34px;margin-bottom:16px;
-                position:relative;min-height:170px;overflow:hidden;
-                display:flex;align-items:center;justify-content:space-between;gap:24px;">
-        <div style="flex:1;min-width:0;max-width:52%;">
+                border-radius:14px;padding:36px 36px 32px;margin-bottom:16px;
+                position:relative;min-height:160px;overflow:hidden;
+                display:flex;align-items:center;justify-content:space-between;gap:32px;">
+        <div style="flex:1;min-width:0;">
             <div style="color:#5A8AAA;font-size:0.62rem;letter-spacing:3px;
                         text-transform:uppercase;margin-bottom:10px;font-weight:700;">
                 PLATAFORMA DE GOVERNANÇA DE DADOS
             </div>
-            <div style="color:#FFFFFF;font-size:1.7rem;font-weight:800;line-height:1.25;
-                        margin-bottom:10px;font-family:'Lora',serif;letter-spacing:-0.3px;">
-                Dados bem governados<br>impulsionam grandes decisões
+            <div style="color:#FFFFFF;font-size:1.65rem;font-weight:800;line-height:1.25;
+                        margin-bottom:10px;font-family:'Lora',serif;letter-spacing:-0.3px;
+                        white-space:nowrap;">
+                Dados bem governados impulsionam grandes decisões
             </div>
             <div style="color:#7AAABF;font-size:0.84rem;line-height:1.6;">
                 Encontre, entenda, confie e aja sobre os dados da sua organização.
             </div>
         </div>
         <div style="flex-shrink:0;background:rgba(13,27,42,0.88);border:1px solid #1E3A5C;
-                    border-radius:12px;padding:18px 20px;width:210px;
+                    border-radius:12px;padding:18px 20px;width:190px;
                     backdrop-filter:blur(10px);">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                <span style="font-size:1.2rem;">📊</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 <span style="color:#C9A227;font-size:0.8rem;font-weight:700;">Nossa missão</span>
             </div>
             <div style="color:#6A8EA8;font-size:0.71rem;line-height:1.6;">
@@ -603,8 +613,9 @@ if pagina == "🏠 Início":
     # C. PANORAMA EXECUTIVO
     # ══════════════════════════════════════════════════════════════════
     st.markdown("""
-    <div style="font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;
-                color:#94A3B8;margin-bottom:10px;">Panorama Geral</div>
+    <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+                color:#475569;border-bottom:1px solid #E2E8F0;padding-bottom:8px;
+                margin-bottom:12px;">Panorama Geral</div>
     """, unsafe_allow_html=True)
 
     pan_left, pan_mid, pan_right = st.columns([2.2, 2.8, 2.0], gap="small")
@@ -614,8 +625,8 @@ if pagina == "🏠 Início":
         st.markdown("""
         <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
                     padding:16px 18px;height:100%;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
-            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1.5px;color:#94A3B8;margin-bottom:14px;">Indicadores</div>
+            <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:1px;color:#475569;margin-bottom:14px;">Indicadores</div>
         """, unsafe_allow_html=True)
 
         kpi_data = [
@@ -643,8 +654,8 @@ if pagina == "🏠 Início":
         st.markdown("""
         <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
                     padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
-            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1.5px;color:#94A3B8;margin-bottom:12px;">Qualidade por Domínio</div>
+            <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:1px;color:#475569;margin-bottom:12px;">Qualidade por Domínio</div>
         """, unsafe_allow_html=True)
 
         if not df_qual.empty and "dominio" in df_qual.columns and "score_final" in df_qual.columns:
@@ -676,8 +687,8 @@ if pagina == "🏠 Início":
         st.markdown("""
         <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
                     padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
-            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1.5px;color:#94A3B8;margin-bottom:10px;">Status das Solicitações</div>
+            <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:1px;color:#475569;margin-bottom:10px;">Status das Solicitações</div>
         """, unsafe_allow_html=True)
 
         frames = []
