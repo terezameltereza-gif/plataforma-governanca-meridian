@@ -149,7 +149,19 @@ div[data-testid="stButton"]:has(button[data-gov-nav]){
     height:48px !important;
     padding:0 14px !important;
     gap:10px !important;}
-  .gov-topbar .topbar-jornadas,
+  .gov-topbar .topbar-jornadas{
+    display:flex !important;
+    overflow-x:auto !important;
+    flex-wrap:nowrap !important;
+    gap:3px !important;
+    margin:0 4px !important;
+    scrollbar-width:none !important;
+    -ms-overflow-style:none !important;}
+  .gov-topbar .topbar-jornadas::-webkit-scrollbar{display:none !important;}
+  .gov-topbar .topbar-jornadas span{
+    font-size:0.6rem !important;
+    padding:3px 6px !important;
+    white-space:nowrap !important;}
   .gov-topbar .topbar-busca{display:none !important;}
   .gov-topbar .topbar-logo{min-width:0 !important;}
 
@@ -681,10 +693,18 @@ st.markdown(f"""
     </div>
     <!-- Busca -->
     <div class="topbar-busca" style="flex:1;max-width:380px;">
-        <div onclick="__govNav('busca')" style="background:#141414;border:1px solid #C9A22733;border-radius:8px;
-                    padding:6px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;">
-            <span style="color:#555555;font-size:12px;">🔍</span>
-            <span style="color:#555555;font-size:0.78rem;">Buscar dados, termos, regras...</span>
+        <div style="background:#141414;border:1px solid #C9A22733;border-radius:8px;
+                    padding:6px 14px;display:flex;align-items:center;gap:8px;">
+            <span style="color:#555555;font-size:12px;flex-shrink:0;">🔍</span>
+            <input type="text" id="gov-search-q"
+                   placeholder="Buscar dados, termos, regras..."
+                   autocomplete="off"
+                   style="background:transparent;border:0;outline:none;color:#E6EDF3;font-size:0.78rem;width:100%;min-width:0;caret-color:#C9A227;"
+                   onkeydown="if(event.key==='Enter'){{event.preventDefault();window.__govSearch&&window.__govSearch(this.value.trim());}}"
+                   onclick="event.stopPropagation()">
+            <span onclick="window.__govSearch&&window.__govSearch(document.getElementById('gov-search-q').value.trim())"
+                  style="color:#C9A227;font-size:11px;cursor:pointer;flex-shrink:0;padding:2px 4px;border-radius:4px;"
+                  title="Buscar">⏎</span>
         </div>
     </div>
     <!-- Usuário -->
@@ -721,6 +741,19 @@ st.markdown("""
     });
   }
   window.__govNav = __govNav;
+
+  // __govSearch: atualiza URL com ?q=... e navega para a busca
+  function __govSearch(q){
+    if(!q || !q.trim()) return;
+    // Salva query na URL (Streamlit lê st.query_params no próximo rerun)
+    try{ history.replaceState({}, '', '?q=' + encodeURIComponent(q.trim())); }catch(e){}
+    // Limpa campo de busca após confirmação (feedback visual)
+    var inp = document.getElementById('gov-search-q');
+    // Navega para página de busca via botão oculto
+    __govNav('busca');
+  }
+  window.__govSearch = __govSearch;
+
   // Oculta botões govnav-* via atributo + inline style
   // O atributo data-govnav-wrap ativa o CSS estático imediatamente;
   // o inline style é um reforço para reruns rápidos do Streamlit.
@@ -798,6 +831,33 @@ _NAV_JORNADAS = {
     "linhagem":  "🔗 Linhagem",
     "espacomeu": "⚡ Meu Espaço",
 }
+
+# ── Botões JS-bridge (govnav) — ANTES de pagina= para renderizar cedo e
+#    ocultar via MutationObserver antes do primeiro paint.
+#    Quando movidos para cá, o botão clicado define session_state["pagina"]
+#    e o script continua para a linha pagina= abaixo — 0 reruns extras.
+_topbar_nav_map = [
+    ("descobrir", "📋 Catálogo"),
+    ("entender",  "📖 Glossário"),
+    ("confiar",   "🏆 Qualidade"),
+    ("agir",      "⚡ Meu Espaço"),
+    ("decidir",   "📊 Indicadores"),
+    ("busca",     "🔍 Busca Global"),
+]
+for _nav_k, _nav_p in _topbar_nav_map:
+    if st.button(f"govnav-{_nav_k}", key=f"topnav-{_nav_k}"):
+        if _nav_k == "busca":
+            # Lê query digitada na barra (chegou via history.replaceState → ?q=...)
+            _q_param = st.query_params.get("q", "").strip()
+            if _q_param:
+                st.session_state["busca_global_query"] = _q_param
+                # Remove apenas o param q para não sujar a URL
+                try:
+                    del st.query_params["q"]
+                except Exception:
+                    pass
+        st.session_state["pagina"] = _nav_p
+        # Não é necessário st.rerun() — pagina= logo abaixo lê o novo valor
 
 # Fallback: query params (mantido para deep-links externos — não causa reload interno)
 _qp_nav = st.query_params.get("nav", "")
@@ -3002,18 +3062,3 @@ elif pagina == "🔍 Busca Global":
                     st.rerun()
 
     copyright_footer()
-
-# ── Botões JS-bridge (govnav) — renderizados no final para não flash no topo ──
-# O JS da topbar clica estes botões; o CSS+JS os oculta antes de pintar.
-_topbar_nav_map = [
-    ("descobrir", "📋 Catálogo"),
-    ("entender",  "📖 Glossário"),
-    ("confiar",   "🏆 Qualidade"),
-    ("agir",      "⚡ Meu Espaço"),
-    ("decidir",   "📊 Indicadores"),
-    ("busca",     "🔍 Busca Global"),
-]
-for _nav_k, _nav_p in _topbar_nav_map:
-    if st.button(f"govnav-{_nav_k}", key=f"topnav-{_nav_k}"):
-        st.session_state["pagina"] = _nav_p
-        st.rerun()
