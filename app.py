@@ -119,9 +119,24 @@ div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
 div[data-testid="stHorizontalBlock"].topbar-nav-row,
 .topbar-nav-row{display:none !important;position:absolute !important;left:-9999px !important;}
 
-/* ── Botões JS-bridge ocultos (govnav-*) ── */
-div[data-testid="stButton"]:has(button[data-testid*="topnav"]){
-    display:none !important;position:absolute !important;left:-9999px !important;}
+/* ── Botões JS-bridge ocultos (govnav-*) ──
+   O atributo data-govnav-wrap é injetado pelo JS (tagNavBtns) assim que
+   os elementos entram no DOM — antes do primeiro paint graças ao
+   MutationObserver síncrono.  O CSS garante ocultação mesmo se o JS
+   demorar um ciclo extra.
+*/
+[data-govnav-wrap]{
+    display:none !important;
+    position:absolute !important;
+    left:-9999px !important;
+    width:0 !important;height:0 !important;
+    overflow:hidden !important;
+    pointer-events:none !important;}
+button[data-gov-nav],
+div[data-testid="stButton"]:has(button[data-gov-nav]){
+    display:none !important;
+    position:absolute !important;
+    left:-9999px !important;}
 
 
 /* ══════════════════════════════════════════
@@ -706,30 +721,50 @@ st.markdown("""
     });
   }
   window.__govNav = __govNav;
-  // Injeta atributos nos botões ocultos assim que o DOM carregar
+  // Oculta botões govnav-* via atributo + inline style
+  // O atributo data-govnav-wrap ativa o CSS estático imediatamente;
+  // o inline style é um reforço para reruns rápidos do Streamlit.
   function tagNavBtns(){
     document.querySelectorAll('button').forEach(function(b){
       var t = b.textContent.trim();
       if(t.startsWith('govnav-')){
         var k = t.replace('govnav-','');
         b.setAttribute('data-gov-nav', k);
-        // Oculta o contêiner do botão
+        // Sobe até o container stButton e marca com atributo CSS + inline
         var wrap = b.closest('[data-testid="stButton"]') || b.parentElement;
-        if(wrap){ wrap.style.cssText='position:absolute;left:-9999px;width:0;height:0;overflow:hidden'; }
+        if(wrap){
+          wrap.setAttribute('data-govnav-wrap', k);
+          wrap.style.cssText = 'display:none!important;position:absolute;left:-9999px;width:0;height:0;overflow:hidden;pointer-events:none';
+        }
       }
     });
   }
+  // Executa imediatamente (caso DOM já tenha os botões)
+  tagNavBtns();
   document.addEventListener('DOMContentLoaded', tagNavBtns);
-  setTimeout(tagNavBtns, 200);
-  setTimeout(tagNavBtns, 600);
-  setTimeout(tagNavBtns, 1500);
-  // Re-aplica após cada rerun do Streamlit (MutationObserver)
+  // MutationObserver: esconde cada botão govnav no instante em que
+  // o React o insere no DOM, antes do primeiro paint.
   var _obs = new MutationObserver(function(ml){
+    var needCheck = false;
     ml.forEach(function(m){
-      if(m.addedNodes.length){ tagNavBtns(); }
+      m.addedNodes.forEach(function(n){
+        if(n.nodeType===1){
+          // Verifica o próprio nó e seus filhos
+          if((n.tagName==='BUTTON'||n.querySelector && n.querySelector('button'))){ needCheck=true; }
+        }
+      });
     });
+    if(needCheck) tagNavBtns();
   });
-  _obs.observe(document.body, {childList:true, subtree:true});
+  // Inicia observação logo que body existir
+  function startObs(){
+    if(document.body){
+      _obs.observe(document.body,{childList:true,subtree:true});
+    } else {
+      setTimeout(startObs,10);
+    }
+  }
+  startObs();
 })();
 </script>
 """, unsafe_allow_html=True)
@@ -770,22 +805,6 @@ if _qp_nav in _NAV_JORNADAS:
     st.session_state["pagina"] = _NAV_JORNADAS[_qp_nav]
     st.query_params.clear()
     st.rerun()
-
-# ── Botões ocultos de navegação da topbar ────────────────────────────
-# Renderizados fora de qualquer coluna; o JS da topbar os clica diretamente.
-# O CSS os remove da viewport sem remover do DOM (para o Streamlit funcionar).
-_topbar_nav_map = [
-    ("descobrir", "📋 Catálogo"),
-    ("entender",  "📖 Glossário"),
-    ("confiar",   "🏆 Qualidade"),
-    ("agir",      "⚡ Meu Espaço"),
-    ("decidir",   "📊 Indicadores"),
-    ("busca",     "🔍 Busca Global"),
-]
-for _nav_k, _nav_p in _topbar_nav_map:
-    if st.button(f"govnav-{_nav_k}", key=f"topnav-{_nav_k}"):
-        st.session_state["pagina"] = _nav_p
-        st.rerun()
 
 pagina       = st.session_state.get("pagina","🏠 Início")
 usuario      = st.session_state["usuario"]
@@ -2983,3 +3002,18 @@ elif pagina == "🔍 Busca Global":
                     st.rerun()
 
     copyright_footer()
+
+# ── Botões JS-bridge (govnav) — renderizados no final para não flash no topo ──
+# O JS da topbar clica estes botões; o CSS+JS os oculta antes de pintar.
+_topbar_nav_map = [
+    ("descobrir", "📋 Catálogo"),
+    ("entender",  "📖 Glossário"),
+    ("confiar",   "🏆 Qualidade"),
+    ("agir",      "⚡ Meu Espaço"),
+    ("decidir",   "📊 Indicadores"),
+    ("busca",     "🔍 Busca Global"),
+]
+for _nav_k, _nav_p in _topbar_nav_map:
+    if st.button(f"govnav-{_nav_k}", key=f"topnav-{_nav_k}"):
+        st.session_state["pagina"] = _nav_p
+        st.rerun()
