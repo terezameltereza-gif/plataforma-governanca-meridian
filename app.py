@@ -673,11 +673,11 @@ st.markdown(f"""
     </div>
     <!-- Jornadas -->
     <div class="topbar-jornadas" style="display:flex;align-items:center;gap:6px;margin:0 12px;">
-        <a href="?nav=descobrir" class="gov-jornada" title="Catálogo, produtos e domínios">🔍 Descobrir</a>
-        <a href="?nav=entender" class="gov-jornada" title="Glossário, definições e regras de negócio">📖 Entender</a>
-        <a href="?nav=confiar" class="gov-jornada" title="Qualidade, scorecard e certificação">🛡️ Confiar</a>
-        <a href="?nav=agir" class="gov-jornada" title="Meu Espaço, solicitações e curadoria">⚡ Agir</a>
-        <a href="?nav=decidir" class="gov-jornada" title="Indicadores e gestão">📊 Decidir</a>
+        <details class="gov-journey-menu"><summary class="gov-jornada">🔍 Descobrir</summary><div class="gov-journey-dropdown"><a href="?nav=catalogo">📋 Catálogo de Dados</a><a href="?nav=produtos">📦 Produtos</a><a href="?nav=dominios">🏛️ Domínios</a></div></details>
+        <details class="gov-journey-menu"><summary class="gov-jornada">📖 Entender</summary><div class="gov-journey-dropdown"><a href="?nav=glossario">📖 Glossário e definições</a><a href="?nav=regras">📜 Regras de negócio (buscar)</a></div></details>
+        <details class="gov-journey-menu"><summary class="gov-jornada">🛡️ Confiar</summary><div class="gov-journey-dropdown"><a href="?nav=qualidade">🏆 Qualidade de Dados</a><a href="?nav=scorecard">🛡️ Scorecard</a><a href="?nav=certificacao">🥇 Certificação</a></div></details>
+        <details class="gov-journey-menu"><summary class="gov-jornada">⚡ Agir</summary><div class="gov-journey-dropdown"><a href="?nav=espacomeu">📬 Meu Espaço</a><a href="?nav=espacomeu">📨 Solicitações</a><a href="?nav=curadoria">✏️ Curadoria</a></div></details>
+        <details class="gov-journey-menu"><summary class="gov-jornada">📊 Decidir</summary><div class="gov-journey-dropdown"><a href="?nav=indicadores">📊 Indicadores</a></div></details>
     </div>
     <!-- Busca -->
     <div class="topbar-busca" style="flex:1;max-width:380px;">
@@ -711,6 +711,12 @@ st.markdown("""
 <style>
 .gov-jornada{color:#AAAAAA !important;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;text-decoration:none !important;display:inline-flex;align-items:center;transition:all .15s;}
 .gov-jornada:hover{color:#C9A227 !important;border-color:#C9A22766;background:#C9A2270D;}
+.gov-journey-menu{position:relative;display:inline-block;}
+.gov-journey-menu summary{list-style:none;}
+.gov-journey-menu summary::-webkit-details-marker{display:none;}
+.gov-journey-dropdown{position:absolute;top:calc(100% + 8px);left:0;min-width:190px;z-index:100001;background:#0A0A0A;border:1px solid #C9A22755;border-radius:9px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.45);}
+.gov-journey-dropdown a{display:block;padding:9px 10px;color:#C8D6E5 !important;text-decoration:none !important;font-size:.76rem;border-radius:6px;white-space:nowrap;}
+.gov-journey-dropdown a:hover{background:#171717;color:#C9A227 !important;}
 .gov-topbar-search{display:flex;align-items:center;gap:6px;width:100%;background:#141414;border:1px solid #C9A22733;border-radius:8px;padding:3px 6px 3px 12px;}
 .gov-topbar-search input{min-width:0;flex:1;background:transparent;border:0;outline:0;color:#E6EDF3;font-size:0.78rem;padding:5px 0;}
 .gov-topbar-search input::placeholder{color:#666;}
@@ -740,6 +746,17 @@ _NAV_JORNADAS = {
     "agir":      "⚡ Meu Espaço",
     "decidir":   "📊 Indicadores",
     "busca":     "🔍 Busca Global",
+    "catalogo":  "📋 Catálogo",
+    "produtos":  "📦 Produtos",
+    "dominios":  "🏛️ Domínios",
+    "glossario": "📖 Glossário",
+    "regras":    "🔍 Busca Global",
+    "qualidade": "🏆 Qualidade",
+    "scorecard": "🛡️ Scorecard",
+    "certificacao": "🥇 Certificação",
+    "espacomeu": "⚡ Meu Espaço",
+    "curadoria": "✏️ Curadoria",
+    "indicadores": "📊 Indicadores",
     # aliases para query-param legado (mantidos para compatibilidade)
     "catalogo":  "📋 Catálogo",
     "glossario": "📖 Glossário",
