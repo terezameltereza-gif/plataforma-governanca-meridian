@@ -673,19 +673,20 @@ st.markdown(f"""
     </div>
     <!-- Jornadas -->
     <div class="topbar-jornadas" style="display:flex;align-items:center;gap:6px;margin:0 12px;">
-        <span onclick="__govNav('descobrir')" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Catálogo e descoberta de ativos">🔍 Descobrir</span>
-        <span onclick="__govNav('entender')" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Glossário e definições">📖 Entender</span>
-        <span onclick="__govNav('confiar')" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Qualidade e scorecard">🛡️ Confiar</span>
-        <span onclick="__govNav('agir')" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Curadoria e solicitações">⚡ Agir</span>
-        <span onclick="__govNav('decidir')" style="color:#AAAAAA;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;" title="Indicadores e gestão">📊 Decidir</span>
+        <details class="gov-journey-menu"><summary class="gov-jornada">🔍 Descobrir</summary><div class="gov-journey-dropdown"><a href="?nav=catalogo">📋 Catálogo de Dados</a><a href="?nav=produtos">📦 Produtos</a><a href="?nav=dominios">🏛️ Domínios</a></div></details>
+        <details class="gov-journey-menu"><summary class="gov-jornada">📖 Entender</summary><div class="gov-journey-dropdown"><a href="?nav=glossario">📖 Glossário e definições</a><a href="?nav=regras">📜 Regras de negócio (buscar)</a></div></details>
+        <details class="gov-journey-menu"><summary class="gov-jornada">🛡️ Confiar</summary><div class="gov-journey-dropdown"><a href="?nav=qualidade">🏆 Qualidade de Dados</a><a href="?nav=scorecard">🛡️ Scorecard</a><a href="?nav=certificacao">🥇 Certificação</a></div></details>
+        <details class="gov-journey-menu"><summary class="gov-jornada">⚡ Agir</summary><div class="gov-journey-dropdown"><a href="?nav=espacomeu">📬 Meu Espaço</a><a href="?nav=espacomeu">📨 Solicitações</a><a href="?nav=curadoria">✏️ Curadoria</a></div></details>
+        <details class="gov-journey-menu"><summary class="gov-jornada">📊 Decidir</summary><div class="gov-journey-dropdown"><a href="?nav=indicadores">📊 Indicadores</a></div></details>
     </div>
     <!-- Busca -->
     <div class="topbar-busca" style="flex:1;max-width:380px;">
-        <div onclick="__govNav('busca')" style="background:#141414;border:1px solid #C9A22733;border-radius:8px;
-                    padding:6px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;">
-            <span style="color:#555555;font-size:12px;">🔍</span>
-            <span style="color:#555555;font-size:0.78rem;">Buscar dados, termos, regras...</span>
-        </div>
+        <form class="gov-topbar-search" action="" method="get">
+            <input type="hidden" name="nav" value="busca">
+            <input type="search" name="q" aria-label="Buscar dados, termos e regras"
+                   placeholder="Buscar dados, termos, regras..." autocomplete="off">
+            <button type="submit" aria-label="Pesquisar">🔍</button>
+        </form>
     </div>
     <!-- Usuário -->
     <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0;">
@@ -705,68 +706,22 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ── Função JS __govNav: clica nos botões Streamlit ocultos sem reload ──
+# ── Navegação funcional por links nativos e busca real ─────────────────
 st.markdown("""
-<script>
-(function(){
-  function __govNav(key){
-    // Encontra o botão oculto pelo atributo data-gov-nav
-    var sel = 'button[data-gov-nav="'+key+'"]';
-    var btn = document.querySelector(sel);
-    if(btn){ btn.click(); return; }
-    // Fallback: busca por texto "govnav-{key}" nos botões Streamlit
-    var mark = 'govnav-'+key;
-    document.querySelectorAll('button').forEach(function(b){
-      if(b.textContent.trim()===mark){ b.click(); }
-    });
-  }
-  window.__govNav = __govNav;
-  // Oculta botões govnav-* via atributo + inline style
-  // O atributo data-govnav-wrap ativa o CSS estático imediatamente;
-  // o inline style é um reforço para reruns rápidos do Streamlit.
-  function tagNavBtns(){
-    document.querySelectorAll('button').forEach(function(b){
-      var t = b.textContent.trim();
-      if(t.startsWith('govnav-')){
-        var k = t.replace('govnav-','');
-        b.setAttribute('data-gov-nav', k);
-        // Sobe até o container stButton e marca com atributo CSS + inline
-        var wrap = b.closest('[data-testid="stButton"]') || b.parentElement;
-        if(wrap){
-          wrap.setAttribute('data-govnav-wrap', k);
-          wrap.style.cssText = 'display:none!important;position:absolute;left:-9999px;width:0;height:0;overflow:hidden;pointer-events:none';
-        }
-      }
-    });
-  }
-  // Executa imediatamente (caso DOM já tenha os botões)
-  tagNavBtns();
-  document.addEventListener('DOMContentLoaded', tagNavBtns);
-  // MutationObserver: esconde cada botão govnav no instante em que
-  // o React o insere no DOM, antes do primeiro paint.
-  var _obs = new MutationObserver(function(ml){
-    var needCheck = false;
-    ml.forEach(function(m){
-      m.addedNodes.forEach(function(n){
-        if(n.nodeType===1){
-          // Verifica o próprio nó e seus filhos
-          if((n.tagName==='BUTTON'||n.querySelector && n.querySelector('button'))){ needCheck=true; }
-        }
-      });
-    });
-    if(needCheck) tagNavBtns();
-  });
-  // Inicia observação logo que body existir
-  function startObs(){
-    if(document.body){
-      _obs.observe(document.body,{childList:true,subtree:true});
-    } else {
-      setTimeout(startObs,10);
-    }
-  }
-  startObs();
-})();
-</script>
+<style>
+.gov-jornada{color:#AAAAAA !important;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #1F1F1F;cursor:pointer;white-space:nowrap;text-decoration:none !important;display:inline-flex;align-items:center;transition:all .15s;}
+.gov-jornada:hover{color:#C9A227 !important;border-color:#C9A22766;background:#C9A2270D;}
+.gov-journey-menu{position:relative;display:inline-block;}
+.gov-journey-menu summary{list-style:none;}
+.gov-journey-menu summary::-webkit-details-marker{display:none;}
+.gov-journey-dropdown{position:absolute;top:calc(100% + 8px);left:0;min-width:190px;z-index:100001;background:#0A0A0A;border:1px solid #C9A22755;border-radius:9px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.45);}
+.gov-journey-dropdown a{display:block;padding:9px 10px;color:#C8D6E5 !important;text-decoration:none !important;font-size:.76rem;border-radius:6px;white-space:nowrap;}
+.gov-journey-dropdown a:hover{background:#171717;color:#C9A227 !important;}
+.gov-topbar-search{display:flex;align-items:center;gap:6px;width:100%;background:#141414;border:1px solid #C9A22733;border-radius:8px;padding:3px 6px 3px 12px;}
+.gov-topbar-search input{min-width:0;flex:1;background:transparent;border:0;outline:0;color:#E6EDF3;font-size:0.78rem;padding:5px 0;}
+.gov-topbar-search input::placeholder{color:#666;}
+.gov-topbar-search button{border:0;background:transparent;color:#C9A227;cursor:pointer;padding:4px 6px;font-size:0.85rem;}
+</style>
 """, unsafe_allow_html=True)
 
 # ── Badge ambiente demo ───────────────────────────────────────────────
@@ -791,6 +746,17 @@ _NAV_JORNADAS = {
     "agir":      "⚡ Meu Espaço",
     "decidir":   "📊 Indicadores",
     "busca":     "🔍 Busca Global",
+    "catalogo":  "📋 Catálogo",
+    "produtos":  "📦 Produtos",
+    "dominios":  "🏛️ Domínios",
+    "glossario": "📖 Glossário",
+    "regras":    "🔍 Busca Global",
+    "qualidade": "🏆 Qualidade",
+    "scorecard": "🛡️ Scorecard",
+    "certificacao": "🥇 Certificação",
+    "espacomeu": "⚡ Meu Espaço",
+    "curadoria": "✏️ Curadoria",
+    "indicadores": "📊 Indicadores",
     # aliases para query-param legado (mantidos para compatibilidade)
     "catalogo":  "📋 Catálogo",
     "glossario": "📖 Glossário",
@@ -801,6 +767,9 @@ _NAV_JORNADAS = {
 
 # Fallback: query params (mantido para deep-links externos — não causa reload interno)
 _qp_nav = st.query_params.get("nav", "")
+_qp_query = st.query_params.get("q", "")
+if _qp_query:
+    st.session_state["busca_global_query"] = str(_qp_query)
 if _qp_nav in _NAV_JORNADAS:
     st.session_state["pagina"] = _NAV_JORNADAS[_qp_nav]
     st.query_params.clear()
@@ -898,8 +867,8 @@ if pagina == "🏠 Início":
         ("📬","Solicitações",         "espacomeu",  "Peça acessos e melhorias de qualidade"),
     ]
     _cards_html = "".join([
-        f"""<div onclick="__govNav('{nav_key}')"
-             style="background:#0A0A0A;border:1px solid #C9A22733;
+        f"""<a href="?nav={nav_key}"
+             style="display:block;text-decoration:none;background:#0A0A0A;border:1px solid #C9A22733;
                     border-bottom:3px solid #C9A227;border-radius:10px;
                     padding:18px 14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.18);
                     cursor:pointer;transition:all 0.2s;"
@@ -909,7 +878,7 @@ if pagina == "🏠 Início":
             <div style="color:#C9A227;font-weight:700;font-size:0.8rem;
                         margin-bottom:5px;line-height:1.3;">{tit}</div>
             <div style="color:#A0A0A0;font-size:0.68rem;line-height:1.4;">{desc}</div>
-        </div>"""
+        </a>"""
         for ic, tit, nav_key, desc in ATALHOS
     ])
     st.markdown(f"""
@@ -2959,6 +2928,24 @@ elif pagina == "🔍 Busca Global":
                     "cor": "#F97316",
                 })
 
+        # 5. Domínios (derivados dos metadados cadastrados)
+        if not _bg_meta.empty and "dominio" in _bg_meta.columns:
+            _dominios = sorted({
+                str(v).strip() for v in _bg_meta["dominio"].dropna().unique()
+                if str(v).strip() and str(v).strip().lower() != "nan"
+            })
+            for _dom in _dominios:
+                if _q_lower in _dom.lower():
+                    _ativos_dom = int((_bg_meta["dominio"].astype(str) == _dom).sum())
+                    _resultados.append({
+                        "tipo": "🏛️ Domínio",
+                        "titulo": _dom,
+                        "subtitulo": f"{_ativos_dom} ativo(s) associado(s)",
+                        "detalhe": "Domínio de negócio identificado no catálogo de metadados.",
+                        "nav_pagina": "🏛️ Domínios",
+                        "cor": "#BC8CFF",
+                    })
+
         # ── Exibe resultados ────────────────────────────────────────
         _total = len(_resultados)
         if _total == 0:
@@ -3003,17 +2990,3 @@ elif pagina == "🔍 Busca Global":
 
     copyright_footer()
 
-# ── Botões JS-bridge (govnav) — renderizados no final para não flash no topo ──
-# O JS da topbar clica estes botões; o CSS+JS os oculta antes de pintar.
-_topbar_nav_map = [
-    ("descobrir", "📋 Catálogo"),
-    ("entender",  "📖 Glossário"),
-    ("confiar",   "🏆 Qualidade"),
-    ("agir",      "⚡ Meu Espaço"),
-    ("decidir",   "📊 Indicadores"),
-    ("busca",     "🔍 Busca Global"),
-]
-for _nav_k, _nav_p in _topbar_nav_map:
-    if st.button(f"govnav-{_nav_k}", key=f"topnav-{_nav_k}"):
-        st.session_state["pagina"] = _nav_p
-        st.rerun()
