@@ -5,6 +5,7 @@ Banco Meridian | v5.0
 Reprodução proibida sem autorização expressa.
 """
 import streamlit as st
+import streamlit.components.v1 as _st_components
 import pandas as pd
 import threading, time
 from databricks import sql
@@ -726,44 +727,45 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ── Função JS __govNav: clica nos botões Streamlit ocultos sem reload ──
-st.markdown("""
+# Usa st.components.v1.html (iframe) que GARANTE execução do script,
+# ao contrário de st.markdown cujos <script> não executam após reruns React.
+# window.parent acessa o frame principal (mesma origem: localhost:8599).
+_st_components.html("""
 <script>
 (function(){
+  var P = window.parent;
+  if(!P) return;
+
+  // ── __govNav: clica o botão oculto govnav-{key} ──────────────────
   function __govNav(key){
-    // Encontra o botão oculto pelo atributo data-gov-nav
     var sel = 'button[data-gov-nav="'+key+'"]';
-    var btn = document.querySelector(sel);
+    var btn = P.document.querySelector(sel);
     if(btn){ btn.click(); return; }
-    // Fallback: busca por texto "govnav-{key}" nos botões Streamlit
     var mark = 'govnav-'+key;
-    document.querySelectorAll('button').forEach(function(b){
+    P.document.querySelectorAll('button').forEach(function(b){
       if(b.textContent.trim()===mark){ b.click(); }
     });
   }
-  window.__govNav = __govNav;
+  P.__govNav = __govNav;
 
-  // __govSearch: atualiza URL com ?q=... e navega para a busca
+  // ── __govSearch: armazena query em sessionStorage e navega ────────
+  // sessionStorage persiste dentro da mesma aba entre reruns do Streamlit.
+  // A página de busca lê o valor via componente e preenche o text_input
+  // usando React synthetic events, disparando o rerun com a query correta.
   function __govSearch(q){
     if(!q || !q.trim()) return;
-    // Salva query na URL (Streamlit lê st.query_params no próximo rerun)
-    try{ history.replaceState({}, '', '?q=' + encodeURIComponent(q.trim())); }catch(e){}
-    // Limpa campo de busca após confirmação (feedback visual)
-    var inp = document.getElementById('gov-search-q');
-    // Navega para página de busca via botão oculto
+    try{ P.sessionStorage.setItem('_govSearchPending', q.trim()); }catch(e){}
     __govNav('busca');
   }
-  window.__govSearch = __govSearch;
+  P.__govSearch = __govSearch;
 
-  // Oculta botões govnav-* via atributo + inline style
-  // O atributo data-govnav-wrap ativa o CSS estático imediatamente;
-  // o inline style é um reforço para reruns rápidos do Streamlit.
+  // ── tagNavBtns: oculta botões govnav-* do DOM ────────────────────
   function tagNavBtns(){
-    document.querySelectorAll('button').forEach(function(b){
+    P.document.querySelectorAll('button').forEach(function(b){
       var t = b.textContent.trim();
       if(t.startsWith('govnav-')){
         var k = t.replace('govnav-','');
         b.setAttribute('data-gov-nav', k);
-        // Sobe até o container stButton e marca com atributo CSS + inline
         var wrap = b.closest('[data-testid="stButton"]') || b.parentElement;
         if(wrap){
           wrap.setAttribute('data-govnav-wrap', k);
@@ -772,27 +774,22 @@ st.markdown("""
       }
     });
   }
-  // Executa imediatamente (caso DOM já tenha os botões)
   tagNavBtns();
-  document.addEventListener('DOMContentLoaded', tagNavBtns);
-  // MutationObserver: esconde cada botão govnav no instante em que
-  // o React o insere no DOM, antes do primeiro paint.
-  var _obs = new MutationObserver(function(ml){
-    var needCheck = false;
+
+  // MutationObserver no frame principal
+  var _obs = new P.MutationObserver(function(ml){
+    var check = false;
     ml.forEach(function(m){
       m.addedNodes.forEach(function(n){
-        if(n.nodeType===1){
-          // Verifica o próprio nó e seus filhos
-          if((n.tagName==='BUTTON'||n.querySelector && n.querySelector('button'))){ needCheck=true; }
-        }
+        if(n.nodeType===1 && (n.tagName==='BUTTON'||(n.querySelector&&n.querySelector('button'))))
+          check=true;
       });
     });
-    if(needCheck) tagNavBtns();
+    if(check) tagNavBtns();
   });
-  // Inicia observação logo que body existir
   function startObs(){
-    if(document.body){
-      _obs.observe(document.body,{childList:true,subtree:true});
+    if(P.document.body){
+      _obs.observe(P.document.body,{childList:true,subtree:true});
     } else {
       setTimeout(startObs,10);
     }
@@ -800,7 +797,7 @@ st.markdown("""
   startObs();
 })();
 </script>
-""", unsafe_allow_html=True)
+""", height=0, scrolling=False)
 
 # ── Badge ambiente demo ───────────────────────────────────────────────
 st.markdown("""
@@ -846,16 +843,10 @@ _topbar_nav_map = [
 ]
 for _nav_k, _nav_p in _topbar_nav_map:
     if st.button(f"govnav-{_nav_k}", key=f"topnav-{_nav_k}"):
-        if _nav_k == "busca":
-            # Lê query digitada na barra (chegou via history.replaceState → ?q=...)
-            _q_param = st.query_params.get("q", "").strip()
-            if _q_param:
-                st.session_state["busca_global_query"] = _q_param
-                # Remove apenas o param q para não sujar a URL
-                try:
-                    del st.query_params["q"]
-                except Exception:
-                    pass
+        # Nota: a query de busca NÃO é lida aqui via query_params — essa abordagem
+        # não funciona pois history.replaceState() não atualiza os parâmetros do
+        # WebSocket. A query chega via sessionStorage, lida pelo componente na
+        # página de busca (ver seção 🔍 Busca Global abaixo).
         st.session_state["pagina"] = _nav_p
         # Não é necessário st.rerun() — pagina= logo abaixo lê o novo valor
 
@@ -2922,6 +2913,44 @@ elif pagina == "🔍 Busca Global":
     st.markdown('<p style="color:#888;font-size:0.85rem;margin-top:-6px;margin-bottom:18px;">Pesquise em ativos, termos, regras, domínios e responsáveis de uma só vez.</p>', unsafe_allow_html=True)
 
     _bg_db_fail = bool(st.session_state.get("_db_err"))
+
+    # ── Leitor de sessionStorage: captura a query vinda da barra de busca ──
+    # __govSearch() armazena a query em sessionStorage._govSearchPending.
+    # Este componente lê esse valor, preenche o text_input via React synthetic
+    # events (única forma de enviar dados de JS para st.text_input) e dispara
+    # o rerun que fará Python ler st.session_state["busca_global_query"].
+    _st_components.html("""
+<script>
+(function(){
+  var P = window.parent;
+  if(!P) return;
+  var q = '';
+  try{ q = P.sessionStorage.getItem('_govSearchPending') || ''; }catch(e){}
+  if(!q) return;
+  // Limpa imediatamente para não repetir em reruns
+  try{ P.sessionStorage.removeItem('_govSearchPending'); }catch(e){}
+  // Aguarda o text_input (key=busca_global_query) aparecer no DOM
+  function tryFill(attempts){
+    var inputs = Array.from(P.document.querySelectorAll('input[type="text"]'));
+    var inp = inputs.find(function(i){
+      return i.placeholder && (i.placeholder.includes('Ex.:') || i.placeholder.includes('procurando'));
+    });
+    if(!inp){
+      if(attempts > 0) setTimeout(function(){ tryFill(attempts-1); }, 200);
+      return;
+    }
+    // React synthetic event trick: única forma de atualizar st.text_input via JS
+    try{
+      var setter = Object.getOwnPropertyDescriptor(P.HTMLInputElement.prototype,'value').set;
+      setter.call(inp, q);
+      inp.dispatchEvent(new P.Event('input',{bubbles:true}));
+      inp.dispatchEvent(new P.Event('change',{bubbles:true}));
+    }catch(e){}
+  }
+  setTimeout(function(){ tryFill(15); }, 300);
+})();
+</script>
+""", height=0, scrolling=False)
 
     # ── Campo de busca ──────────────────────────────────────────────
     _busca_q = st.text_input(
