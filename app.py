@@ -58,6 +58,7 @@ header[data-testid="stHeader"] > *:not([data-testid="stToolbar"]):not([data-test
     background:transparent !important;
     pointer-events:none !important;}
 [data-testid="stToolbar"] > *{pointer-events:auto !important;}
+.gov-topbar .topbar-logo,.gov-topbar .topbar-jornadas,.gov-topbar .topbar-busca{display:none !important;}
 .gov-topbar{
     position:fixed !important;top:0 !important;left:0 !important;right:0 !important;
     height:52px !important;background:#0C2340 !important;z-index:99999 !important;
@@ -67,7 +68,7 @@ header[data-testid="stHeader"] > *:not([data-testid="stToolbar"]):not([data-test
 /* ── Sidebar ── */
 section[data-testid="stSidebar"]{
     background:#0C2340 !important;border-right:1px solid #546579 !important;
-    min-width:220px !important;margin-top:52px !important;padding-top:0 !important;}
+    min-width:220px !important;margin-top:0 !important;padding-top:0 !important;}
 section[data-testid="stSidebar"] > div{padding-top:0 !important;overflow-y:auto !important;}
 section[data-testid="stSidebar"] > div::-webkit-scrollbar{width:4px;}
 section[data-testid="stSidebar"] > div::-webkit-scrollbar-track{background:#0C2340;}
@@ -97,6 +98,11 @@ section[data-testid="stSidebar"] .stButton>button:hover{background:#F0F0F0 !impo
 .stSelectbox>div>div,.stTextInput>div>div>input,.stTextArea>div>div>textarea{background:#FFFFFF !important;border:1px solid #E2E8F0 !important;border-radius:8px !important;color:#0C2340 !important;}
 .stDataFrame{background:#FFFFFF !important;border-radius:10px !important;}
 div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
+.finder-title{font-size:2rem;font-weight:800;letter-spacing:-0.04em;color:#0C2340;margin:0 0 4px;}
+.finder-subtitle{font-size:1.05rem;color:#64748B;margin:0 0 18px;}
+.finder-section{font-size:1.2rem;font-weight:750;color:#0C2340;margin:20px 0 10px;}
+.finder-demo{font-size:.72rem;color:#64748B;margin:0 0 10px;}
+.demo-badge{display:none !important;}
 
 /* ── Home: atalhos ── */
 .atalho-btn .stButton>button{
@@ -148,7 +154,8 @@ div[data-testid="stButton"]:has(button[data-gov-nav]){
 @media (max-width:768px){
 
   /* Topbar: compacta, esconde jornadas e busca */
-  .gov-topbar{
+  .gov-topbar .topbar-logo,.gov-topbar .topbar-jornadas,.gov-topbar .topbar-busca{display:none !important;}
+.gov-topbar{
     height:48px !important;
     padding:0 14px !important;
     gap:10px !important;}
@@ -552,7 +559,7 @@ with st.sidebar:
             st.session_state["usuario"]      = email
             st.session_state["perfil_atual"] = USUARIOS[email]["perfil"]
             st.session_state["nome_atual"]   = USUARIOS[email]["nome"]
-            st.session_state["pagina"]       = "🏠 Início"
+            st.session_state["pagina"]       = "🔎 Encontrar dados"
             st.rerun()
         st.stop()
 
@@ -565,32 +572,24 @@ with st.sidebar:
     is_aprovador = perfil == "aprovador"
 
     if "pagina" not in st.session_state:
-        st.session_state["pagina"] = "🏠 Início"
+        st.session_state["pagina"] = "🔎 Encontrar dados"
 
     # ── Espaçamento inicial
     st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 
     # ── Navegação flat
+    st.markdown("""
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 12px 24px;">
+      <div style="width:42px;height:30px;background:#DA291C;color:#FFFFFF;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;">BIP</div>
+      <div><div style="font-size:12px;font-weight:700;color:#FFFFFF;">Governança de Dados</div><div style="font-size:8px;color:#9DA7B3;letter-spacing:.8px;">PLATAFORMA BIP</div></div>
+    </div>""", unsafe_allow_html=True)
     NAV_ITEMS = [
-        ("🏠", "Início",                "🏠 Início"),
-        ("🔍", "Busca Global",          "🔍 Busca Global"),
-        ("📋", "Catálogo de Dados",     "📋 Catálogo"),
-        ("📖", "Glossário de Negócio",  "📖 Glossário"),
-        ("🏆", "Qualidade de Dados",    "🏆 Qualidade"),
-        ("🔗", "Linhagem de Dados",     "🔗 Linhagem"),
-        ("📬", "Solicitações",          "⚡ Meu Espaço"),
-        ("📊", "Gestão e Indicadores",  "📊 Indicadores"),
+        ("🔍", "Encontrar dados", "🔎 Encontrar dados"),
+        ("📊", "Avaliar dados", "🏆 Qualidade"),
+        ("📄", "Solicitar uso", "⚡ Meu Espaço"),
+        ("⚙️", "Gestão", "⚙️ Gestão"),
     ]
-    NAV_OP = [
-        ("🏛️", "Domínios",     "🏛️ Domínios"),
-        ("📦", "Produtos",     "📦 Produtos"),
-        ("🛡️", "Scorecard",   "🛡️ Scorecard"),
-        ("🥇", "Certificação", "🥇 Certificação"),
-        ("✏️", "Curadoria",   "✏️ Curadoria"),
-        ("🕐", "Auditoria",   "🕐 Auditoria"),
-    ]
-
-    nav_all = NAV_ITEMS + (NAV_OP if is_curador else [])
+    nav_all = NAV_ITEMS
 
     for icon, label, dest in nav_all:
         is_active = st.session_state["pagina"] == dest
@@ -754,7 +753,7 @@ st.markdown("""
 
 # ── Badge ambiente demo ───────────────────────────────────────────────
 st.markdown("""
-<div class="demo-badge" style="position:fixed;bottom:16px;right:16px;z-index:9999;
+<div class="demo-badge" style="display:none;position:fixed;bottom:16px;right:16px;z-index:9999;
             background:#0C2340;border:1px solid #DA291C66;border-radius:6px;
             padding:4px 10px;display:flex;align-items:center;gap:6px;
             box-shadow:0 2px 8px rgba(0,0,0,0.4);">
@@ -768,7 +767,7 @@ st.markdown("""
 # ── Navegação via topbar (jornadas + busca) ──────────────────────────
 # Mapa de chave de jornada → página interna
 _NAV_JORNADAS = {
-    "descobrir": "📋 Catálogo",
+    "descobrir": "🔎 Encontrar dados",
     "entender":  "📖 Glossário",
     "confiar":   "🏆 Qualidade",
     "agir":      "⚡ Meu Espaço",
@@ -789,7 +788,10 @@ if _qp_nav in _NAV_JORNADAS:
     st.query_params.clear()
     st.rerun()
 
-pagina       = st.session_state.get("pagina","🏠 Início")
+pagina       = st.session_state.get("pagina","🔎 Encontrar dados")
+if pagina == "🏠 Início":  # migra sessões já abertas para a nova entrada principal
+    pagina = "🔎 Encontrar dados"
+    st.session_state["pagina"] = pagina
 usuario      = st.session_state["usuario"]
 u            = USUARIOS[usuario]
 perfil       = u["perfil"]
@@ -799,7 +801,166 @@ is_aprovador = perfil == "aprovador"
 # ════════════════════════════════════════════════════════════════════
 # 🏠 INÍCIO — Plataforma de Governança de Dados
 # ════════════════════════════════════════════════════════════════════
-if pagina == "🏠 Início":
+if pagina == "🔎 Encontrar dados":
+    st.markdown("<div class='finder-demo'>Ambiente de demonstração · consulte as informações disponíveis no catálogo</div>", unsafe_allow_html=True)
+    st.markdown("<div class='finder-title'>Encontre dados para sua necessidade</div>", unsafe_allow_html=True)
+    st.markdown("<div class='finder-subtitle'>Descubra ativos confiáveis e entenda como usá-los.</div>", unsafe_allow_html=True)
+
+    df_find = load_meta().copy()
+    df_quality_find = load_quality_dimensions()
+    df_products_find = load_produtos()
+    df_product_assets_find = load_produto_ativos()
+
+    quality_by_asset = {}
+    if not df_quality_find.empty and {"table_name", "score_final"}.issubset(df_quality_find.columns):
+        qcols = [c for c in ["schema_name", "table_name"] if c in df_quality_find.columns]
+        qtmp = df_quality_find.copy()
+        qtmp["score_final"] = pd.to_numeric(qtmp["score_final"], errors="coerce")
+        for _, qrow in qtmp.groupby(qcols, dropna=False)["score_final"].mean().reset_index().iterrows():
+            q_schema = str(qrow.get("schema_name", ""))
+            quality_by_asset[(q_schema, str(qrow["table_name"]))] = qrow["score_final"]
+
+    if not df_find.empty:
+        df_find["_score_qualidade"] = [
+            quality_by_asset.get((str(row.get("schema_name", "")), str(row.get("table_name", ""))))
+            for _, row in df_find.iterrows()
+        ]
+        update_col = next((c for c in ["atualizado_em", "updated_at", "data_atualizacao"] if c in df_find.columns), None)
+        if update_col:
+            df_find["_updated_at"] = pd.to_datetime(df_find[update_col], errors="coerce", utc=True)
+        else:
+            df_find["_updated_at"] = pd.NaT
+
+        with st.form("finder_form", clear_on_submit=False):
+            fquery = st.text_input("Busca", placeholder="Ex.: clientes ativos, faturamento, inadimplência", key="finder_query")
+            fc1, fc2, fc3 = st.columns(3)
+            with fc1:
+                domains = sorted([str(v) for v in df_find.get("dominio", pd.Series(dtype=str)).dropna().unique() if str(v).strip() and str(v).lower() != "nan"])
+                fdomain = st.selectbox("Domínio", ["Todos"] + domains, key="finder_domain")
+            with fc2:
+                update_options = ["Todas", "Últimas 24 horas", "Últimos 7 dias"] if df_find["_updated_at"].notna().any() else ["Não informada"]
+                fupdated = st.selectbox("Atualização", update_options, key="finder_updated")
+            with fc3:
+                fquality = st.selectbox("Qualidade", ["Todas", "Alta (≥80%)", "Atenção (60–79%)", "Crítica (<60%)", "Não avaliada"], key="finder_quality")
+            st.form_submit_button("Buscar", type="primary", use_container_width=False)
+
+        df_results = df_find.copy()
+        if fquery and fquery.strip():
+            search_cols = [c for c in ["table_name", "descricao", "dominio", "data_owner", "data_steward"] if c in df_results.columns]
+            search_mask = pd.Series(False, index=df_results.index)
+            for col in search_cols:
+                search_mask = search_mask | df_results[col].fillna("").astype(str).str.contains(fquery.strip(), case=False, regex=False)
+            df_results = df_results[search_mask]
+        if fdomain != "Todos" and "dominio" in df_results.columns:
+            df_results = df_results[df_results["dominio"].astype(str) == fdomain]
+        if fupdated in ("Últimas 24 horas", "Últimos 7 dias"):
+            cutoff_days = 1 if fupdated == "Últimas 24 horas" else 7
+            cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(days=cutoff_days)
+            df_results = df_results[df_results["_updated_at"] >= cutoff]
+        if fquality == "Alta (≥80%)":
+            df_results = df_results[pd.to_numeric(df_results["_score_qualidade"], errors="coerce") >= 80]
+        elif fquality == "Atenção (60–79%)":
+            scores = pd.to_numeric(df_results["_score_qualidade"], errors="coerce")
+            df_results = df_results[(scores >= 60) & (scores < 80)]
+        elif fquality == "Crítica (<60%)":
+            df_results = df_results[pd.to_numeric(df_results["_score_qualidade"], errors="coerce") < 60]
+        elif fquality == "Não avaliada":
+            df_results = df_results[pd.to_numeric(df_results["_score_qualidade"], errors="coerce").isna()]
+
+        st.markdown("<div class='finder-section'>Produtos recomendados</div>", unsafe_allow_html=True)
+        if not df_products_find.empty:
+            active_products = df_products_find.copy()
+            if "status" in active_products.columns:
+                active_products = active_products[active_products["status"].astype(str).str.lower().eq("ativo")]
+            if fdomain != "Todos" and "dominio" in active_products.columns:
+                active_products = active_products[active_products["dominio"].astype(str) == fdomain]
+            if fquery and fquery.strip():
+                product_search_cols = [c for c in ["nome", "finalidade", "descricao", "dominio"] if c in active_products.columns]
+                product_mask = pd.Series(False, index=active_products.index)
+                for product_col in product_search_cols:
+                    product_mask = product_mask | active_products[product_col].fillna("").astype(str).str.contains(fquery.strip(), case=False, regex=False)
+                active_products = active_products[product_mask]
+            active_products = active_products.head(2)
+            if not active_products.empty:
+                product_cols = st.columns(min(2, len(active_products)))
+                for product_idx, (_, product) in enumerate(active_products.iterrows()):
+                    product_id = product.get("produto_id")
+                    linked = df_product_assets_find[df_product_assets_find["produto_id"] == product_id] if not df_product_assets_find.empty and "produto_id" in df_product_assets_find.columns else pd.DataFrame()
+                    scores_linked = []
+                    if not linked.empty and "table_name" in linked.columns:
+                        for table in linked["table_name"].dropna().astype(str):
+                            scores_linked.extend([v for (schema, name), v in quality_by_asset.items() if name == table and pd.notna(v)])
+                    product_score = round(float(pd.Series(scores_linked).mean()), 1) if scores_linked else None
+                    with product_cols[product_idx]:
+                        with st.container(border=True):
+                            product_name = product.get("nome")
+                            product_goal = product.get("finalidade")
+                            product_domain = product.get("dominio")
+                            product_status = product.get("status")
+                            if pd.isna(product_goal) or not str(product_goal).strip():
+                                product_goal = product.get("descricao")
+                            if pd.isna(product_goal) or not str(product_goal).strip():
+                                product_goal = "Produto de dados cadastrado no catálogo."
+                            st.markdown(f"### {product_name if pd.notna(product_name) else 'Produto de dados'}")
+                            st.write(str(product_goal))
+                            st.caption(f"{product_domain if pd.notna(product_domain) else 'Domínio não informado'} · {str(product_status if pd.notna(product_status) else 'Status não informado').replace('_', ' ').title()}")
+                            if product_score is None:
+                                st.caption("Qualidade dos ativos vinculados: não avaliada")
+                            else:
+                                st.metric("Qualidade média dos ativos", f"{product_score:.1f}%")
+                            if st.button("Ver produto", key=f"finder_product_{product_idx}", use_container_width=True):
+                                st.session_state["prod_sel"] = product_id
+                                st.session_state["pagina"] = "📦 Produtos"
+                                st.rerun()
+            else:
+                st.info("Não há produtos ativos cadastrados para recomendar. Consulte os ativos disponíveis abaixo.")
+        else:
+            st.info("Produtos de dados ainda não estão cadastrados. Os resultados abaixo mostram ativos do catálogo, sem recomendação de produto.")
+
+        st.markdown("<div class='finder-section'>Todos os ativos de dados</div>", unsafe_allow_html=True)
+        if df_results.empty:
+            estado_vazio("🔍", "Nenhum ativo encontrado", "Altere os termos ou filtros. Se a fonte estiver indisponível, tente novamente mais tarde.")
+        else:
+            display = pd.DataFrame({
+                "Nome do ativo": df_results.get("table_name", pd.Series("—", index=df_results.index)).fillna("—").astype(str),
+                "Para que serve": df_results.get("descricao", pd.Series("—", index=df_results.index)).fillna("—").astype(str),
+                "Domínio": df_results.get("dominio", pd.Series("—", index=df_results.index)).fillna("—").astype(str),
+                "Qualidade": df_results["_score_qualidade"].apply(lambda v: f"{float(v):.1f}%" if pd.notna(v) else "Não avaliada"),
+                "Atualização": df_results["_updated_at"].apply(lambda v: v.strftime("%d/%m/%Y %H:%M UTC") if pd.notna(v) else "Não informada"),
+            })
+            st.caption(f"{len(display)} ativo(s) encontrado(s). A qualidade e a atualização só são exibidas quando informadas pelas fontes cadastradas.")
+            st.dataframe(display, use_container_width=True, hide_index=True, height=min(440, 38 + 38 * len(display)))
+            asset_options = [f"{row.get('schema_name', '—')}.{row.get('table_name', '—')}" for _, row in df_results.iterrows()]
+            selected_asset = st.selectbox("Abrir perfil do ativo", asset_options, key="finder_asset_choice")
+            if st.button("Ver detalhes do ativo", type="primary", key="finder_open_asset"):
+                st.session_state["cat_sel"] = selected_asset
+                st.session_state["pagina"] = "📋 Catálogo"
+                st.rerun()
+    elif st.session_state.get("_db_err"):
+        estado_vazio("⚠️", "Catálogo indisponível", "Não foi possível carregar os ativos agora. Verifique a conexão e tente novamente.")
+    else:
+        estado_vazio("📋", "Nenhum ativo cadastrado", "Os ativos aparecerão aqui quando forem registrados no catálogo.")
+
+    copyright_footer()
+
+elif pagina == "⚙️ Gestão":
+    page_header("⚙️", "Gestão", "Acesse as ferramentas de governança conforme sua responsabilidade.")
+    st.markdown("Escolha uma área para continuar. As funções de aprovação e curadoria dependem das permissões atribuídas ao seu perfil.")
+    management_links = [("📖 Glossário", "Conceitos e regras de negócio"), ("🔗 Linhagem", "Origem e fluxo dos dados"), ("📦 Produtos", "Produtos de dados e ativos vinculados"), ("🏛️ Domínios", "Responsáveis e ativos por área")]
+    if is_curador:
+        management_links += [("📊 Indicadores", "Visão de governança"), ("🥇 Certificação", "Critérios e decisões de certificação"), ("✏️ Curadoria", "Manutenção dos metadados"), ("🕐 Auditoria", "Histórico de alterações")]
+    management_cols = st.columns(2)
+    for link_idx, (target_page, description) in enumerate(management_links):
+        with management_cols[link_idx % 2]:
+            with st.container(border=True):
+                st.markdown(f"**{target_page.replace('📖 ', '').replace('🔗 ', '').replace('📦 ', '').replace('🏛️ ', '').replace('📊 ', '').replace('🥇 ', '').replace('✏️ ', '').replace('🕐 ', '')}**")
+                st.caption(description)
+                if st.button("Abrir", key=f"management_link_{link_idx}", use_container_width=True):
+                    st.session_state["pagina"] = target_page
+                    st.rerun()
+    copyright_footer()
+
+elif pagina == "🏠 Início":
 
     # ── Dados para a home ────────────────────────────────────────────
     df_meta   = load_meta()
@@ -3000,3 +3161,4 @@ for _nav_k, _nav_p in _topbar_nav_map:
     if st.button(f"govnav-{_nav_k}", key=f"topnav-{_nav_k}"):
         st.session_state["pagina"] = _nav_p
         st.rerun()
+
