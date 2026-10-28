@@ -22,9 +22,9 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body,.stApp{background:#F0F0F0 !important;font-family:Work Sans,sans-serif !important;color:#0C2340 !important;}
+html,body,.stApp{background:#FFFFFF !important;font-family:Work Sans,sans-serif !important;color:#0C2340 !important;}
 .stApp p,.stApp label,.stApp [data-testid="stMarkdownContainer"]{font-family:Work Sans,sans-serif !important;}
-.stApp [data-testid="stMain"]{background:#F0F0F0 !important;}
+.stApp [data-testid="stMain"]{background:#FFFFFF !important;}
 h1,h2,h3{font-family:Work Sans,sans-serif !important;font-weight:700 !important;color:#0C2340 !important;}
 
 /* ── Topbar fixa ── */
@@ -102,6 +102,7 @@ div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
 .finder-subtitle{font-size:1.05rem;color:#64748B;margin:0 0 18px;}
 .finder-section{font-size:1.2rem;font-weight:750;color:#0C2340;margin:20px 0 10px;}
 .finder-demo{font-size:.72rem;color:#64748B;margin:0 0 10px;}
+.demo-badge{display:none !important;}
 .demo-badge{display:none !important;}
 
 /* ── Home: atalhos ── */
@@ -831,8 +832,12 @@ if pagina == "🔎 Encontrar dados":
         else:
             df_find["_updated_at"] = pd.NaT
 
-        with st.form("finder_form", clear_on_submit=False):
-            fquery = st.text_input("Busca", placeholder="Ex.: clientes ativos, faturamento, inadimplência", key="finder_query")
+        with st.form("finder_form", clear_on_submit=False, border=False):
+            search_field, search_button = st.columns([8, 1])
+            with search_field:
+                fquery = st.text_input("Busca", placeholder="Ex.: clientes ativos, faturamento, inadimplência", key="finder_query", label_visibility="collapsed")
+            with search_button:
+                st.form_submit_button("Buscar", type="primary", use_container_width=True)
             fc1, fc2, fc3 = st.columns(3)
             with fc1:
                 domains = sorted([str(v) for v in df_find.get("dominio", pd.Series(dtype=str)).dropna().unique() if str(v).strip() and str(v).lower() != "nan"])
@@ -842,8 +847,6 @@ if pagina == "🔎 Encontrar dados":
                 fupdated = st.selectbox("Atualização", update_options, key="finder_updated")
             with fc3:
                 fquality = st.selectbox("Qualidade", ["Todas", "Alta (≥80%)", "Atenção (60–79%)", "Crítica (<60%)", "Não avaliada"], key="finder_quality")
-            st.form_submit_button("Buscar", type="primary", use_container_width=False)
-
         df_results = df_find.copy()
         if fquery and fquery.strip():
             search_cols = [c for c in ["table_name", "descricao", "dominio", "data_owner", "data_steward"] if c in df_results.columns]
@@ -870,6 +873,10 @@ if pagina == "🔎 Encontrar dados":
         st.markdown("<div class='finder-section'>Produtos recomendados</div>", unsafe_allow_html=True)
         if not df_products_find.empty:
             active_products = df_products_find.copy()
+            if "produto_id" in active_products.columns:
+                active_products = active_products.drop_duplicates(subset=["produto_id"], keep="first")
+            elif "nome" in active_products.columns:
+                active_products = active_products.drop_duplicates(subset=["nome"], keep="first")
             if "status" in active_products.columns:
                 active_products = active_products[active_products["status"].astype(str).str.lower().eq("ativo")]
             if fdomain != "Todos" and "dominio" in active_products.columns:
@@ -906,8 +913,12 @@ if pagina == "🔎 Encontrar dados":
                             st.caption(f"{product_domain if pd.notna(product_domain) else 'Domínio não informado'} · {str(product_status if pd.notna(product_status) else 'Status não informado').replace('_', ' ').title()}")
                             if product_score is None:
                                 st.caption("Qualidade dos ativos vinculados: não avaliada")
+                            elif product_score >= 80:
+                                st.markdown(f"<span style='display:inline-block;background:#E8F7EF;color:#167647;padding:6px 10px;border-radius:99px;font-size:.76rem;font-weight:700;'>✓ Qualidade alta {product_score:.1f}%</span>", unsafe_allow_html=True)
+                            elif product_score >= 60:
+                                st.markdown(f"<span style='display:inline-block;background:#FFF2D8;color:#9A5A00;padding:6px 10px;border-radius:99px;font-size:.76rem;font-weight:700;'>! Qualidade média {product_score:.1f}%</span>", unsafe_allow_html=True)
                             else:
-                                st.metric("Qualidade média dos ativos", f"{product_score:.1f}%")
+                                st.markdown(f"<span style='display:inline-block;background:#FDE8E7;color:#A61B1B;padding:6px 10px;border-radius:99px;font-size:.76rem;font-weight:700;'>! Qualidade baixa {product_score:.1f}%</span>", unsafe_allow_html=True)
                             if st.button("Ver produto", key=f"finder_product_{product_idx}", use_container_width=True):
                                 st.session_state["prod_sel"] = product_id
                                 st.session_state["pagina"] = "📦 Produtos"
