@@ -355,13 +355,14 @@ def esc(v): return str(v).replace("'","''") if v else ""
 # ════════════════════════════════════════════════════════════════════
 USUARIOS = {
     "consultante@meridian.com":   {"nome":"João Silva",      "perfil":"consultante"},
+    "owner@meridian.com":         {"nome":"Owner de Demonstração", "perfil":"owner"},
     "curador@meridian.com":       {"nome":"Maria Santos",    "perfil":"curador"},
     "governanca@meridian.com":    {"nome":"Tereza Cristina", "perfil":"curador"},
     "ana.lima@meridian.com":      {"nome":"Ana Lima",        "perfil":"aprovador"},
     "fernando.dias@meridian.com": {"nome":"Fernando Dias",   "perfil":"aprovador"},
 }
-PERFIL_COR   = {"consultante":"#546579","curador":"#DA291C","aprovador":"#216E4E"}
-PERFIL_LABEL = {"consultante":"👁️ Consultante","curador":"✏️ Curador","aprovador":"✅ Aprovador"}
+PERFIL_COR   = {"consultante":"#546579","owner":"#216E4E","curador":"#DA291C","aprovador":"#216E4E"}
+PERFIL_LABEL = {"consultante":"👁️ Usuário comum","owner":"🧑‍💼 Data Owner","curador":"✏️ Curador","aprovador":"✅ Aprovador"}
 
 # ════════════════════════════════════════════════════════════════════
 # MENU — reorganizado por jornada do usuário
@@ -464,6 +465,50 @@ def load_solicitacoes_qualidade():
     return df if df is not None else pd.DataFrame()
 
 # ════════════════════════════════════════════════════════════════════
+
+def insert_quality_request(requester, asset, schema, domain, description):
+    """Create a quality ticket using only columns present in the target table."""
+    table = "meridian_governanca.solicitacoes_qualidade"
+    cols_df, err = qry(f"DESCRIBE TABLE {table}")
+    if err or cols_df.empty or "col_name" not in cols_df.columns:
+        return False, err or "Não foi possível identificar a estrutura da fila de qualidade."
+    available = {str(c).strip().lower() for c in cols_df["col_name"].dropna() if str(c).strip() and not str(c).startswith("#")}
+    request_id = str(uuid.uuid4())
+    values = {"solicitacao_id": request_id, "id": request_id, "solicitante": requester,
+        "solicitado_por": requester, "requester": requester, "ativo": asset,
+        "ativo_solicitado": asset, "table_name": asset, "tabela": asset, "schema_name": schema,
+        "schema": schema, "dominio": domain, "domain": domain, "descricao": description,
+        "descricao_problema": description, "problema": description, "justificativa": description,
+        "status": "pendente", "criado_em": None, "atualizado_em": None}
+    selected = [(c, values[c]) for c in values if c in available]
+    if not any(c in available for c in ("ativo", "ativo_solicitado", "table_name", "tabela")):
+        return False, "A tabela de solicitações não possui uma coluna reconhecida para o ativo."
+    if not any(c in available for c in ("descricao", "descricao_problema", "problema", "justificativa")):
+        return False, "A tabela de solicitações não possui uma coluna reconhecida para a descrição."
+    columns, sql_values = [], []
+    for col, value in selected:
+        columns.append(f"`{col}`")
+        if col in ("criado_em", "atualizado_em"): sql_values.append("current_timestamp()")
+        elif value is None: sql_values.append("NULL")
+        else: sql_values.append(f"'{esc(value)}'")
+    return exe(f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({', '.join(sql_values)})")
+
+def update_request_status(table_name, request_id, new_status, actor):
+    if table_name not in ("solicitacoes_acesso", "solicitacoes_qualidade", "sugestoes_conceitos", "sugestoes_regras"):
+        return False, "Fila não reconhecida."
+    table = "meridian_governanca." + table_name
+    columns_df, err = qry("DESCRIBE TABLE " + table)
+    if err or columns_df.empty or "col_name" not in columns_df.columns:
+        return False, err or "Estrutura da fila indisponível."
+    columns = {str(c).strip().lower() for c in columns_df["col_name"].dropna()}
+    id_col = next((c for c in ["solicitacao_id", "sugestao_id", "id"] if c in columns), None)
+    if not id_col or "status" not in columns:
+        return False, "A fila não possui chave e status reconhecidos."
+    assignments = ["status='" + esc(new_status) + "'"]
+    if "atualizado_em" in columns: assignments.append("atualizado_em=current_timestamp()")
+    actor_col = next((c for c in ["analisado_por", "atualizado_por", "responsavel"] if c in columns), None)
+    if actor_col: assignments.append(actor_col + "='" + esc(actor) + "'")
+    return exe("UPDATE " + table + " SET " + ", ".join(assignments) + " WHERE " + id_col + "='" + esc(request_id) + "'")
 # COMPONENTES REUTILIZÁVEIS
 # ════════════════════════════════════════════════════════════════════
 def page_header(icone, titulo, subtitulo=""):
@@ -571,6 +616,7 @@ with st.sidebar:
     st.session_state["nome_atual"]   = u["nome"]
     is_curador   = perfil in ["curador","aprovador"]
     is_aprovador = perfil == "aprovador"
+    is_owner     = perfil == "owner"
 
     if "pagina" not in st.session_state:
         st.session_state["pagina"] = "🔎 Encontrar dados"
@@ -795,6 +841,7 @@ u            = USUARIOS[usuario]
 perfil       = u["perfil"]
 is_curador   = perfil in ["curador","aprovador"]
 is_aprovador = perfil == "aprovador"
+is_owner = perfil == "owner"
 
 # ════════════════════════════════════════════════════════════════════
 # 🏠 INÍCIO — Plataforma de Governança de Dados
@@ -951,12 +998,130 @@ if pagina == "🔎 Encontrar dados":
 
     copyright_footer()
 
+
+elif pagina == "🧑‍💼 Minhas Tabelas":
+    if not (is_owner or is_curador):
+        estado_vazio("🔒", "Área restrita", "A gestão das tabelas é destinada ao Data Owner.")
+    else:
+        page_header("🧑‍💼", "Gestão das minhas tabelas", "Acompanhe ativos, qualidade e solicitações por domínio.")
+        df_owner_all = load_meta().copy()
+        if df_owner_all.empty:
+            estado_vazio("📋", "Ativos indisponíveis", "Não há metadados disponíveis para montar sua visão.")
+        else:
+            owner_values = sorted([str(v) for v in df_owner_all.get("data_owner", pd.Series(dtype=str)).dropna().unique() if str(v).strip()])
+            owner_email = usuario.lower()
+            owned = df_owner_all[df_owner_all["data_owner"].fillna("").astype(str).str.lower().eq(owner_email)]
+            if owned.empty and owner_values:
+                st.info("O perfil de demonstração não está associado ao campo data_owner dos ativos. Selecione um responsável para visualizar a experiência; em produção, este escopo deve vir do IAM.")
+                owner_scope = st.selectbox("Responsável (escopo de demonstração)", owner_values, key="owner_demo_scope")
+                owned = df_owner_all[df_owner_all["data_owner"].astype(str) == owner_scope]
+            domains_owner = sorted([str(v) for v in owned.get("dominio", pd.Series(dtype=str)).dropna().unique() if str(v).strip()])
+            domain_owner = st.selectbox("Domínio", ["Todos"] + domains_owner, key="owner_domain")
+            if domain_owner != "Todos":
+                owned = owned[owned["dominio"].astype(str) == domain_owner]
+            owned_names = set(owned.get("table_name", pd.Series(dtype=str)).astype(str))
+            df_owner_quality = load_quality_dimensions()
+            q_owner = df_owner_quality[df_owner_quality.get("table_name", pd.Series(dtype=str)).astype(str).isin(owned_names)].copy() if not df_owner_quality.empty else pd.DataFrame()
+            df_owner_access = load_solicitacoes_acesso()
+            access_owner = df_owner_access[df_owner_access.get("ativo_solicitado", pd.Series(dtype=str)).astype(str).isin(owned_names)].copy() if not df_owner_access.empty else pd.DataFrame()
+            df_owner_tickets = load_solicitacoes_qualidade()
+            ticket_asset_col = next((c for c in ["ativo", "ativo_solicitado", "table_name", "tabela"] if c in df_owner_tickets.columns), None) if not df_owner_tickets.empty else None
+            quality_tickets_owner = df_owner_tickets[df_owner_tickets[ticket_asset_col].astype(str).isin(owned_names)].copy() if ticket_asset_col else pd.DataFrame()
+            n_assets = len(owned)
+            n_no_quality = max(0, n_assets - (q_owner["table_name"].nunique() if not q_owner.empty and "table_name" in q_owner.columns else 0))
+            k1,k2,k3,k4 = st.columns(4)
+            with k1: st.markdown(kpi(n_assets, "Tabelas no escopo", "#DA291C"), unsafe_allow_html=True)
+            with k2: st.markdown(kpi(f"{q_owner['score_final'].mean():.1f}%" if not q_owner.empty and "score_final" in q_owner else "—", "Qualidade média", "#216E4E"), unsafe_allow_html=True)
+            with k3: st.markdown(kpi(len(access_owner), "Pedidos de acesso", "#546579"), unsafe_allow_html=True)
+            with k4: st.markdown(kpi(len(quality_tickets_owner), "Chamados de qualidade", "#DA291C"), unsafe_allow_html=True)
+            tab_overview, tab_terms, tab_lineage, tab_rules, tab_requests = st.tabs(["Visão das tabelas", "Glossário e regras", "Linhagem e indicadores", "Qualidade", "Solicitações"])
+            with tab_overview:
+                st.subheader("Qualidade e documentação por tabela")
+                qmap = {}
+                if not q_owner.empty and {"table_name", "score_final"}.issubset(q_owner.columns):
+                    qmap = q_owner.groupby("table_name")["score_final"].mean().to_dict()
+                view_owner = owned.copy()
+                view_owner["Qualidade dos dados"] = view_owner["table_name"].map(qmap).apply(lambda x: f"{float(x):.1f}%" if pd.notna(x) else "Não avaliada")
+                view_owner["Documentação"] = view_owner["score_completude"].apply(lambda x: f"{x}%")
+                owner_cols = [c for c in ["table_name", "schema_name", "dominio", "descricao", "data_steward", "Qualidade dos dados", "Documentação"] if c in view_owner.columns]
+                st.dataframe(view_owner[owner_cols], use_container_width=True, hide_index=True)
+                st.caption("Tabelas candidatas à revisão por baixo uso: indisponível. A plataforma ainda não recebe telemetria de consultas.")
+                st.caption("Pessoas com acesso efetivo: indisponível. A fonte de grants/IAM ainda não está conectada; pedidos registrados não comprovam acesso concedido.")
+                st.caption(f"Tabelas sem avaliação de qualidade: {n_no_quality}.")
+            with tab_terms:
+                links_owner = load_links()
+                gloss_owner = load_glossario()
+                term_ids = links_owner[links_owner.get("table_name", pd.Series(dtype=str)).astype(str).isin(owned_names)]["glossary_id"].astype(str).unique() if not links_owner.empty else []
+                terms_owner = gloss_owner[gloss_owner.get("glossary_id", pd.Series(dtype=str)).astype(str).isin(term_ids)] if not gloss_owner.empty else pd.DataFrame()
+                st.subheader("Termos de negócio vinculados")
+                if terms_owner.empty: st.info("Nenhum termo vinculado às tabelas deste escopo.")
+                else: st.dataframe(terms_owner[[c for c in ["termo", "definicao", "dominio", "status"] if c in terms_owner.columns]], use_container_width=True, hide_index=True)
+                business_rules = load_rules()
+                if not business_rules.empty and "glossary_id" in business_rules.columns:
+                    business_rules = business_rules[business_rules["glossary_id"].astype(str).isin(term_ids)]
+                st.subheader("Regras de negócio")
+                if business_rules.empty: st.info("Nenhuma regra de negócio vinculada aos termos associados.")
+                else: st.dataframe(business_rules, use_container_width=True, hide_index=True)
+            with tab_lineage:
+                lineage_owner, lineage_err = load_linhagem()
+                if not lineage_owner.empty:
+                    mask_lineage = lineage_owner.get("origem_tabela", pd.Series(dtype=str)).astype(str).isin(owned_names) | lineage_owner.get("destino_tabela", pd.Series(dtype=str)).astype(str).isin(owned_names)
+                    st.dataframe(lineage_owner[mask_lineage], use_container_width=True, hide_index=True)
+                else: st.info("Linhagem indisponível para as tabelas do escopo." if lineage_err else "Nenhuma linhagem cadastrada.")
+                st.subheader("Indicadores que usam estas tabelas")
+                st.info("Não há associação de indicadores a tabelas na fonte conectada. Os indicadores disponíveis atualmente são agregados por domínio.")
+            with tab_rules:
+                st.subheader("Regras e resultados de qualidade")
+                st.markdown("As dimensões abaixo refletem avaliações recebidas da fonte gd_quality_dimensions. As regras executáveis e seus limites ainda não estão cadastrados nesta plataforma.")
+                if q_owner.empty: st.info("Sem resultados de qualidade para as tabelas deste domínio.")
+                else: st.dataframe(q_owner, use_container_width=True, hide_index=True)
+                st.subheader("Verificações de qualidade dos metadados")
+                metadata_rules = [
+                    ("Descrição preenchida", lambda r: bool(str(r.get("descricao", "")).strip())),
+                    ("Domínio atribuído", lambda r: bool(str(r.get("dominio", "")).strip())),
+                    ("Data Owner atribuído", lambda r: bool(str(r.get("data_owner", "")).strip())),
+                    ("Data Steward atribuído", lambda r: bool(str(r.get("data_steward", "")).strip())),
+                    ("Classificação preenchida", lambda r: bool(str(r.get("classificacao", "")).strip())),
+                ]
+                checks = [{"Tabela": r.get("table_name"), "Regra": name, "Resultado": "Atende" if check(r) else "Precisa de atenção"} for _, r in owned.iterrows() for name, check in metadata_rules]
+                st.dataframe(pd.DataFrame(checks), use_container_width=True, hide_index=True)
+            with tab_requests:
+                st.subheader("Pedidos de acesso das tabelas")
+                if access_owner.empty: st.info("Nenhum pedido localizado para este escopo.")
+                if not access_owner.empty:
+                    st.info("A mudança de status registra a decisão do processo. Ela não concede nem revoga permissões no banco.")
+                    for _, req in access_owner.iterrows():
+                        req_id = req.get("solicitacao_id", req.get("id", ""))
+                        with st.expander(f"Acesso · {req.get('ativo_solicitado', 'Tabela')} · {req.get('solicitante', 'Solicitante')} · {req.get('status', 'pendente')}"):
+                            st.write(req.get("justificativa", req.get("motivo", "Sem justificativa registrada.")))
+                            new_access_status = st.selectbox("Decisão", ["em_analise", "aprovado", "rejeitado"], key=f"owner_access_status_{req_id}")
+                            if st.button("Atualizar pedido", key=f"owner_access_update_{req_id}"):
+                                ok, err = update_request_status("solicitacoes_acesso", req_id, new_access_status, usuario)
+                                if ok: st.cache_data.clear(); st.rerun()
+                                else: st.error(err)
+
+                else: st.dataframe(access_owner, use_container_width=True, hide_index=True)
+                st.subheader("Chamados de qualidade")
+                if quality_tickets_owner.empty: st.info("Nenhum chamado localizado para este escopo.")
+                if not quality_tickets_owner.empty:
+                    for _, req in quality_tickets_owner.iterrows():
+                        req_id = req.get("solicitacao_id", req.get("id", ""))
+                        with st.expander(f"Qualidade · {req.get(ticket_asset_col, 'Tabela')} · {req.get('status', 'pendente')}"):
+                            st.write(req.get("descricao", req.get("problema", req.get("justificativa", "Descrição indisponível."))))
+                            new_quality_status = st.selectbox("Etapa", ["em_analise", "aguardando_correcao", "concluido", "rejeitado"], key=f"owner_quality_status_{req_id}")
+                            if st.button("Atualizar chamado", key=f"owner_quality_update_{req_id}"):
+                                ok, err = update_request_status("solicitacoes_qualidade", req_id, new_quality_status, usuario)
+                                if ok: st.cache_data.clear(); st.rerun()
+                                else: st.error(err)
+
+                else: st.dataframe(quality_tickets_owner, use_container_width=True, hide_index=True)
 elif pagina == "⚙️ Gestão":
     page_header("⚙️", "Gestão", "Acesse as ferramentas de governança conforme sua responsabilidade.")
     st.markdown("Escolha uma área para continuar. As funções de aprovação e curadoria dependem das permissões atribuídas ao seu perfil.")
     management_links = [("📖 Glossário", "Conceitos e regras de negócio"), ("🔗 Linhagem", "Origem e fluxo dos dados"), ("📦 Produtos", "Produtos de dados e ativos vinculados"), ("🏛️ Domínios", "Responsáveis e ativos por área")]
     if is_curador:
         management_links += [("📊 Indicadores", "Visão de governança"), ("🥇 Certificação", "Critérios e decisões de certificação"), ("✏️ Curadoria", "Manutenção dos metadados"), ("🕐 Auditoria", "Histórico de alterações")]
+    if is_owner or is_curador: management_links += [("🧑‍💼 Minhas Tabelas", "Gestão das tabelas por domínio")]
     management_cols = st.columns(2)
     for link_idx, (target_page, description) in enumerate(management_links):
         with management_cols[link_idx % 2]:
@@ -1842,17 +2007,30 @@ elif pagina == "📋 Catálogo":
                     st.markdown('</div>', unsafe_allow_html=True)
 
                     # Solicitação de acesso — para consultantes
-                    if perfil == "consultante":
+                    if perfil in ["consultante", "owner"]:
                         with st.expander("🔑 Solicitar acesso a este ativo"):
                             sa_just = st.text_area("Por que você precisa deste dado?", key="sa_just", height=70)
                             sa_tipo = st.selectbox("Tipo de acesso", ["Leitura","Leitura e Escrita"], key="sa_tipo")
                             if st.button("📤 Enviar solicitação de acesso", key="btn_sol_acesso"):
                                 if sa_just:
                                     ok,err = exe(f"INSERT INTO meridian_governanca.solicitacoes_acesso VALUES ('{uuid.uuid4()}','{esc(usuario)}','{esc(tb)}','{esc(sc)}','{esc(sa_just)}','{esc(sa_tipo)}','pendente',null,null,current_timestamp(),current_timestamp())")
-                                    if ok: st.success("✅ Solicitação enviada! O responsável será notificado.")
+                                    if ok: st.success("✅ Solicitação registrada. Acompanhe o andamento em Solicitar uso.")
                                     else: st.error(f"Erro: {err}")
                                 else: st.warning("Informe o motivo da solicitação.")
 
+
+                    with st.expander("🧪 Solicitar melhoria na qualidade"):
+                        sq_desc = st.text_area("Descreva o problema observado ou a melhoria desejada", key=f"sq_desc_{sc}_{tb}", height=90)
+                        if st.button("📤 Enviar solicitação de qualidade", key=f"btn_sq_{sc}_{tb}"):
+                            if sq_desc.strip():
+                                ok, err = insert_quality_request(usuario, tb, sc, str(item.get("dominio", "")), sq_desc.strip())
+                                if ok:
+                                    st.success("Solicitação registrada para análise da equipe responsável.")
+                                    load_solicitacoes_qualidade.clear()
+                                else:
+                                    st.error(f"Não foi possível registrar a solicitação: {err}")
+                            else:
+                                st.warning("Descreva o problema ou a melhoria desejada.")
                     # Editar na Curadoria — apenas para curador/aprovador
                     if is_curador:
                         if st.button("✏️ Editar metadados na Curadoria", key="btn_ir_curadoria"):
@@ -2196,7 +2374,7 @@ elif pagina == "⚡ Meu Espaço":
     df_gloss = load_glossario()
 
     # ── CONSULTANTE ───────────────────────────────────────────────
-    if perfil == "consultante":
+    if perfil in ["consultante", "owner"]:
         df_sol_ac  = load_solicitacoes_acesso()
         df_sol_qu  = load_solicitacoes_qualidade()
         df_sug_co  = load_sugestoes_conceitos()
@@ -2349,6 +2527,20 @@ elif pagina == "⚡ Meu Espaço":
                             if st.button("❌ Rejeitar",key=f"rej_conc_{r['sugestao_id']}",use_container_width=True):
                                 ok,_ = exe(f"UPDATE meridian_governanca.sugestoes_conceitos SET status='rejeitado',analisado_por='{esc(usuario)}',atualizado_em=current_timestamp() WHERE sugestao_id='{r['sugestao_id']}'")
                                 if ok: st.warning("↩️ Rejeitado."); st.cache_data.clear(); st.rerun()
+
+
+        if not pend_reg.empty:
+            section_divider("SUGESTÕES DE REGRAS DE NEGÓCIO")
+            for _, r in pend_reg.iterrows():
+                sug_id = r.get("sugestao_id", r.get("id", ""))
+                with st.expander(f"📏 {r.get('nome_regra', 'Regra sugerida')} · por {r.get('solicitante', 'usuário')}"):
+                    st.write(r.get("descricao", r.get("regra", "Descrição não informada.")))
+                    st.caption(f"Conceito: {r.get('termo', r.get('glossary_id', '—'))}")
+                    new_status = st.selectbox("Encaminhamento", ["em_analise", "aprovado", "rejeitado"], key=f"review_rule_{sug_id}")
+                    if st.button("Atualizar sugestão", key=f"update_rule_{sug_id}"):
+                        ok, err = update_request_status("sugestoes_regras", sug_id, new_status, usuario)
+                        if ok: st.cache_data.clear(); st.rerun()
+                        else: st.error(err)
 
         if is_aprovador and pend_aprov>0:
             section_divider("CONCEITOS AGUARDANDO APROVAÇÃO")
@@ -3169,4 +3361,3 @@ for _nav_k, _nav_p in _topbar_nav_map:
     if st.button(f"govnav-{_nav_k}", key=f"topnav-{_nav_k}"):
         st.session_state["pagina"] = _nav_p
         st.rerun()
-
