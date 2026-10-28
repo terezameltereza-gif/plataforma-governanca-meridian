@@ -612,9 +612,7 @@ with st.sidebar:
     # ── Perfil (rodapé)
     iniciais_u = "".join([n[0].upper() for n in u["nome"].split()[:2]])
     st.markdown(f"""
-    <div style="position:absolute;bottom:0;left:0;right:0;
-                border-top:1px solid #546579;padding:14px 14px 16px;
-                background:#0C2340;">
+    <div style="border-top:1px solid #546579;margin-top:22px;padding:14px 14px 16px;background:#0C2340;">
         <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:1.5px;
                     color:#9DA7B3;margin-bottom:10px;font-weight:700;">Perfil Atual</div>
         <div style="display:flex;align-items:center;gap:10px;">
@@ -629,7 +627,6 @@ with st.sidebar:
             </div>
         </div>
     </div>""", unsafe_allow_html=True)
-    st.markdown("<div style='height:106px;'></div>", unsafe_allow_html=True)
     if st.button("↩ Trocar perfil", key="logout", use_container_width=True):
         st.session_state["usuario"] = None
         st.rerun()
