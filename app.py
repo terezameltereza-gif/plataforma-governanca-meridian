@@ -73,6 +73,7 @@ section[data-testid="stSidebar"] > div::-webkit-scrollbar{width:4px;}
 section[data-testid="stSidebar"] > div::-webkit-scrollbar-track{background:#0C2340;}
 section[data-testid="stSidebar"] > div::-webkit-scrollbar-thumb{background:#9DA7B3;border-radius:4px;}
 section[data-testid="stSidebar"] *{color:#DADEE2 !important;}
+section[data-testid="stSidebar"] [data-baseweb="select"] *{color:#0C2340 !important;}
 section[data-testid="stSidebar"] .stButton>button{
     background:transparent !important;color:#E6EDF3 !important;border:none !important;
     border-radius:7px !important;font-weight:500 !important;font-size:0.81rem !important;
@@ -539,8 +540,8 @@ with st.sidebar:
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
                 <div aria-label="BIP" style="width:42px;height:30px;background:#DA291C;color:#FFFFFF;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:Work Sans,sans-serif;font-size:15px;font-weight:800;letter-spacing:0.4px;flex-shrink:0;">BIP</div>
                 <div>
-                    <div style="font-family:Work Sans,sans-serif;font-size:13px;font-weight:800;color:#FFFFFF;letter-spacing:1.2px;line-height:1.2;">BIP</div>
-                    <div style="font-size:8.5px;color:#9DA7B3;letter-spacing:0.8px;text-transform:uppercase;">Governança de Dados</div>
+                    <div style="font-family:Work Sans,sans-serif;font-size:12px;font-weight:700;color:#FFFFFF;letter-spacing:0.1px;line-height:1.2;">Governança de Dados</div>
+                    <div style="font-size:8.5px;color:#9DA7B3;letter-spacing:0.8px;text-transform:uppercase;">PLATAFORMA BIP</div>
                 </div>
             </div>
         </div>""", unsafe_allow_html=True)
@@ -649,8 +650,8 @@ st.markdown(f"""
         <!-- BIP wordmark -->
         <div aria-label="BIP" style="width:42px;height:30px;background:#DA291C;color:#FFFFFF;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:Work Sans,sans-serif;font-size:15px;font-weight:800;letter-spacing:0.4px;flex-shrink:0;">BIP</div>
         <div>
-            <div style="font-family:Work Sans,sans-serif;font-size:13px;font-weight:800;color:#FFFFFF;letter-spacing:1.2px;line-height:1.2;">BIP</div>
-            <div style="font-size:8px;color:#DADEE2;letter-spacing:0.8px;text-transform:uppercase;line-height:1.2;">Governança de Dados</div>
+            <div style="font-family:Work Sans,sans-serif;font-size:12px;font-weight:700;color:#FFFFFF;letter-spacing:0.1px;line-height:1.2;">Governança de Dados</div>
+            <div style="font-size:8px;color:#DADEE2;letter-spacing:0.8px;text-transform:uppercase;line-height:1.2;">PLATAFORMA BIP</div>
         </div>
     </div>
     <!-- Jornadas -->
