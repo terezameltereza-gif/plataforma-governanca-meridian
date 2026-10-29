@@ -509,6 +509,31 @@ def update_request_status(table_name, request_id, new_status, actor):
     actor_col = next((c for c in ["analisado_por", "atualizado_por", "responsavel"] if c in columns), None)
     if actor_col: assignments.append(actor_col + "='" + esc(actor) + "'")
     return exe("UPDATE " + table + " SET " + ", ".join(assignments) + " WHERE " + id_col + "='" + esc(request_id) + "'")
+
+@st.cache_data(ttl=900)
+def load_uc_table_usage():
+    """Optional usage telemetry from Unity Catalog table lineage."""
+    had_prior_db_error = bool(st.session_state.get("_db_err"))
+    df, err = qry("""
+        SELECT
+            source_table_catalog AS catalog_name,
+            source_table_schema AS schema_name,
+            source_table_name AS table_name,
+            COALESCE(created_by, 'Identidade indisponível') AS user_name,
+            COUNT(DISTINCT event_id) AS access_count,
+            MAX(event_time) AS last_access
+        FROM system.access.table_lineage
+        WHERE event_date >= date_sub(current_date(), 90)
+          AND source_type IS NOT NULL
+          AND source_table_catalog IS NOT NULL
+          AND source_table_schema IS NOT NULL
+          AND source_table_name IS NOT NULL
+        GROUP BY source_table_catalog, source_table_schema, source_table_name,
+                 COALESCE(created_by, 'Identidade indisponível')
+    """)
+    if err and not had_prior_db_error:
+        st.session_state.pop("_db_err", None)
+    return (df if df is not None else pd.DataFrame()), err
 # COMPONENTES REUTILIZÁVEIS
 # ════════════════════════════════════════════════════════════════════
 def page_header(icone, titulo, subtitulo=""):
@@ -1045,7 +1070,47 @@ elif pagina == "🧑‍💼 Minhas Tabelas":
                 view_owner["Documentação"] = view_owner["score_completude"].apply(lambda x: f"{x}%")
                 owner_cols = [c for c in ["table_name", "schema_name", "dominio", "descricao", "data_steward", "Qualidade dos dados", "Documentação"] if c in view_owner.columns]
                 st.dataframe(view_owner[owner_cols], use_container_width=True, hide_index=True)
-                st.caption("Tabelas candidatas à revisão por baixo uso: indisponível. A plataforma ainda não recebe telemetria de consultas.")
+
+            usage_df, usage_err = load_uc_table_usage()
+            st.subheader("Uso observado nos últimos 90 dias")
+            if usage_err:
+                st.info("Telemetria indisponível. Verifique se Unity Catalog e system.access.table_lineage estão habilitados e se o principal da aplicação tem USE CATALOG, USE SCHEMA e SELECT.")
+            else:
+                metadata_catalog_col = next((c for c in ["catalog_name", "catalog", "catalogo"] if c in owned.columns), None)
+                usage_rows, user_rows = [], []
+                for _, asset_row in owned.iterrows():
+                    asset_schema = str(asset_row.get("schema_name", ""))
+                    asset_table = str(asset_row.get("table_name", ""))
+                    matches = usage_df[
+                        usage_df["schema_name"].astype(str).str.lower().eq(asset_schema.lower()) &
+                        usage_df["table_name"].astype(str).str.lower().eq(asset_table.lower())
+                    ].copy() if not usage_df.empty else pd.DataFrame()
+                    if metadata_catalog_col and not matches.empty:
+                        asset_catalog = str(asset_row.get(metadata_catalog_col, ""))
+                        matches = matches[matches["catalog_name"].astype(str).str.lower().eq(asset_catalog.lower())]
+                    elif not matches.empty and matches["catalog_name"].nunique() > 1:
+                        usage_rows.append({"Tabela": asset_table, "Leituras registradas": "Ambíguo", "Usuários observados": "—", "Último uso": "—"})
+                        continue
+                    count = int(pd.to_numeric(matches["access_count"], errors="coerce").fillna(0).sum()) if not matches.empty else 0
+                    users = int(matches["user_name"].nunique()) if not matches.empty else 0
+                    last = matches["last_access"].max() if not matches.empty else None
+                    usage_rows.append({"Tabela": asset_table, "Leituras registradas": count, "Usuários observados": users, "Último uso": str(last) if pd.notna(last) else "Nenhum evento registrado"})
+                    if not matches.empty:
+                        for _, usage in matches.iterrows():
+                            user_rows.append({"Tabela": asset_table, "Usuário observado": usage["user_name"], "Leituras": int(usage["access_count"]), "Último acesso": str(usage["last_access"])})
+                usage_summary = pd.DataFrame(usage_rows)
+                if usage_summary.empty:
+                    st.info("Nenhuma tabela neste escopo para analisar.")
+                else:
+                    st.dataframe(usage_summary.sort_values("Leituras registradas", ascending=False, key=lambda s: pd.to_numeric(s, errors="coerce").fillna(-1)), use_container_width=True, hide_index=True)
+                    review_candidates = usage_summary[usage_summary["Leituras registradas"].astype(str).eq("0")]
+                    if not review_candidates.empty:
+                        st.warning(f"{len(review_candidates)} tabela(s) sem evento de leitura registrado nos últimos 90 dias. Trate como candidatas a revisão, não como recomendação automática de exclusão.")
+                    if user_rows:
+                        with st.expander("Ver pessoas e identidades que consultaram as tabelas"):
+                            st.dataframe(pd.DataFrame(user_rows).sort_values("Leituras", ascending=False), use_container_width=True, hide_index=True)
+                    st.caption("Fonte: Unity Catalog system.access.table_lineage · janela de 90 dias. Os registros representam linhagem observada, não grants efetivos; alguns eventos podem não gerar linhagem. Nomes iguais em mais de um catálogo são marcados como ambíguos.")
+
                 st.caption("Pessoas com acesso efetivo: indisponível. A fonte de grants/IAM ainda não está conectada; pedidos registrados não comprovam acesso concedido.")
                 st.caption(f"Tabelas sem avaliação de qualidade: {n_no_quality}.")
             with tab_terms:
@@ -3361,3 +3426,4 @@ for _nav_k, _nav_p in _topbar_nav_map:
     if st.button(f"govnav-{_nav_k}", key=f"topnav-{_nav_k}"):
         st.session_state["pagina"] = _nav_p
         st.rerun()
+
