@@ -131,6 +131,16 @@ def params_intervencao(ids, objetivo=None, achado=None):
 # ════════════════════════════════════════════════════════════════════
 # Idempotência e estrutura
 # ════════════════════════════════════════════════════════════════════
+def test_entrada_pendente_registrada_no_banco(ambiente):
+    ambiente.execute("SELECT criterio, entrada FROM vd_modelo_priorizacao WHERE situacao = 'pendente'")
+    assert {tuple(r) for r in ambiente.fetchall()} == R.PENDENTES_P1
+
+
+def test_habilitacao_calculada_para_todas_as_regras(ambiente):
+    ambiente.execute("SELECT COUNT(*) FROM vd_regras_habilitacao WHERE versao_regras = 'R1'")
+    assert ambiente.fetchone()[0] == len(R.REGRAS_R1)
+
+
 def test_reexecucao_nao_duplica_referencias(ambiente):
     c = ambiente
     for tabela, esperado in (("vd_regras_diagnostico", 9), ("vd_modelo_priorizacao", 19), ("vd_faixas_prioridade", 4),
@@ -200,7 +210,7 @@ def test_intervencao_valida_e_dedupe(ciclo, cur):
 
 def test_transicoes(ciclo, cur):
     iid = ciclo["int"]
-    base = dict(intervencao_id=iid, prazo="2026-12-31", justificativa=None, usuario="teste@governantes")
+    base = dict(intervencao_id=iid, prazo="2026-12-31", justificativa=None, comentario=None, usuario="teste@governantes")
     cur.execute(R.SQL_TRANSICIONAR, {**base, "status_de": "identificada", "status_para": "concluida", "perfil": "aprovador", "versao_lida": 1})
     assert afetadas(cur) == 0, "pular etapas é recusado"
     cur.execute(R.SQL_TRANSICIONAR, {**base, "status_de": "identificada", "status_para": "em_analise", "perfil": "consultante", "versao_lida": 1})
@@ -231,7 +241,7 @@ def test_beneficio_calculado_e_coerente(ciclo, cur):
     cur.execute(R.SQL_INSERIR_EVIDENCIA, dict(evidencia_id=tid(), chave_natural=R.chave_evidencia("intervencao", iid, conteudo),
                 entidade_tipo="intervencao", entidade_id=iid, tipo="link", descricao="teste", conteudo=conteudo,
                 origem="manual", usuario=dono, perfil="consultante"))
-    base = dict(intervencao_id=iid, prazo=None, justificativa=None)
+    base = dict(intervencao_id=iid, prazo=None, justificativa=None, comentario=None)
     for de, para, perfil, usuario in (("em_execucao", "em_validacao", "consultante", dono),
                                       ("em_validacao", "concluida", "aprovador", "teste@governantes")):
         cur.execute(R.SQL_TRANSICIONAR, {**base, "usuario": usuario, "status_de": de, "status_para": para, "perfil": perfil,

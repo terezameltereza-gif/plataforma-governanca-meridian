@@ -39,6 +39,8 @@ MODELO_P1: dict[str, dict[str, int]] = {
     "esforco": {"baixo": 1, "medio": 0, "alto": -1, "nao_informado": 0},
 }
 PESOS_P1 = {c: 1 for c in MODELO_P1}
+# Entradas ainda não aprovadas pela responsável de negócio: não pontuam intervenções.
+PENDENTES_P1 = {("posicao_ativo", "nao_aplicavel")}
 FAIXAS_P1 = (("critica", 10, 99), ("alta", 7, 9), ("media", 4, 6), ("baixa", -99, 3))
 
 # ── Máquina de estados (espelho de 02) ────────────────────────────────
@@ -56,6 +58,10 @@ TRANSICOES: dict[tuple[str, str], tuple[str, ...]] = {
        for s in ("identificada", "em_analise", "aprovada", "planejada", "em_execucao", "em_validacao")},
 }
 EXIGE_COMENTARIO = {("em_analise", "identificada"), ("em_execucao", "planejada"), ("em_validacao", "em_execucao")}
+
+
+class DecisaoPendente(ValueError):
+    """A priorização depende de uma entrada do modelo ainda não aprovada."""
 
 
 class ErroIntegridade(ValueError):
@@ -282,6 +288,8 @@ def priorizar(prioridade_objetivo: str, posicao_ativo: Optional[str], tipo_achad
     for crit, entrada in entradas.items():
         if entrada not in MODELO_P1[crit]:
             raise ValueError(f"Entrada '{entrada}' inválida para o critério {crit}")
+        if (crit, entrada) in PENDENTES_P1:
+            raise DecisaoPendente(f"Pontuação de {crit}='{entrada}' ainda não aprovada no modelo {VERSAO_MODELO}")
         pontos[crit] = MODELO_P1[crit][entrada] * PESOS_P1[crit]
     total = sum(pontos.values())
     faixa = [p for p, lo, hi in FAIXAS_P1 if lo <= total <= hi]
@@ -473,11 +481,11 @@ USING (
   FROM vd_achados a
   JOIN vd_objetivos o ON o.objetivo_id = a.objetivo_id AND o.status <> 'cancelado'
   JOIN vd_vinculos v  ON v.vinculo_id = a.vinculo_id AND v.objetivo_id = a.objetivo_id
-  JOIN vd_modelo_priorizacao m1 ON m1.versao_modelo = :versao_modelo AND m1.criterio = 'prioridade_objetivo' AND m1.entrada = o.prioridade
-  JOIN vd_modelo_priorizacao m2 ON m2.versao_modelo = :versao_modelo AND m2.criterio = 'posicao_ativo' AND m2.entrada = coalesce(v.papel_no_processo, 'nao_aplicavel')
-  JOIN vd_modelo_priorizacao m3 ON m3.versao_modelo = :versao_modelo AND m3.criterio = 'tipo_achado' AND m3.entrada = a.natureza
-  JOIN vd_modelo_priorizacao m4 ON m4.versao_modelo = :versao_modelo AND m4.criterio = 'abrangencia' AND m4.entrada = :entrada_abrangencia
-  JOIN vd_modelo_priorizacao m5 ON m5.versao_modelo = :versao_modelo AND m5.criterio = 'esforco' AND m5.entrada = :esforco
+  JOIN vd_modelo_priorizacao m1 ON m1.versao_modelo = :versao_modelo AND m1.situacao = 'aprovado' AND m1.criterio = 'prioridade_objetivo' AND m1.entrada = o.prioridade
+  JOIN vd_modelo_priorizacao m2 ON m2.versao_modelo = :versao_modelo AND m2.situacao = 'aprovado' AND m2.criterio = 'posicao_ativo' AND m2.entrada = coalesce(v.papel_no_processo, 'nao_aplicavel')
+  JOIN vd_modelo_priorizacao m3 ON m3.versao_modelo = :versao_modelo AND m3.situacao = 'aprovado' AND m3.criterio = 'tipo_achado' AND m3.entrada = a.natureza
+  JOIN vd_modelo_priorizacao m4 ON m4.versao_modelo = :versao_modelo AND m4.situacao = 'aprovado' AND m4.criterio = 'abrangencia' AND m4.entrada = :entrada_abrangencia
+  JOIN vd_modelo_priorizacao m5 ON m5.versao_modelo = :versao_modelo AND m5.situacao = 'aprovado' AND m5.criterio = 'esforco' AND m5.entrada = :esforco
   JOIN vd_faixas_prioridade f ON f.versao_modelo = :versao_modelo
        AND (m1.pontos * m1.peso + m2.pontos * m2.peso + m3.pontos * m3.peso + m4.pontos * m4.peso + m5.pontos * m5.peso)
            BETWEEN f.pontuacao_min AND f.pontuacao_max
@@ -502,6 +510,12 @@ USING (
          OR (array_contains(split(tr.perfis, ','), 'responsavel') AND i.responsavel = :usuario))
     AND (tr.status_para <> 'em_validacao' OR EXISTS (SELECT 1 FROM vd_evidencias e
          WHERE e.entidade_tipo = 'intervencao' AND e.entidade_id = i.intervencao_id))
+    AND (tr.status_para <> 'aprovada' OR (length(trim(coalesce(i.recomendacao, ''))) > 0
+         AND length(trim(coalesce(i.criterio_conclusao, ''))) > 0))
+    AND (tr.status_para <> 'planejada' OR coalesce(CAST(:prazo AS DATE), i.prazo) IS NOT NULL)
+    AND (tr.status_para <> 'cancelada' OR length(trim(coalesce(:justificativa, ''))) > 0)
+    AND (concat(tr.status_de, '>', tr.status_para) NOT IN ('em_analise>identificada', 'em_execucao>planejada', 'em_validacao>em_execucao')
+         OR length(trim(coalesce(:comentario, ''))) > 0)
 ) s
 ON t.intervencao_id = s.intervencao_id AND t.versao = s.versao
 WHEN MATCHED THEN UPDATE SET
@@ -571,3 +585,122 @@ def gravacao_aceita(linhas_afetadas: int, operacao: str) -> None:
     """A aplicação chama após cada gravação condicionada."""
     if linhas_afetadas != 1:
         raise ErroIntegridade([f"{operacao}: recusada pela verificação no banco (dados mudaram ou relação incoerente)"])
+
+
+# ════════════════════════════════════════════════════════════════════
+# Cobertura do diagnóstico: toda regra aplicável a todo vínculo analisado
+# ════════════════════════════════════════════════════════════════════
+# Espelho de 02 (aplica_a por regra); teste garante igualdade.
+REGRAS_R1 = {"DG-01": "ativo", "DG-02": "ativo", "DG-03": "ativo", "DG-04": "ativo", "DG-05": "ativo",
+             "DG-06": "ativo", "DG-07": "ativo", "DG-08": "produto", "DG-09": "vinculo"}
+
+
+def regras_aplicaveis(ref_tipo: str, regras: Mapping[str, str] = REGRAS_R1) -> list[str]:
+    return sorted(c for c, alvo in regras.items() if alvo == "vinculo" or alvo == ref_tipo)
+
+
+@dataclass(frozen=True)
+class Ocorrencia:
+    vinculo_id: str
+    regra_codigo: str
+    resultado: str                      # disparou | nao_disparou | nao_avaliada
+    natureza: Optional[str] = None
+    valor_observado: Optional[str] = None
+    motivo_nao_avaliada: Optional[str] = None
+
+
+def montar_ocorrencias(vinculos: Mapping[str, str], habilitacao: Mapping[str, tuple[bool, str]],
+                       resultados: Mapping[tuple[str, str], tuple]) -> list[Ocorrencia]:
+    """vinculos: vinculo_id -> ref_tipo; habilitacao: regra -> (habilitada, motivo);
+    resultados: (vinculo_id, regra) -> (resultado, natureza, valor) das regras avaliadas.
+    Garante uma ocorrência por par (vínculo, regra aplicável). Falta de resultado
+    para regra habilitada impede concluir a execução."""
+    ocorrencias, faltando = [], []
+    for vid, ref_tipo in sorted(vinculos.items()):
+        for regra in regras_aplicaveis(ref_tipo):
+            habilitada, motivo = habilitacao.get(regra, (False, "regra sem registro de habilitação"))
+            if not habilitada:
+                if (vid, regra) in resultados:
+                    raise ErroIntegridade([f"{regra} está desabilitada ({motivo}) e não pode ter resultado avaliado"])
+                ocorrencias.append(Ocorrencia(vid, regra, "nao_avaliada", motivo_nao_avaliada=motivo))
+                continue
+            r = resultados.get((vid, regra))
+            if r is None:
+                faltando.append(f"{vid}/{regra}")
+                continue
+            resultado, natureza, valor = r
+            if resultado.startswith("nao_avaliada"):
+                ocorrencias.append(Ocorrencia(vid, regra, "nao_avaliada", motivo_nao_avaliada=resultado.split(":", 1)[-1]))
+            elif resultado in ("disparou", "nao_disparou"):
+                if (resultado == "disparou") != (natureza is not None):
+                    raise ErroIntegridade([f"{vid}/{regra}: natureza incompatível com o resultado"])
+                ocorrencias.append(Ocorrencia(vid, regra, resultado, natureza, valor))
+            else:
+                raise ErroIntegridade([f"{vid}/{regra}: resultado desconhecido '{resultado}'"])
+    if faltando:
+        raise ErroIntegridade([f"Execução incompleta: sem resultado para {', '.join(faltando)}"])
+    return ocorrencias
+
+
+# ════════════════════════════════════════════════════════════════════
+# Operação confirmada = entidade gravada + histórico gravado
+# ════════════════════════════════════════════════════════════════════
+class ErroAuditoria(RuntimeError):
+    """A entidade foi alterada, mas o histórico não foi gravado. A operação NÃO
+    está confirmada: a interface deve exibir erro e a entidade fica bloqueada
+    até a reconciliação (verificação I03)."""
+
+
+SQL_PENDENCIA_ENTIDADE = """
+SELECT COUNT(*) FROM vd_v_integridade
+WHERE codigo = 'I03' AND entidade = :entidade_tipo AND registro = :entidade_id
+"""
+
+
+@dataclass(frozen=True)
+class ResultadoOperacao:
+    confirmada: bool
+    versao_nova: int
+    mensagem: str
+
+
+def _linhas(cursor) -> int:
+    linha = cursor.fetchone()
+    return int(linha[0]) if linha else 0
+
+
+def executar_com_historico(cursor, operacao: str, sql: str, params: Mapping,
+                           historico: Mapping, entidade_tipo: str, entidade_id: str) -> ResultadoOperacao:
+    """1) recusa se a entidade tem histórico pendente; 2) grava a entidade (condicionada);
+    3) grava o histórico; 4) só então confirma. Falha em 3 → ErroAuditoria."""
+    cursor.execute(SQL_PENDENCIA_ENTIDADE, {"entidade_tipo": entidade_tipo, "entidade_id": entidade_id})
+    if _linhas(cursor) > 0:
+        raise ErroAuditoria(f"{operacao}: {entidade_tipo} {entidade_id} tem alteração sem histórico; reconciliar antes de continuar")
+    cursor.execute(sql, dict(params))
+    gravacao_aceita(_linhas(cursor), operacao)
+    try:
+        cursor.execute(SQL_INSERIR_HISTORICO, dict(historico))
+        ok = _linhas(cursor) == 1
+    except Exception as exc:  # noqa: BLE001 — qualquer falha do banco impede a confirmação
+        raise ErroAuditoria(f"{operacao}: alteração gravada sem histórico ({exc}); operação NÃO confirmada") from exc
+    if not ok:
+        raise ErroAuditoria(f"{operacao}: alteração gravada sem histórico; operação NÃO confirmada")
+    return ResultadoOperacao(True, int(historico["versao_entidade"]), f"{operacao}: confirmada")
+
+
+def transicionar(cursor, interv: Mapping, para: str, perfil: str, usuario: str, *, historico_id: str,
+                 comentario: Optional[str] = None, tem_evidencia: bool = False, prazo=None,
+                 justificativa_cancelamento: Optional[str] = None) -> ResultadoOperacao:
+    """Fluxo completo de uma transição: validação prévia → gravação condicionada → histórico."""
+    _exigir(validar_transicao({**interv, "prazo": prazo or interv.get("prazo")}, para, perfil, usuario,
+                              comentario, tem_evidencia, justificativa_cancelamento))
+    de, versao = interv["status"], int(interv["versao"])
+    params = {"intervencao_id": interv["intervencao_id"], "status_de": de, "status_para": para, "perfil": perfil,
+              "usuario": usuario, "versao_lida": versao, "prazo": prazo, "justificativa": justificativa_cancelamento,
+              "comentario": comentario}
+    hist = {"historico_id": historico_id, "chave_natural": chave("intervencao", interv["intervencao_id"], str(versao + 1), "transicao"),
+            "entidade_tipo": "intervencao", "entidade_id": interv["intervencao_id"], "acao": "transicao",
+            "versao_entidade": versao + 1, "status_anterior": de, "status_novo": para, "campos_alterados": None,
+            "comentario": comentario or justificativa_cancelamento, "evidencia_id": None, "usuario": usuario, "perfil": perfil}
+    return executar_com_historico(cursor, f"Transição {de} → {para}", SQL_TRANSICIONAR, params, hist,
+                                  "intervencao", interv["intervencao_id"])

@@ -32,31 +32,76 @@ MERGE INTO vd_regras_diagnostico t USING vd_ref_regras_r1 s
 ON t.regra_codigo = s.regra_codigo AND t.versao_regras = s.versao_regras
 WHEN NOT MATCHED THEN INSERT *;
 
+-- ── 1b. Habilitação das regras R1 neste ambiente ─────────────────────
+--    Decisão derivada da estrutura confirmada do catálogo (não apenas
+--    informação). Reexecutar 02 recalcula; a mudança fica no Change Data Feed.
+CREATE OR REPLACE TEMPORARY VIEW vd_calc_habilitacao AS
+WITH col AS (
+  SELECT table_name, column_name FROM information_schema.columns
+  WHERE table_catalog = current_catalog() AND table_schema = current_schema()
+),
+tem AS (
+  SELECT
+    COUNT_IF(table_name = 'tabelas_metadata'    AND column_name = 'classificacao') > 0 AS classificacao,
+    COUNT_IF(table_name = 'glossary_asset_link' AND column_name = 'schema_name')   > 0 AS link_schema,
+    COUNT_IF(table_name = 'produtos_dados'      AND column_name IN ('descricao','finalidade')) > 0 AS prod_doc,
+    COUNT_IF(table_name = 'produtos_dados'      AND column_name IN ('owner','data_owner'))     > 0 AS prod_resp
+  FROM col
+),
+qual AS (
+  SELECT COUNT(*) = 0 AS unica FROM (SELECT schema_name, table_name FROM gd_quality_dimensions GROUP BY ALL HAVING COUNT(*) > 1)
+)
+SELECT r.regra_codigo, r.versao_regras,
+  CASE r.regra_codigo
+    WHEN 'DG-04' THEN tem.classificacao
+    WHEN 'DG-06' THEN qual.unica
+    WHEN 'DG-08' THEN tem.prod_doc AND tem.prod_resp
+    ELSE true END AS habilitada,
+  CASE r.regra_codigo
+    WHEN 'DG-03' THEN IF(tem.link_schema, 'Chave completa (schema + tabela) confirmada em glossary_asset_link',
+                         'glossary_asset_link sem schema_name: nome de tabela repetido em mais de um schema gera nao_identificado')
+    WHEN 'DG-04' THEN IF(tem.classificacao, 'tabelas_metadata.classificacao confirmada', 'tabelas_metadata.classificacao ausente no catálogo')
+    WHEN 'DG-06' THEN IF(qual.unica, 'Uma avaliação por ativo em gd_quality_dimensions',
+                         'Mais de uma avaliação por ativo sem critério de seleção confirmado')
+    WHEN 'DG-08' THEN IF(tem.prod_doc AND tem.prod_resp, 'Colunas de documentação e responsável confirmadas em produtos_dados',
+                         'produtos_dados sem coluna de documentação e/ou de responsável')
+    ELSE 'Colunas obrigatórias confirmadas na pré-verificação (00)' END AS motivo,
+  current_user() AS verificado_por, current_timestamp() AS verificado_em
+FROM vd_regras_diagnostico r CROSS JOIN tem CROSS JOIN qual
+WHERE r.versao_regras = 'R1';
+
+MERGE INTO vd_regras_habilitacao t USING vd_calc_habilitacao s
+ON t.regra_codigo = s.regra_codigo AND t.versao_regras = s.versao_regras
+WHEN MATCHED AND (t.habilitada <> s.habilitada OR t.motivo <> s.motivo) THEN UPDATE SET *
+WHEN NOT MATCHED THEN INSERT *;
+
+SELECT regra_codigo, habilitada, motivo FROM vd_regras_habilitacao WHERE versao_regras = 'R1' ORDER BY regra_codigo;
+
 -- ── 2. Modelo de priorização — versão P1 ─────────────────────────────
 --    pontuacao_total = Σ (pontos × peso). Em P1 todos os pesos = 1.
 --    Mínimo possível = 2; máximo = 13.
 CREATE OR REPLACE TEMPORARY VIEW vd_ref_modelo_p1 AS
 SELECT * FROM VALUES
- ('P1','prioridade_objetivo','alta',3,1,'Prioridade do objetivo de negócio'),
- ('P1','prioridade_objetivo','media',2,1,'Prioridade do objetivo de negócio'),
- ('P1','prioridade_objetivo','baixa',1,1,'Prioridade do objetivo de negócio'),
- ('P1','posicao_ativo','saida',3,1,'Ativo entrega o resultado do processo'),
- ('P1','posicao_ativo','intermediario',2,1,'Ativo de transformação'),
- ('P1','posicao_ativo','fonte',1,1,'Ativo de origem'),
- ('P1','posicao_ativo','nao_aplicavel',2,1,'Achado sobre produto de dados (sem posição de ativo); valor neutro — DECISÃO PENDENTE'),
- ('P1','tipo_achado','nao_conforme',3,1,'Informação existe e viola critério'),
- ('P1','tipo_achado','nao_cadastrado',2,1,'Informação ausente na plataforma'),
- ('P1','tipo_achado','nao_identificado',1,1,'Plataforma não consegue verificar'),
- ('P1','abrangencia','0',0,1,'Nenhum ativo a jusante na linhagem'),
- ('P1','abrangencia','1-2',1,1,'1 a 2 ativos a jusante'),
- ('P1','abrangencia','3-5',2,1,'3 a 5 ativos a jusante'),
- ('P1','abrangencia','6+',3,1,'6 ou mais ativos a jusante'),
- ('P1','abrangencia','nao_determinada',0,1,'Sem linhagem: neutro, exibido como não determinada'),
- ('P1','esforco','baixo',1,1,'Esforço informado pelo gestor'),
- ('P1','esforco','medio',0,1,'Esforço informado pelo gestor'),
- ('P1','esforco','alto',-1,1,'Esforço informado pelo gestor'),
- ('P1','esforco','nao_informado',0,1,'Neutro, exibido como não informado')
-AS t(versao_modelo, criterio, entrada, pontos, peso, descricao);
+ ('P1','prioridade_objetivo','alta',3,1,'Prioridade do objetivo de negócio','aprovado'),
+ ('P1','prioridade_objetivo','media',2,1,'Prioridade do objetivo de negócio','aprovado'),
+ ('P1','prioridade_objetivo','baixa',1,1,'Prioridade do objetivo de negócio','aprovado'),
+ ('P1','posicao_ativo','saida',3,1,'Ativo entrega o resultado do processo','aprovado'),
+ ('P1','posicao_ativo','intermediario',2,1,'Ativo de transformação','aprovado'),
+ ('P1','posicao_ativo','fonte',1,1,'Ativo de origem','aprovado'),
+ ('P1','posicao_ativo','nao_aplicavel',2,1,'Achado sobre produto de dados (sem posição de ativo): hipótese neutra, NÃO APROVADA','pendente'),
+ ('P1','tipo_achado','nao_conforme',3,1,'Informação existe e viola critério','aprovado'),
+ ('P1','tipo_achado','nao_cadastrado',2,1,'Informação ausente na plataforma','aprovado'),
+ ('P1','tipo_achado','nao_identificado',1,1,'Plataforma não consegue verificar','aprovado'),
+ ('P1','abrangencia','0',0,1,'Nenhum ativo a jusante na linhagem','aprovado'),
+ ('P1','abrangencia','1-2',1,1,'1 a 2 ativos a jusante','aprovado'),
+ ('P1','abrangencia','3-5',2,1,'3 a 5 ativos a jusante','aprovado'),
+ ('P1','abrangencia','6+',3,1,'6 ou mais ativos a jusante','aprovado'),
+ ('P1','abrangencia','nao_determinada',0,1,'Sem linhagem: neutro, exibido como não determinada','aprovado'),
+ ('P1','esforco','baixo',1,1,'Esforço informado pelo gestor','aprovado'),
+ ('P1','esforco','medio',0,1,'Esforço informado pelo gestor','aprovado'),
+ ('P1','esforco','alto',-1,1,'Esforço informado pelo gestor','aprovado'),
+ ('P1','esforco','nao_informado',0,1,'Neutro, exibido como não informado','aprovado')
+AS t(versao_modelo, criterio, entrada, pontos, peso, descricao, situacao);
 
 MERGE INTO vd_modelo_priorizacao t USING vd_ref_modelo_p1 s
 ON t.versao_modelo = s.versao_modelo AND t.criterio = s.criterio AND t.entrada = s.entrada
@@ -123,3 +168,7 @@ SELECT CASE WHEN COUNT(*) = 0 THEN 'OK: transições íntegras'
             ELSE raise_error('ABORTAR: máquina de estados divergente do publicado') END AS transicoes
 FROM ((SELECT * FROM vd_ref_transicoes EXCEPT SELECT * FROM vd_transicoes_intervencao)
       UNION ALL (SELECT * FROM vd_transicoes_intervencao EXCEPT SELECT * FROM vd_ref_transicoes));
+
+-- Entradas do modelo ainda NÃO aprovadas: intervenções que dependam delas
+-- não são pontuadas (a gravação condicionada recusa) até nova versão aprovada.
+SELECT versao_modelo, criterio, entrada, pontos, descricao FROM vd_modelo_priorizacao WHERE situacao = 'pendente';

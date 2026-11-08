@@ -139,13 +139,18 @@ class TestPriorizacao:
 
     def test_todas_as_combinacoes_tem_faixa_unica_e_limites(self):
         totais = set()
-        for po, pa, ta, ab, es in product(["alta", "media", "baixa"], ["saida", "intermediario", "fonte", None],
+        for po, pa, ta, ab, es in product(["alta", "media", "baixa"], ["saida", "intermediario", "fonte"],
                                           ["nao_conforme", "nao_cadastrado", "nao_identificado"],
                                           [None, 0, 1, 4, 9], ["baixo", "medio", "alto", None]):
             p = R.priorizar(po, pa, ta, ab, es)
             totais.add(p.total)
             assert p.total == sum(p.pontos.values())
         assert min(totais) == 2 and max(totais) == 13
+
+    def test_entrada_pendente_bloqueia_pontuacao(self):
+        """Achado sobre produto (sem posição de ativo) depende de decisão não aprovada."""
+        with pytest.raises(R.DecisaoPendente):
+            R.priorizar("alta", None, "nao_cadastrado", None, "baixo")
 
     def test_nao_aplicavel_nao_gera_intervencao(self):
         with pytest.raises(ValueError):
@@ -336,9 +341,22 @@ def _colunas_tabela(tabela: str) -> list[str]:
 
 class TestCodigoIgualAoSQL:
     def test_modelo_p1(self):
-        sql = {(c, e): int(p) for _, c, e, p, peso, _ in _values("vd_ref_modelo_p1")}
+        linhas = _values("vd_ref_modelo_p1")
+        sql = {(c, e): int(p) for _, c, e, p, peso, _, _ in linhas}
         py = {(c, e): p for c, es in R.MODELO_P1.items() for e, p in es.items()}
         assert sql == py
+        assert {(c, e) for _, c, e, _, _, _, sit in linhas if sit == "pendente"} == R.PENDENTES_P1
+
+    def test_regras_r1_aplicacao(self):
+        assert {r[0]: r[7] for r in _values("vd_ref_regras_r1")} == R.REGRAS_R1
+
+    def test_intervencao_so_usa_entradas_aprovadas(self):
+        assert R.SQL_INSERIR_INTERVENCAO.count(".situacao = 'aprovado'") == 5
+
+    def test_transicao_no_banco_confere_precondicoes(self):
+        for trecho in ("em_validacao", "'aprovada'", "'planejada'", "'cancelada'", ":comentario", "i.versao = :versao_lida",
+                       "array_contains(split(tr.perfis"):
+            assert trecho in R.SQL_TRANSICIONAR
 
     def test_faixas_p1(self):
         assert {(p, int(lo), int(hi)) for _, p, lo, hi in _values("vd_ref_faixas_p1")} == set(R.FAIXAS_P1)
@@ -374,3 +392,109 @@ class TestCodigoIgualAoSQL:
         with pytest.raises(R.ErroIntegridade):
             R.gravacao_aceita(0, "inserir intervenção")
         R.gravacao_aceita(1, "inserir intervenção")
+
+
+# ════════════════════════════════════════════════════════════════════
+# Cobertura do diagnóstico (I04)
+# ════════════════════════════════════════════════════════════════════
+HAB = {c: (True, "ok") for c in R.REGRAS_R1}
+
+
+class TestCobertura:
+    def test_regras_por_tipo(self):
+        assert R.regras_aplicaveis("ativo") == ["DG-01", "DG-02", "DG-03", "DG-04", "DG-05", "DG-06", "DG-07", "DG-09"]
+        assert R.regras_aplicaveis("produto") == ["DG-08", "DG-09"]
+        assert R.regras_aplicaveis("dominio") == ["DG-09"]
+
+    def _res(self, vid, regras, resultado=("nao_disparou", None, None)):
+        return {(vid, r): resultado for r in regras}
+
+    def test_toda_regra_gera_ocorrencia_inclusive_sem_achado(self):
+        res = self._res("V1", R.regras_aplicaveis("ativo")) | self._res("V2", ["DG-08", "DG-09"])
+        oc = R.montar_ocorrencias({"V1": "ativo", "V2": "produto"}, HAB, res)
+        assert len(oc) == 10 and {o.resultado for o in oc} == {"nao_disparou"}
+
+    def test_regra_desabilitada_vira_nao_avaliada_com_motivo(self):
+        hab = {**HAB, "DG-04": (False, "classificacao ausente")}
+        res = self._res("V1", [r for r in R.regras_aplicaveis("ativo") if r != "DG-04"])
+        oc = {o.regra_codigo: o for o in R.montar_ocorrencias({"V1": "ativo"}, hab, res)}
+        assert oc["DG-04"].resultado == "nao_avaliada" and oc["DG-04"].motivo_nao_avaliada == "classificacao ausente"
+
+    def test_resultado_para_regra_desabilitada_e_recusado(self):
+        hab = {**HAB, "DG-04": (False, "x")}
+        with pytest.raises(R.ErroIntegridade, match="desabilitada"):
+            R.montar_ocorrencias({"V1": "ativo"}, hab, self._res("V1", R.regras_aplicaveis("ativo")))
+
+    def test_execucao_incompleta_nao_conclui(self):
+        res = self._res("V1", ["DG-01", "DG-02"])
+        with pytest.raises(R.ErroIntegridade, match="incompleta"):
+            R.montar_ocorrencias({"V1": "ativo"}, HAB, res)
+
+    def test_resultado_e_natureza_coerentes(self):
+        res = self._res("V1", ["DG-08", "DG-09"]) | {("V1", "DG-08"): ("disparou", None, "x")}
+        with pytest.raises(R.ErroIntegridade, match="natureza"):
+            R.montar_ocorrencias({"V1": "produto"}, HAB, res)
+
+
+# ════════════════════════════════════════════════════════════════════
+# Atomicidade: operação só é confirmada com entidade + histórico
+# ════════════════════════════════════════════════════════════════════
+class CursorFalso:
+    """Simula o cursor: cada execute consome um resultado roteirizado."""
+
+    def __init__(self, respostas):
+        self.respostas, self.executados, self._atual = list(respostas), [], None
+
+    def execute(self, sql, params=None):
+        self.executados.append(sql)
+        r = self.respostas.pop(0)
+        if isinstance(r, Exception):
+            raise r
+        self._atual = r
+
+    def fetchone(self):
+        return (self._atual,)
+
+
+INT = {"intervencao_id": "T1", "status": "em_analise", "versao": 2, "responsavel": "joao@x", "recomendacao": "r",
+       "criterio_conclusao": "c", "prazo": None}
+
+
+class TestAtomicidade:
+    def test_confirma_quando_entidade_e_historico_gravam(self):
+        cur = CursorFalso([0, 1, 1])
+        r = R.transicionar(cur, INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
+        assert r.confirmada and r.versao_nova == 3
+        assert cur.executados[1] == R.SQL_TRANSICIONAR and cur.executados[2] == R.SQL_INSERIR_HISTORICO
+
+    def test_falha_no_historico_nao_confirma(self):
+        with pytest.raises(R.ErroAuditoria, match="NÃO confirmada"):
+            R.transicionar(CursorFalso([0, 1, 0]), INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
+
+    def test_excecao_no_historico_nao_confirma(self):
+        with pytest.raises(R.ErroAuditoria, match="NÃO confirmada"):
+            R.transicionar(CursorFalso([0, 1, RuntimeError("timeout")]), INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
+
+    def test_entidade_com_pendencia_fica_bloqueada(self):
+        cur = CursorFalso([1])
+        with pytest.raises(R.ErroAuditoria, match="reconciliar"):
+            R.transicionar(cur, INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
+        assert cur.executados == [R.SQL_PENDENCIA_ENTIDADE], "nada é gravado"
+
+    def test_recusa_no_banco_nao_grava_historico(self):
+        cur = CursorFalso([0, 0])
+        with pytest.raises(R.ErroIntegridade, match="recusada"):
+            R.transicionar(cur, INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
+        assert R.SQL_INSERIR_HISTORICO not in cur.executados
+
+    def test_validacao_previa_impede_ir_ao_banco(self):
+        cur = CursorFalso([])
+        with pytest.raises(R.ErroIntegridade, match="Perfil"):
+            R.transicionar(cur, INT, "aprovada", "curador", "ana@x", historico_id="H1")
+        assert cur.executados == []
+
+    def test_devolucao_sem_comentario_nao_vai_ao_banco(self):
+        cur = CursorFalso([])
+        with pytest.raises(R.ErroIntegridade, match="Comentário"):
+            R.transicionar(cur, INT, "identificada", "curador", "ana@x", historico_id="H1")
+        assert cur.executados == []

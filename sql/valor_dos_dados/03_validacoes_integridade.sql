@@ -201,6 +201,16 @@ WHERE i.entrada_abrangencia <> CASE WHEN i.abrangencia_ativos IS NULL THEN 'nao_
                                     WHEN i.abrangencia_ativos <= 2 THEN '1-2'
                                     WHEN i.abrangencia_ativos <= 5 THEN '3-5' ELSE '6+' END
 
+UNION ALL SELECT 'C09','Intervenção pontuada com entrada do modelo ainda não aprovada','vd_intervencoes', i.intervencao_id,
+       concat(mp.criterio, '=', mp.entrada)
+FROM vd_intervencoes i
+JOIN vd_modelo_priorizacao mp ON mp.versao_modelo = i.versao_modelo AND mp.situacao <> 'aprovado' AND (
+      (mp.criterio = 'prioridade_objetivo' AND mp.entrada = i.entrada_prioridade_obj)
+   OR (mp.criterio = 'posicao_ativo'       AND mp.entrada = i.entrada_posicao_ativo)
+   OR (mp.criterio = 'tipo_achado'         AND mp.entrada = i.entrada_tipo_achado)
+   OR (mp.criterio = 'abrangencia'         AND mp.entrada = i.entrada_abrangencia)
+   OR (mp.criterio = 'esforco'             AND mp.entrada = i.esforco))
+
 -- ── C10 Transições registradas no histórico seguem a máquina de estados
 UNION ALL SELECT 'C10','Transição não permitida registrada','vd_historico', h.entidade_id, concat(h.status_anterior,' → ',h.status_novo)
 FROM vd_historico h LEFT JOIN vd_transicoes_intervencao t ON t.status_de = h.status_anterior AND t.status_para = h.status_novo
@@ -239,13 +249,37 @@ FROM (          SELECT 'objetivo' entidade_tipo, objetivo_id entidade_id, versao
       UNION ALL SELECT 'conversao', conversao_id, versao FROM vd_conversoes_financeiras) x
 LEFT ANTI JOIN vd_historico h ON h.entidade_tipo = x.entidade_tipo AND h.entidade_id = x.entidade_id AND h.versao_entidade = x.versao
 
--- ── I04 Execuções concluídas com resumo coerente ─────────────────────
+-- ── I04 Cobertura completa de cada execução concluída ────────────────
+--    Cada vínculo analisado deve ter UMA ocorrência para CADA regra
+--    aplicável da versão — inclusive nao_disparou e nao_avaliada.
+--    Regras aplicáveis: tipo do vínculo 'ativo' → regras de ativo + DG-09;
+--    'produto' → regras de produto + DG-09; demais tipos → DG-09.
 UNION ALL SELECT 'I04','Resumo da execução diferente das ocorrências gravadas','vd_execucoes_diagnostico', e.execucao_id,
        concat('vinculos=', e.vinculos_analisados, ' x ', COALESCE(o.vinculos, 0))
 FROM vd_execucoes_diagnostico e
 LEFT JOIN (SELECT execucao_id, COUNT(DISTINCT vinculo_id) AS vinculos FROM vd_achados_ocorrencias GROUP BY execucao_id) o
        ON o.execucao_id = e.execucao_id
 WHERE e.status = 'concluida' AND e.vinculos_analisados <> COALESCE(o.vinculos, 0)
+UNION ALL SELECT 'I04','Regra aplicável sem ocorrência na execução','vd_achados_ocorrencias', concat(esp.execucao_id,'/',esp.vinculo_id), esp.regra_codigo
+FROM (SELECT DISTINCT oc.execucao_id, oc.vinculo_id, r.regra_codigo
+      FROM vd_achados_ocorrencias oc
+      JOIN vd_execucoes_diagnostico e ON e.execucao_id = oc.execucao_id AND e.status = 'concluida'
+      JOIN vd_vinculos v ON v.vinculo_id = oc.vinculo_id
+      JOIN vd_regras_diagnostico r ON r.versao_regras = e.versao_regras
+       AND (r.aplica_a = 'vinculo' OR (r.aplica_a = 'ativo' AND v.ref_tipo = 'ativo') OR (r.aplica_a = 'produto' AND v.ref_tipo = 'produto'))) esp
+LEFT ANTI JOIN vd_achados_ocorrencias oc2
+  ON oc2.execucao_id = esp.execucao_id AND oc2.vinculo_id = esp.vinculo_id AND oc2.regra_codigo = esp.regra_codigo
+UNION ALL SELECT 'I04','Ocorrência de regra que não se aplica ao tipo do vínculo','vd_achados_ocorrencias', oc.ocorrencia_id, oc.regra_codigo
+FROM vd_achados_ocorrencias oc
+JOIN vd_execucoes_diagnostico e ON e.execucao_id = oc.execucao_id
+JOIN vd_vinculos v ON v.vinculo_id = oc.vinculo_id
+LEFT JOIN vd_regras_diagnostico r ON r.regra_codigo = oc.regra_codigo AND r.versao_regras = e.versao_regras
+WHERE r.regra_codigo IS NULL
+   OR NOT (r.aplica_a = 'vinculo' OR (r.aplica_a = 'ativo' AND v.ref_tipo = 'ativo') OR (r.aplica_a = 'produto' AND v.ref_tipo = 'produto'))
+UNION ALL SELECT 'I04','Regra desabilitada na execução com resultado diferente de nao_avaliada','vd_achados_ocorrencias', oc.ocorrencia_id, oc.regra_codigo
+FROM vd_achados_ocorrencias oc
+JOIN vd_execucoes_diagnostico e ON e.execucao_id = oc.execucao_id
+WHERE array_contains(split(coalesce(e.regras_desabilitadas, ''), ','), oc.regra_codigo) AND oc.resultado <> 'nao_avaliada'
 
 -- ── I05 Estrutura: colunas obrigatórias da v3 presentes ──────────────
 UNION ALL SELECT 'I05','Coluna da v3 ausente (tabela de versão anterior)', esperado.tabela, esperado.coluna, 'ausente'
@@ -253,7 +287,8 @@ FROM (SELECT * FROM VALUES
         ('vd_vinculos','objetivo_id'), ('vd_achados','versao_regras'), ('vd_achados','situacao'),
         ('vd_intervencoes','versao_modelo'), ('vd_intervencoes','entrada_abrangencia'), ('vd_intervencoes','sequencia'),
         ('vd_medicoes','objetivo_id'), ('vd_beneficios','melhoria'), ('vd_beneficios','formula_versao'),
-        ('vd_indicadores','tipo_unidade'), ('vd_historico','chave_natural'), ('vd_evidencias','perfil')
+        ('vd_indicadores','tipo_unidade'), ('vd_historico','chave_natural'), ('vd_evidencias','perfil'),
+        ('vd_modelo_priorizacao','situacao'), ('vd_execucoes_diagnostico','motivos_desabilitacao')
       AS t(tabela, coluna)) esperado
 LEFT ANTI JOIN information_schema.columns c
   ON c.table_catalog = current_catalog() AND c.table_schema = current_schema()

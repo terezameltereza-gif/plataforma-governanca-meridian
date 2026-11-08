@@ -56,6 +56,20 @@ CREATE TABLE IF NOT EXISTS vd_regras_diagnostico (
   CONSTRAINT vd_regras_diagnostico_pk PRIMARY KEY (regra_codigo, versao_regras)
 ) COMMENT 'Valor dos Dados — catálogo versionado de regras do diagnóstico';
 
+-- 1.1b Habilitação das regras no ambiente (decisão, não informação)
+--   Recalculada por 02 a partir do catálogo. Regra desabilitada gera
+--   ocorrência 'nao_avaliada' com o motivo; nunca é ignorada em silêncio.
+CREATE TABLE IF NOT EXISTS vd_regras_habilitacao (
+  regra_codigo      STRING    NOT NULL,
+  versao_regras     STRING    NOT NULL,
+  habilitada        BOOLEAN   NOT NULL,
+  motivo            STRING    NOT NULL COMMENT 'Dependência confirmada ou ausente no catálogo',
+  verificado_por    STRING    NOT NULL,
+  verificado_em     TIMESTAMP NOT NULL,
+  CONSTRAINT vd_regras_habilitacao_pk PRIMARY KEY (regra_codigo, versao_regras)
+) COMMENT 'Valor dos Dados — regras habilitadas conforme a estrutura confirmada do catálogo'
+TBLPROPERTIES ('delta.enableChangeDataFeed' = 'true');
+
 -- 1.2 Modelo de priorização: pontos por critério e entrada
 CREATE TABLE IF NOT EXISTS vd_modelo_priorizacao (
   versao_modelo     STRING  NOT NULL COMMENT 'Ex.: P1',
@@ -64,6 +78,7 @@ CREATE TABLE IF NOT EXISTS vd_modelo_priorizacao (
   pontos            INT     NOT NULL,
   peso              INT     NOT NULL COMMENT 'Multiplicador do critério (P1: todos = 1)',
   descricao         STRING  NOT NULL,
+  situacao          STRING  NOT NULL COMMENT 'aprovado | pendente — entrada pendente não pode pontuar intervenções',
   CONSTRAINT vd_modelo_priorizacao_pk PRIMARY KEY (versao_modelo, criterio, entrada)
 ) COMMENT 'Valor dos Dados — escala de pontos por critério (versionada)';
 
@@ -253,7 +268,8 @@ CREATE TABLE IF NOT EXISTS vd_execucoes_diagnostico (
   finalizado_em           TIMESTAMP,
   status                  STRING    NOT NULL COMMENT 'em_execucao | concluida | falhou',
   regras_aplicadas        STRING    COMMENT 'Lista de códigos efetivamente avaliados',
-  regras_desabilitadas    STRING    COMMENT 'Regras não avaliadas por dependência ausente, com motivo',
+  regras_desabilitadas    STRING    COMMENT 'Códigos separados por vírgula (cópia de vd_regras_habilitacao no início da execução)',
+  motivos_desabilitacao   STRING    COMMENT 'JSON {regra: motivo}',
   vinculos_analisados     INT,
   achados_novos           INT,
   achados_reincidentes    INT,
@@ -591,7 +607,7 @@ ALTER TABLE vd_historico   ADD  CONSTRAINT ck_dominio CHECK (
   AND acao IN ('criacao','edicao','transicao','validacao','evidencia','cancelamento','reincidencia','resolucao')
   AND perfil IN ('consultante','curador','aprovador','processo') AND versao_entidade >= 1);
 ALTER TABLE vd_modelo_priorizacao DROP CONSTRAINT IF EXISTS ck_dominio;
-ALTER TABLE vd_modelo_priorizacao ADD  CONSTRAINT ck_dominio CHECK (criterio IN ('prioridade_objetivo','posicao_ativo','tipo_achado','abrangencia','esforco') AND peso >= 1 AND pontos BETWEEN -3 AND 3);
+ALTER TABLE vd_modelo_priorizacao ADD  CONSTRAINT ck_dominio CHECK (criterio IN ('prioridade_objetivo','posicao_ativo','tipo_achado','abrangencia','esforco') AND peso >= 1 AND pontos BETWEEN -3 AND 3 AND situacao IN ('aprovado','pendente'));
 ALTER TABLE vd_faixas_prioridade DROP CONSTRAINT IF EXISTS ck_dominio;
 ALTER TABLE vd_faixas_prioridade ADD  CONSTRAINT ck_dominio CHECK (prioridade IN ('critica','alta','media','baixa') AND pontuacao_max >= pontuacao_min);
 ALTER TABLE vd_regras_diagnostico DROP CONSTRAINT IF EXISTS ck_dominio;

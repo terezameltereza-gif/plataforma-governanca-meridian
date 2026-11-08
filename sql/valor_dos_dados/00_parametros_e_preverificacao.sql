@@ -66,7 +66,9 @@ FROM faltando;
 
 
 -- ── 3. Colunas que o código lê de forma opcional (não interrompem) ───
---    Definem quais regras do diagnóstico ficam habilitadas.
+--    Definem quais regras ficam habilitadas: 02 grava a decisão em
+--    vd_regras_habilitacao e o diagnóstico registra 'nao_avaliada' para
+--    toda regra desabilitada (com o motivo).
 --    DG-04 depende de tabelas_metadata.classificacao (lida com .get()).
 --    Vínculo por schema depende de glossary_asset_link.schema_name e
 --    produto_ativos.schema_name (o código lê apenas table_name).
@@ -109,6 +111,12 @@ FROM (SELECT glossary_id FROM business_glossary GROUP BY ALL HAVING COUNT(*) > 1
 SELECT CASE WHEN COUNT(*) = 0 THEN 'OK: produto_id é única'
             ELSE raise_error(concat('ABORTAR: ', COUNT(*), ' produto_id duplicados')) END AS unicidade_produto
 FROM (SELECT produto_id FROM produtos_dados GROUP BY ALL HAVING COUNT(*) > 1);
+
+-- Avaliações de qualidade por ativo: se houver mais de uma, a regra DG-06
+-- fica DESABILITADA em 02 (não há critério confirmado para escolher qual vale).
+SELECT CASE WHEN COUNT(*) = 0 THEN 'OK: uma avaliação por ativo em gd_quality_dimensions — DG-06 habilitável'
+            ELSE concat('ATENÇÃO: ', COUNT(*), ' ativos com mais de uma avaliação — DG-06 será desabilitada') END AS unicidade_qualidade
+FROM (SELECT schema_name, table_name FROM gd_quality_dimensions GROUP BY ALL HAVING COUNT(*) > 1);
 
 -- Ativos com o mesmo table_name em schemas diferentes: se houver, vínculos
 -- lidos só por table_name (glossário/produto) ficam ambíguos e a aplicação
