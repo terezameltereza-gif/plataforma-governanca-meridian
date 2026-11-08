@@ -50,7 +50,7 @@ class TestCoerencia:
         assert any("C01" in e for e in R.validar_processo(repo, {"objetivo_id": obj, "resp_processo": "ana.lima@meridian.com"}))
 
     def test_responsavel_desconhecido(self, repo):
-        assert any("não é usuário" in e for e in R.validar_processo(repo, {"objetivo_id": "O1", "resp_processo": "x@y.com"}))
+        assert any("vd_v_responsaveis" in e for e in R.validar_processo(repo, {"objetivo_id": "O1", "resp_processo": "x@y.com"}))
 
     def test_indicador_com_processo_de_outro_objetivo(self, repo):
         e = R.validar_indicador(repo, {"objetivo_id": "O1", "processo_id": "P2", "sentido_melhora": "reduzir",
@@ -388,10 +388,23 @@ class TestCodigoIgualAoSQL:
                      "SQL_INSERIR_HISTORICO", "SQL_INSERIR_EVIDENCIA"):
             sqlglot.parse_one(re.sub(r":(\w+)", r"'\1'", getattr(R, nome)), read="databricks")
 
-    def test_gravacao_recusada(self):
-        with pytest.raises(R.ErroIntegridade):
-            R.gravacao_aceita(0, "inserir intervenção")
-        R.gravacao_aceita(1, "inserir intervenção")
+    def test_comandos_de_gravacao_novos_sao_validos(self):
+        for nome in ("SQL_INSERIR_OCORRENCIA", "SQL_CONCLUIR_EXECUCAO"):
+            sqlglot.parse_one(re.sub(r":(\w+)", r"'\1'", getattr(R, nome)), read="databricks")
+        texto = re.sub(r":(\w+)", r"'\1'", R.SQL_INSERIR_OCORRENCIA)
+        sel = sqlglot.parse_one(texto, read="databricks").expression
+        assert len(sel.expressions) == len(_colunas_tabela("vd_achados_ocorrencias"))
+
+    def test_verificacoes_sao_somente_leitura(self):
+        for sql in R.VERIFICACOES.values():
+            assert sqlglot.parse_one(re.sub(r":(\w+)", r"'\1'", sql), read="databricks").key == "select"
+
+    def test_fonte_unica_de_responsaveis(self):
+        sql03 = (SQL / "03_validacoes_integridade.sql").read_text(encoding="utf-8")
+        assert "vd_v_responsaveis" in R.SQL_RESPONSAVEIS
+        assert "CREATE OR REPLACE VIEW vd_v_responsaveis" in sql03
+        assert sql03.count("LEFT ANTI JOIN vd_v_responsaveis") == 2      # C04 e C11
+        assert "m.data_owner = v.ref_nome" not in sql03                 # regra antiga, divergente, removida
 
 
 # ════════════════════════════════════════════════════════════════════
@@ -437,55 +450,82 @@ class TestCobertura:
 
 
 # ════════════════════════════════════════════════════════════════════
-# Atomicidade: operação só é confirmada com entidade + histórico
+# Confirmação de gravações e atomicidade
 # ════════════════════════════════════════════════════════════════════
 class CursorFalso:
-    """Simula o cursor: cada execute consome um resultado roteirizado."""
+    """Cursor roteirizado. SELECT consome um valor devolvido por fetchone();
+    INSERT/MERGE/UPDATE consome um valor de rowcount (-1 = conector não informa).
+    Chamar fetchone() depois de uma gravação FALHA o teste: prova que o código não
+    presume que INSERT/MERGE devolva linha com contagem."""
 
-    def __init__(self, respostas):
-        self.respostas, self.executados, self._atual = list(respostas), [], None
+    def __init__(self, roteiro, fetchall=None):
+        self.roteiro, self.executados, self._valor, self._ultimo_select = list(roteiro), [], None, False
+        self.rowcount, self._fetchall = -1, fetchall or []
 
     def execute(self, sql, params=None):
-        self.executados.append(sql)
-        r = self.respostas.pop(0)
+        self.executados.append(sql.strip().split()[0].upper())
+        r = self.roteiro.pop(0)
         if isinstance(r, Exception):
             raise r
-        self._atual = r
+        self._ultimo_select = sql.lstrip().upper().startswith("SELECT")
+        if self._ultimo_select:
+            self._valor, self.rowcount = r, -1
+        else:
+            self._valor, self.rowcount = None, r
 
     def fetchone(self):
-        return (self._atual,)
+        assert self._ultimo_select, "fetchone() chamado após INSERT/MERGE"
+        return (self._valor,)
+
+    def fetchall(self):
+        return self._fetchall
 
 
 INT = {"intervencao_id": "T1", "status": "em_analise", "versao": 2, "responsavel": "joao@x", "recomendacao": "r",
        "criterio_conclusao": "c", "prazo": None}
+OK_TRANS = lambda rc=-1, rc_h=-1: [0, rc, 1, rc_h, 1]   # pendência, MERGE, leitura, histórico, leitura
 
 
-class TestAtomicidade:
-    def test_confirma_quando_entidade_e_historico_gravam(self):
-        cur = CursorFalso([0, 1, 1])
+class TestConfirmacao:
+    @pytest.mark.parametrize("rc", [-1, 1], ids=["conector_sem_contagem", "conector_com_contagem"])
+    def test_confirma_por_leitura_com_ou_sem_contagem_do_conector(self, rc):
+        cur = CursorFalso(OK_TRANS(rc, rc))
         r = R.transicionar(cur, INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
         assert r.confirmada and r.versao_nova == 3
-        assert cur.executados[1] == R.SQL_TRANSICIONAR and cur.executados[2] == R.SQL_INSERIR_HISTORICO
+        assert cur.executados == ["SELECT", "MERGE", "SELECT", "INSERT", "SELECT"]
+
+    def test_leitura_sem_estado_esperado_recusa(self):
+        with pytest.raises(R.ErroIntegridade, match="estado esperado não encontrado"):
+            R.transicionar(CursorFalso([0, -1, 0]), INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
+
+    def test_contagem_do_conector_divergente_recusa(self):
+        with pytest.raises(R.ErroIntegridade, match="divergência"):
+            R.transicionar(CursorFalso([0, 2, 1]), INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
+
+    def test_repeticao_idempotente_do_historico_e_aceita(self):
+        r = R.transicionar(CursorFalso([0, 1, 1, 0, 1]), INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
+        assert r.confirmada
 
     def test_falha_no_historico_nao_confirma(self):
         with pytest.raises(R.ErroAuditoria, match="NÃO confirmada"):
-            R.transicionar(CursorFalso([0, 1, 0]), INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
+            R.transicionar(CursorFalso([0, 1, 1, -1, 0]), INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
 
     def test_excecao_no_historico_nao_confirma(self):
         with pytest.raises(R.ErroAuditoria, match="NÃO confirmada"):
-            R.transicionar(CursorFalso([0, 1, RuntimeError("timeout")]), INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
+            R.transicionar(CursorFalso([0, 1, 1, RuntimeError("timeout")]), INT, "aprovada", "aprovador", "ana@x",
+                           historico_id="H1")
 
     def test_entidade_com_pendencia_fica_bloqueada(self):
         cur = CursorFalso([1])
         with pytest.raises(R.ErroAuditoria, match="reconciliar"):
             R.transicionar(cur, INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
-        assert cur.executados == [R.SQL_PENDENCIA_ENTIDADE], "nada é gravado"
+        assert cur.executados == ["SELECT"], "nada é gravado"
 
     def test_recusa_no_banco_nao_grava_historico(self):
-        cur = CursorFalso([0, 0])
+        cur = CursorFalso([0, 0, 0])
         with pytest.raises(R.ErroIntegridade, match="recusada"):
             R.transicionar(cur, INT, "aprovada", "aprovador", "ana@x", historico_id="H1")
-        assert R.SQL_INSERIR_HISTORICO not in cur.executados
+        assert "INSERT" not in cur.executados
 
     def test_validacao_previa_impede_ir_ao_banco(self):
         cur = CursorFalso([])
@@ -498,3 +538,45 @@ class TestAtomicidade:
         with pytest.raises(R.ErroIntegridade, match="Comentário"):
             R.transicionar(cur, INT, "identificada", "curador", "ana@x", historico_id="H1")
         assert cur.executados == []
+
+    def test_consulta_de_contagem_so_aceita_select(self):
+        with pytest.raises(ValueError):
+            R._consultar_contagem(CursorFalso([1]), "INSERT INTO x VALUES (1)", {})
+
+
+class TestPersistenciaOcorrencias:
+    def _ocorrencias(self):
+        hab = {**{c: (True, "ok") for c in R.REGRAS_R1}, "DG-04": (False, "classificacao ausente")}
+        res = {("V1", r): ("nao_disparou", None, None) for r in R.regras_aplicaveis("ativo") if r != "DG-04"}
+        res[("V1", "DG-02")] = ("disparou", "nao_cadastrado", "vazio")
+        return R.montar_ocorrencias({"V1": "ativo"}, hab, res)
+
+    def test_grava_as_tres_situacoes_e_conclui(self):
+        oc = self._ocorrencias()
+        assert {o.resultado for o in oc} == {"disparou", "nao_disparou", "nao_avaliada"} and len(oc) == 8
+        roteiro = [x for _ in oc for x in (1, 1)] + [len(oc), 1, 1]   # 8×(INSERT, leitura), contagem, MERGE, leitura
+        cur = CursorFalso(roteiro)
+        ids = iter(range(100))
+        n = R.gravar_ocorrencias_e_concluir(cur, "E1", oc, {("V1", "DG-02"): "A1"}, lambda: f"id{next(ids)}",
+                                            {"achados_novos": 1, "achados_reincidentes": 0, "achados_resolvidos": 0})
+        assert n == 8 and cur.executados.count("INSERT") == 8 and cur.executados[-2:] == ["MERGE", "SELECT"]
+
+    def test_nao_conclui_se_o_banco_tiver_menos_ocorrencias(self):
+        oc = self._ocorrencias()
+        roteiro = [x for _ in oc for x in (1, 1)] + [7]
+        cur = CursorFalso(roteiro)
+        with pytest.raises(R.ErroIntegridade, match="7 ocorrências no banco, 8 esperadas"):
+            R.gravar_ocorrencias_e_concluir(cur, "E1", oc, {}, lambda: "x",
+                                            {"achados_novos": 0, "achados_reincidentes": 0, "achados_resolvidos": 0})
+        assert "MERGE" not in cur.executados
+
+    def test_ocorrencia_nao_gravada_interrompe(self):
+        oc = self._ocorrencias()
+        with pytest.raises(R.ErroIntegridade, match="estado esperado"):
+            R.gravar_ocorrencias_e_concluir(CursorFalso([1, 0]), "E1", oc, {}, lambda: "x", {})
+
+
+class TestResponsaveis:
+    def test_carrega_da_fonte_unica(self):
+        cur = CursorFalso([None], fetchall=[("ana@x",), ("joao@x",)])
+        assert R.carregar_responsaveis(cur) == {"ana@x", "joao@x"}

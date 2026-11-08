@@ -44,6 +44,8 @@ ALTER TABLE vd_beneficios             OWNER TO `<grupo_admin_governanca>`;
 ALTER TABLE vd_evidencias             OWNER TO `<grupo_admin_governanca>`;
 ALTER TABLE vd_historico              OWNER TO `<grupo_admin_governanca>`;
 ALTER VIEW  vd_v_integridade          OWNER TO `<grupo_admin_governanca>`;
+ALTER VIEW  vd_v_responsaveis         OWNER TO `<grupo_admin_governanca>`;
+ALTER TABLE vd_regras_habilitacao     OWNER TO `<grupo_admin_governanca>`;
 
 -- ── Credencial do app ────────────────────────────────────────────────
 GRANT USE CATALOG ON CATALOG IDENTIFIER(vd_catalogo) TO `<principal_do_app>`;
@@ -56,6 +58,8 @@ GRANT SELECT ON TABLE vd_modelo_priorizacao     TO `<principal_do_app>`;
 GRANT SELECT ON TABLE vd_faixas_prioridade      TO `<principal_do_app>`;
 GRANT SELECT ON TABLE vd_transicoes_intervencao TO `<principal_do_app>`;
 GRANT SELECT ON TABLE vd_v_integridade          TO `<principal_do_app>`;
+GRANT SELECT ON TABLE vd_v_responsaveis         TO `<principal_do_app>`;
+GRANT SELECT ON TABLE vd_regras_habilitacao     TO `<principal_do_app>`;
 
 -- Leitura e gravação
 GRANT SELECT, MODIFY ON TABLE vd_conversoes_financeiras TO `<principal_do_app>`;

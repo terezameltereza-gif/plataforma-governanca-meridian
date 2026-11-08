@@ -18,6 +18,15 @@ DECLARE OR REPLACE VARIABLE vd_schema   STRING DEFAULT 'meridian_governanca';
 USE CATALOG IDENTIFIER(vd_catalogo);
 USE SCHEMA  IDENTIFIER(vd_schema);
 
+-- Fonte ÚNICA de responsáveis, lida pela aplicação (vd_regras.SQL_RESPONSAVEIS)
+-- e por esta validação (C04 e C11). Usuários definidos apenas no código do app
+-- não são aceitos como responsáveis enquanto não houver cadastro no catálogo.
+CREATE OR REPLACE VIEW vd_v_responsaveis
+COMMENT 'Valor dos Dados — responsáveis válidos: Owners e Stewards cadastrados em tabelas_metadata' AS
+SELECT DISTINCT trim(email) AS email
+FROM (SELECT data_owner AS email FROM tabelas_metadata UNION ALL SELECT data_steward FROM tabelas_metadata)
+WHERE email IS NOT NULL AND trim(email) <> '';
+
 CREATE OR REPLACE VIEW vd_v_integridade
 COMMENT 'Valor dos Dados — violações de integridade (deve estar vazia)' AS
 
@@ -74,10 +83,9 @@ UNION ALL SELECT 'C04','Domínio referenciado não existe em tabelas_metadata.do
 FROM vd_vinculos v
 WHERE v.status = 'ativo' AND v.ref_tipo = 'dominio'
   AND NOT EXISTS (SELECT 1 FROM tabelas_metadata m WHERE m.dominio = v.ref_nome)
-UNION ALL SELECT 'C04','Responsável referenciado não é Owner/Steward cadastrado','vd_vinculos', v.vinculo_id, v.ref_nome
-FROM vd_vinculos v
+UNION ALL SELECT 'C04','Responsável referenciado fora de vd_v_responsaveis','vd_vinculos', v.vinculo_id, v.ref_nome
+FROM vd_vinculos v LEFT ANTI JOIN vd_v_responsaveis r ON r.email = v.ref_nome
 WHERE v.status = 'ativo' AND v.ref_tipo = 'responsavel'
-  AND NOT EXISTS (SELECT 1 FROM tabelas_metadata m WHERE m.data_owner = v.ref_nome OR m.data_steward = v.ref_nome)
 -- Chave de business_rules ainda não confirmada: enquanto não for, nenhum
 -- vínculo desse tipo é aceito (a aplicação também recusa).
 UNION ALL SELECT 'C04','Vínculo a regra de negócio antes da confirmação da chave','vd_vinculos', v.vinculo_id, v.ref_id
@@ -210,6 +218,15 @@ JOIN vd_modelo_priorizacao mp ON mp.versao_modelo = i.versao_modelo AND mp.situa
    OR (mp.criterio = 'tipo_achado'         AND mp.entrada = i.entrada_tipo_achado)
    OR (mp.criterio = 'abrangencia'         AND mp.entrada = i.entrada_abrangencia)
    OR (mp.criterio = 'esforco'             AND mp.entrada = i.esforco))
+
+-- ── C11 Todo campo de responsável usa a fonte única ──────────────────
+UNION ALL SELECT 'C11','Responsável fora de vd_v_responsaveis', x.entidade, x.id, concat(x.campo, '=', x.email)
+FROM (          SELECT 'vd_objetivos' entidade, objetivo_id id, 'resp_negocio' campo, resp_negocio email FROM vd_objetivos WHERE status <> 'cancelado'
+      UNION ALL SELECT 'vd_objetivos', objetivo_id, 'resp_acompanhamento', resp_acompanhamento FROM vd_objetivos WHERE status <> 'cancelado'
+      UNION ALL SELECT 'vd_processos', processo_id, 'resp_processo', resp_processo FROM vd_processos WHERE status <> 'cancelado'
+      UNION ALL SELECT 'vd_indicadores', indicador_id, 'responsavel', responsavel FROM vd_indicadores WHERE status <> 'cancelado'
+      UNION ALL SELECT 'vd_intervencoes', intervencao_id, 'responsavel', responsavel FROM vd_intervencoes WHERE status NOT IN ('concluida','cancelada')) x
+LEFT ANTI JOIN vd_v_responsaveis r ON r.email = x.email
 
 -- ── C10 Transições registradas no histórico seguem a máquina de estados
 UNION ALL SELECT 'C10','Transição não permitida registrada','vd_historico', h.entidade_id, concat(h.status_anterior,' → ',h.status_novo)

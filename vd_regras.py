@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Iterable, Mapping, Optional
 
-VERSAO_DIAGNOSTICO = "vd_regras 3.0.0"
+VERSAO_DIAGNOSTICO = "vd_regras 3.2.0"
 VERSAO_REGRAS = "R1"
 VERSAO_MODELO = "P1"
 VERSAO_FORMULA = "F1"
@@ -111,7 +111,7 @@ class Repositorio:
     produtos: set = field(default_factory=set)          # {produto_id}
     termos: set = field(default_factory=set)            # {glossary_id}
     dominios: set = field(default_factory=set)          # {nome}
-    responsaveis: set = field(default_factory=set)      # {e-mail} = owners/stewards + usuários da plataforma
+    responsaveis: set = field(default_factory=set)      # {e-mail} carregado de vd_v_responsaveis (fonte única)
     chave_regra_confirmada: bool = False                # muda após confirmar business_rules (00, passo 4)
     regras: set = field(default_factory=set)            # {id da regra}, quando confirmada
 
@@ -123,11 +123,21 @@ def _ativo_aberto(reg: Optional[Mapping], campo="status", cancelado="cancelado")
 # ════════════════════════════════════════════════════════════════════
 # Validações prévias (C01–C09)
 # ════════════════════════════════════════════════════════════════════
+# Fonte única de responsáveis: a visão vd_v_responsaveis (SQL 03), usada tanto
+# pela aplicação (carregar_responsaveis) quanto pela validação C11 do SQL.
+SQL_RESPONSAVEIS = "SELECT email FROM vd_v_responsaveis"
+
+
+def carregar_responsaveis(cursor) -> set:
+    cursor.execute(SQL_RESPONSAVEIS)
+    return {linha[0] for linha in cursor.fetchall()}
+
+
 def validar_responsavel(repo: Repositorio, email: Optional[str], papel: str) -> list[str]:
     if not email:
         return [f"{papel}: obrigatório"]
     if email not in repo.responsaveis:
-        return [f"{papel}: '{email}' não é usuário nem Owner/Steward cadastrado"]
+        return [f"{papel}: '{email}' não consta em vd_v_responsaveis (Owners e Stewards do catálogo)"]
     return []
 
 
@@ -581,10 +591,55 @@ WHERE NOT EXISTS (SELECT 1 FROM vd_evidencias e WHERE e.chave_natural = :chave_n
 """
 
 
-def gravacao_aceita(linhas_afetadas: int, operacao: str) -> None:
-    """A aplicação chama após cada gravação condicionada."""
-    if linhas_afetadas != 1:
-        raise ErroIntegridade([f"{operacao}: recusada pela verificação no banco (dados mudaram ou relação incoerente)"])
+# ── Confirmação de gravações ─────────────────────────────────────────
+# Comandos INSERT/MERGE NÃO são lidos com fetchone(). A confirmação é feita por
+# LEITURA POSTERIOR do estado esperado (consulta SELECT), o que independe da
+# versão do databricks-sql-connector. Quando o conector informa a contagem em
+# cursor.rowcount (versões que expõem numModifiedRows), ela é conferida contra a
+# leitura; divergência impede a confirmação. rowcount = -1 significa "não
+# informado" e não é usado como evidência.
+VERIFICACOES = {
+    "intervencao_inserida": "SELECT COUNT(*) FROM vd_intervencoes WHERE intervencao_id = :intervencao_id AND versao = 1",
+    "transicao": ("SELECT COUNT(*) FROM vd_intervencoes WHERE intervencao_id = :intervencao_id AND status = :status_para "
+                  "AND versao = :versao_nova AND atualizado_por = :usuario"),
+    "beneficio_inserido": "SELECT COUNT(*) FROM vd_beneficios WHERE beneficio_id = :beneficio_id",
+    "historico": "SELECT COUNT(*) FROM vd_historico WHERE chave_natural = :chave_natural",
+    "evidencia": "SELECT COUNT(*) FROM vd_evidencias WHERE chave_natural = :chave_natural",
+    "ocorrencia": "SELECT COUNT(*) FROM vd_achados_ocorrencias WHERE chave_natural = :chave_natural",
+    "ocorrencias": "SELECT COUNT(*) FROM vd_achados_ocorrencias WHERE execucao_id = :execucao_id",
+    "execucao_concluida": ("SELECT COUNT(*) FROM vd_execucoes_diagnostico WHERE execucao_id = :execucao_id "
+                           "AND status = 'concluida'"),
+}
+
+
+def _consultar_contagem(cursor, sql: str, params: Mapping) -> int:
+    """Executa um SELECT COUNT(*) e devolve o valor. Só é usado para consultas."""
+    if not sql.lstrip().upper().startswith("SELECT"):
+        raise ValueError("_consultar_contagem aceita apenas SELECT")
+    cursor.execute(sql, dict(params))
+    linha = cursor.fetchone()
+    return int(linha[0]) if linha else 0
+
+
+def _contagem_informada(cursor) -> Optional[int]:
+    rc = getattr(cursor, "rowcount", -1)
+    return rc if isinstance(rc, int) and rc >= 0 else None
+
+
+def executar_gravacao(cursor, operacao: str, sql: str, params: Mapping, verificacao: str,
+                      params_verificacao: Mapping, esperado: int = 1, aceita_ja_existente: bool = False) -> int:
+    """Executa a gravação condicionada e confirma pela leitura posterior.
+    aceita_ja_existente: para inclusões idempotentes (histórico, evidência), uma
+    repetição que não insere nada é aceita se o registro já existir."""
+    cursor.execute(sql, dict(params))
+    informada = _contagem_informada(cursor)
+    lida = _consultar_contagem(cursor, VERIFICACOES[verificacao], params_verificacao)
+    if lida != esperado:
+        raise ErroIntegridade([f"{operacao}: recusada — estado esperado não encontrado após a gravação "
+                               f"(leitura={lida}, esperado={esperado})"])
+    if informada is not None and informada != esperado and not (aceita_ja_existente and informada == 0):
+        raise ErroIntegridade([f"{operacao}: divergência entre a contagem do conector ({informada}) e a leitura ({lida})"])
+    return lida
 
 
 # ════════════════════════════════════════════════════════════════════
@@ -664,27 +719,20 @@ class ResultadoOperacao:
     mensagem: str
 
 
-def _linhas(cursor) -> int:
-    linha = cursor.fetchone()
-    return int(linha[0]) if linha else 0
-
-
-def executar_com_historico(cursor, operacao: str, sql: str, params: Mapping,
-                           historico: Mapping, entidade_tipo: str, entidade_id: str) -> ResultadoOperacao:
-    """1) recusa se a entidade tem histórico pendente; 2) grava a entidade (condicionada);
-    3) grava o histórico; 4) só então confirma. Falha em 3 → ErroAuditoria."""
-    cursor.execute(SQL_PENDENCIA_ENTIDADE, {"entidade_tipo": entidade_tipo, "entidade_id": entidade_id})
-    if _linhas(cursor) > 0:
+def executar_com_historico(cursor, operacao: str, sql: str, params: Mapping, verificacao: str,
+                           params_verificacao: Mapping, historico: Mapping, entidade_tipo: str,
+                           entidade_id: str) -> ResultadoOperacao:
+    """1) recusa se a entidade tem histórico pendente; 2) grava a entidade e confirma por
+    leitura; 3) grava o histórico e confirma por leitura; 4) só então confirma.
+    Falha em 3 → ErroAuditoria (operação NÃO confirmada, entidade bloqueada)."""
+    if _consultar_contagem(cursor, SQL_PENDENCIA_ENTIDADE, {"entidade_tipo": entidade_tipo, "entidade_id": entidade_id}) > 0:
         raise ErroAuditoria(f"{operacao}: {entidade_tipo} {entidade_id} tem alteração sem histórico; reconciliar antes de continuar")
-    cursor.execute(sql, dict(params))
-    gravacao_aceita(_linhas(cursor), operacao)
+    executar_gravacao(cursor, operacao, sql, params, verificacao, params_verificacao)
     try:
-        cursor.execute(SQL_INSERIR_HISTORICO, dict(historico))
-        ok = _linhas(cursor) == 1
-    except Exception as exc:  # noqa: BLE001 — qualquer falha do banco impede a confirmação
+        executar_gravacao(cursor, f"{operacao} (histórico)", SQL_INSERIR_HISTORICO, historico, "historico",
+                          {"chave_natural": historico["chave_natural"]}, aceita_ja_existente=True)
+    except Exception as exc:  # noqa: BLE001 — qualquer falha no histórico impede a confirmação
         raise ErroAuditoria(f"{operacao}: alteração gravada sem histórico ({exc}); operação NÃO confirmada") from exc
-    if not ok:
-        raise ErroAuditoria(f"{operacao}: alteração gravada sem histórico; operação NÃO confirmada")
     return ResultadoOperacao(True, int(historico["versao_entidade"]), f"{operacao}: confirmada")
 
 
@@ -702,5 +750,56 @@ def transicionar(cursor, interv: Mapping, para: str, perfil: str, usuario: str, 
             "entidade_tipo": "intervencao", "entidade_id": interv["intervencao_id"], "acao": "transicao",
             "versao_entidade": versao + 1, "status_anterior": de, "status_novo": para, "campos_alterados": None,
             "comentario": comentario or justificativa_cancelamento, "evidencia_id": None, "usuario": usuario, "perfil": perfil}
-    return executar_com_historico(cursor, f"Transição {de} → {para}", SQL_TRANSICIONAR, params, hist,
-                                  "intervencao", interv["intervencao_id"])
+    verif = {"intervencao_id": interv["intervencao_id"], "status_para": para, "versao_nova": versao + 1, "usuario": usuario}
+    return executar_com_historico(cursor, f"Transição {de} → {para}", SQL_TRANSICIONAR, params, "transicao", verif,
+                                  hist, "intervencao", interv["intervencao_id"])
+
+
+# ════════════════════════════════════════════════════════════════════
+# Gravação das ocorrências e conclusão da execução (I04)
+# ════════════════════════════════════════════════════════════════════
+SQL_INSERIR_OCORRENCIA = """
+INSERT INTO vd_achados_ocorrencias
+SELECT :ocorrencia_id, :chave_natural, :execucao_id, :vinculo_id, :regra_codigo, :achado_id, :resultado,
+       :natureza, :valor_observado, :motivo_nao_avaliada, current_timestamp()
+FROM (SELECT 1) d
+WHERE NOT EXISTS (SELECT 1 FROM vd_achados_ocorrencias o WHERE o.chave_natural = :chave_natural)
+"""
+
+# Só conclui se o banco tiver exatamente o número de ocorrências esperado.
+SQL_CONCLUIR_EXECUCAO = """
+MERGE INTO vd_execucoes_diagnostico t
+USING (
+  SELECT e.execucao_id FROM vd_execucoes_diagnostico e
+  WHERE e.execucao_id = :execucao_id AND e.status = 'em_execucao'
+    AND (SELECT COUNT(*) FROM vd_achados_ocorrencias o WHERE o.execucao_id = e.execucao_id) = CAST(:ocorrencias_esperadas AS INT)
+) s
+ON t.execucao_id = s.execucao_id
+WHEN MATCHED THEN UPDATE SET
+  status = 'concluida', finalizado_em = current_timestamp(),
+  vinculos_analisados = CAST(:vinculos_analisados AS INT), achados_novos = CAST(:achados_novos AS INT),
+  achados_reincidentes = CAST(:achados_reincidentes AS INT), achados_resolvidos = CAST(:achados_resolvidos AS INT)
+"""
+
+
+def gravar_ocorrencias_e_concluir(cursor, execucao_id: str, ocorrencias: list[Ocorrencia],
+                                  achado_por_par: Mapping[tuple[str, str], str], novo_id, resumo: Mapping) -> int:
+    """Grava UMA ocorrência por (vínculo, regra) — disparou, nao_disparou e nao_avaliada —,
+    confirma pela contagem lida do banco e só então conclui a execução.
+    novo_id: função que gera identificadores (uuid na aplicação)."""
+    for o in ocorrencias:
+        chave_oc = chave(execucao_id, o.vinculo_id, o.regra_codigo)
+        executar_gravacao(cursor, f"Ocorrência {o.vinculo_id}/{o.regra_codigo}", SQL_INSERIR_OCORRENCIA, {
+            "ocorrencia_id": novo_id(), "chave_natural": chave_oc, "execucao_id": execucao_id, "vinculo_id": o.vinculo_id,
+            "regra_codigo": o.regra_codigo, "achado_id": achado_por_par.get((o.vinculo_id, o.regra_codigo)),
+            "resultado": o.resultado, "natureza": o.natureza, "valor_observado": o.valor_observado,
+            "motivo_nao_avaliada": o.motivo_nao_avaliada}, "ocorrencia", {"chave_natural": chave_oc},
+            aceita_ja_existente=True)
+    gravadas = _consultar_contagem(cursor, VERIFICACOES["ocorrencias"], {"execucao_id": execucao_id})
+    if gravadas != len(ocorrencias):
+        raise ErroIntegridade([f"Execução {execucao_id}: {gravadas} ocorrências no banco, {len(ocorrencias)} esperadas"])
+    executar_gravacao(cursor, f"Concluir execução {execucao_id}", SQL_CONCLUIR_EXECUCAO, {
+        "execucao_id": execucao_id, "ocorrencias_esperadas": len(ocorrencias),
+        "vinculos_analisados": len({o.vinculo_id for o in ocorrencias}), **resumo},
+        "execucao_concluida", {"execucao_id": execucao_id})
+    return gravadas
