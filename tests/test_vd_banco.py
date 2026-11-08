@@ -4,8 +4,10 @@ Travas contra gravação em produção (todas obrigatórias, verificadas antes d
 qualquer comando de gravação):
   1. VD_SCHEMA_TESTE precisa terminar em '_teste' e ser diferente de VD_SCHEMA_PRODUCAO;
   2. depois do USE, o schema corrente é lido de volta e conferido;
-  3. a credencial NÃO pode ter MODIFY/ALL PRIVILEGES no schema de produção nem ser
-     dona dele (a credencial de homologação só lê produção — ver roteiro).
+  3. a credencial NÃO pode ter privilégio de gravação efetivo em produção — direto,
+     herdado do catálogo ou herdado de grupo — nem ser dona (ela ou um grupo dela)
+     do catálogo, do schema ou de tabelas de produção.
+Em caso de falha, pytest.exit encerra a sessão antes de qualquer gravação.
 Os registros criados são insumos de teste (prefixo TESTE-), não evidência sobre
 dados de negócio, e são descartados com o DROP do schema de teste.
 
@@ -39,44 +41,116 @@ def tid():
 
 
 # ════════════════════════════════════════════════════════════════════
-# Conexão e travas de segurança
+# Travas de segurança (funções puras, também exercitadas offline em
+# tests/test_isolamento_producao.py)
+# ════════════════════════════════════════════════════════════════════
+# Privilégios que permitiriam gravar ou criar objetos em produção. No catálogo
+# eles são herdados por todos os schemas, por isso também são verificados lá.
+PRIVILEGIOS_DE_GRAVACAO = {"MODIFY", "ALL PRIVILEGES", "MANAGE", "CREATE TABLE", "CREATE MATERIALIZED VIEW",
+                           "CREATE FUNCTION", "CREATE VOLUME", "CREATE MODEL"}
+
+# Privilégios efetivos: concedidos ao próprio principal OU a qualquer grupo do qual
+# ele faça parte (SHOW GRANTS `principal` não mostra os herdados de grupos).
+SQL_PRIVILEGIOS_PRODUCAO = """
+SELECT 'catalogo' AS nivel, catalog_name AS objeto, grantee, privilege_type
+FROM {cat}.information_schema.catalog_privileges
+WHERE catalog_name = :cat AND (grantee = current_user() OR is_account_group_member(grantee))
+UNION ALL
+SELECT 'schema', schema_name, grantee, privilege_type
+FROM {cat}.information_schema.schema_privileges
+WHERE schema_name = :prod AND (grantee = current_user() OR is_account_group_member(grantee))
+UNION ALL
+SELECT 'tabela', table_name, grantee, privilege_type
+FROM {cat}.information_schema.table_privileges
+WHERE table_schema = :prod AND (grantee = current_user() OR is_account_group_member(grantee))
+"""
+
+# Dono de catálogo, schema ou tabela tem todos os direitos, sem precisar de GRANT.
+SQL_PROPRIEDADE_PRODUCAO = """
+SELECT 'catalogo' AS nivel, catalog_name AS objeto, catalog_owner AS dono FROM {cat}.information_schema.catalogs
+WHERE catalog_name = :cat AND (catalog_owner = current_user() OR is_account_group_member(catalog_owner))
+UNION ALL
+SELECT 'schema', schema_name, schema_owner FROM {cat}.information_schema.schemata
+WHERE schema_name = :prod AND (schema_owner = current_user() OR is_account_group_member(schema_owner))
+UNION ALL
+SELECT 'tabela', table_name, table_owner FROM {cat}.information_schema.tables
+WHERE table_schema = :prod AND (table_owner = current_user() OR is_account_group_member(table_owner))
+"""
+
+
+class TravaAcionada(AssertionError):
+    pass
+
+
+def verificar_travas(c, catalogo=CATALOGO, teste=TESTE, producao=PRODUCAO) -> dict:
+    """Executada antes de qualquer gravação. Só emite SELECT, USE e consultas ao
+    information_schema. Qualquer falha interrompe toda a sessão de testes."""
+    if not (teste.endswith("_teste") and teste != producao):
+        raise TravaAcionada(f"trava 1: schema de teste inválido ({teste})")
+    c.execute(f"USE CATALOG {catalogo}")
+    c.execute(f"USE SCHEMA {teste}")
+    c.execute("SELECT current_catalog(), current_schema(), current_user()")
+    cat, sch, usuario = c.fetchone()
+    if (cat, sch) != (catalogo, teste):
+        raise TravaAcionada(f"trava 2: schema corrente é {cat}.{sch}, esperado {catalogo}.{teste}")
+    params = {"cat": catalogo, "prod": producao}
+    c.execute(SQL_PRIVILEGIOS_PRODUCAO.format(cat=catalogo), params)
+    privilegios = [tuple(r) for r in c.fetchall()]
+    indevidos = [p for p in privilegios if str(p[3]).upper() in PRIVILEGIOS_DE_GRAVACAO]
+    if indevidos:
+        raise TravaAcionada(f"trava 3: a credencial pode gravar em produção: {indevidos}")
+    c.execute(SQL_PROPRIEDADE_PRODUCAO.format(cat=catalogo), params)
+    propriedades = [tuple(r) for r in c.fetchall()]
+    if propriedades:
+        raise TravaAcionada(f"trava 3: a credencial (ou um grupo dela) é dona de objetos de produção: {propriedades}")
+    return {"catalogo": cat, "schema_teste": sch, "usuario": usuario,
+            "privilegios_efetivos_producao": privilegios, "propriedade_producao": propriedades}
+
+
+def preparar_sql(nome, teste=TESTE, producao=PRODUCAO) -> list:
+    """Lê um arquivo 00–03, aponta o parâmetro de schema para o teste e recusa o
+    arquivo se restar qualquer referência ao schema de produção."""
+    txt = (SQL / nome).read_text(encoding="utf-8")
+    sem_comentarios = "\n".join(l for l in txt.splitlines() if not l.strip().startswith("--"))
+    ajustado = sem_comentarios.replace(f"'{producao}'", f"'{teste}'")
+    restos = re.findall(rf"\b{re.escape(producao)}\b(?!_)", ajustado.replace(teste, ""))
+    if restos:
+        raise TravaAcionada(f"{nome}: referência ao schema de produção remanescente")
+    return [s.strip() for s in re.split(r";\s*\n", ajustado) if s.strip()]
+
+
+def rodar_arquivo(c, nome, teste=TESTE):
+    for stmt in preparar_sql(nome, teste=teste):
+        c.execute(stmt)
+        if stmt.upper().startswith("USE "):                     # cada troca de contexto é conferida
+            c.execute("SELECT current_schema()")
+            atual = c.fetchone()[0]
+            if atual != teste:
+                raise TravaAcionada(f"{nome}: o schema corrente passou a ser {atual}")
+    c.execute("SELECT current_schema()")
+    if c.fetchone()[0] != teste:
+        raise TravaAcionada(f"{nome} alterou o schema corrente")
+
+
+# ════════════════════════════════════════════════════════════════════
+# Conexão
 # ════════════════════════════════════════════════════════════════════
 @pytest.fixture(scope="session")
 def cur():
-    assert TESTE.endswith("_teste") and TESTE != PRODUCAO, "trava 1: schema de teste inválido"
     from databricks import sql
     con = sql.connect(server_hostname=os.environ["DATABRICKS_HOST"], http_path=os.environ["DATABRICKS_HTTP_PATH"],
                       access_token=os.environ["DATABRICKS_TOKEN"])
     c = con.cursor()
-    c.execute(f"USE CATALOG {CATALOGO}")
-    c.execute(f"USE SCHEMA {TESTE}")
-    c.execute("SELECT current_catalog(), current_schema(), current_user()")
-    cat, sch, usuario = c.fetchone()
-    assert (cat, sch) == (CATALOGO, TESTE), f"trava 2: schema corrente é {cat}.{sch}"
-    c.execute(f"SHOW GRANTS `{usuario}` ON SCHEMA {CATALOGO}.{PRODUCAO}")
-    privilegios = {str(r[1]).upper() for r in c.fetchall()}
-    c.execute(f"SHOW GRANTS `{usuario}` ON CATALOG {CATALOGO}")      # privilégios herdados do catálogo
-    privilegios |= {str(r[1]).upper() for r in c.fetchall()}
-    assert not privilegios & {"MODIFY", "ALL PRIVILEGES", "CREATE TABLE", "MANAGE"}, \
-        f"trava 3: a credencial tem {privilegios} em produção — use a credencial de homologação"
-    c.execute(f"DESCRIBE SCHEMA EXTENDED {CATALOGO}.{PRODUCAO}")
-    dono = {str(r[0]).lower(): r[1] for r in c.fetchall()}.get("owner")
-    assert dono != usuario, "trava 3: a credencial é dona do schema de produção"
-    registro["ambiente"] = {"catalogo": cat, "schema_teste": sch, "usuario": usuario, "privilegios_producao": sorted(privilegios)}
+    try:
+        registro["ambiente"] = verificar_travas(c)
+    except TravaAcionada as exc:
+        c.close()
+        con.close()
+        pytest.exit(str(exc), returncode=3)                    # encerra a sessão inteira, sem nenhuma gravação
     yield c
     c.close()
     con.close()
     EVIDENCIAS.write_text(json.dumps(registro, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
-
-
-def rodar_arquivo(c, nome):
-    txt = (SQL / nome).read_text(encoding="utf-8").replace(f"'{PRODUCAO}'", f"'{TESTE}'")
-    assert f"'{PRODUCAO}'" not in txt
-    sem_comentarios = "\n".join(l for l in txt.splitlines() if not l.strip().startswith("--"))
-    for stmt in [s.strip() for s in re.split(r";\s*\n", sem_comentarios) if s.strip()]:
-        c.execute(stmt)
-    c.execute("SELECT current_schema()")
-    assert c.fetchone()[0] == TESTE, f"{nome} alterou o schema corrente"
 
 
 def contar(c, sql, params=None) -> int:
