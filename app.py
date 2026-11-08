@@ -22,10 +22,11 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body,.stApp{background:#F3EBDD !important;font-family:'Inter',sans-serif !important;color:#3E2E1F;}
-.stApp [data-testid="stMain"] p,.stApp [data-testid="stMain"] label,.stApp [data-testid="stMain"] li{color:#3E2E1F;}
-.stApp a{color:#8A6A12;}
-h1,h2,h3{font-family:'Lora',serif !important;font-weight:700 !important;color:#3E2E1F !important;}
+html,body,.stApp{background:#FAFAFA !important;font-family:'Inter',sans-serif !important;color:#000000;
+    font-feature-settings:"tnum" 1,"cv11" 1;-webkit-font-smoothing:antialiased;}
+.stApp [data-testid="stMain"] p,.stApp [data-testid="stMain"] label,.stApp [data-testid="stMain"] li{color:#1A1A1A;}
+.stApp a{color:#000000;text-decoration-color:#C9A227;text-underline-offset:3px;}
+h1,h2,h3{font-family:'Inter',sans-serif !important;font-weight:650 !important;letter-spacing:-0.01em !important;color:#000000 !important;}
 
 /* ── Topbar fixa ── */
 header[data-testid="stHeader"]{
@@ -43,8 +44,8 @@ header[data-testid="stHeader"] > *:not([data-testid="stToolbar"]):not([data-test
     top:10px !important;
     left:4px !important;
     z-index:999999 !important;
-    background:#3E2E1F !important;
-    border:1px solid #C9A22755 !important;
+    background:#FFFFFF !important;
+    border:1px solid #E5E5E5 !important;
     border-radius:6px !important;}
 /* Toolbar (container do toggle): posicionado fixo, sem área visível além do botão */
 [data-testid="stToolbar"]{
@@ -60,29 +61,35 @@ header[data-testid="stHeader"] > *:not([data-testid="stToolbar"]):not([data-test
 [data-testid="stToolbar"] > *{pointer-events:auto !important;}
 .gov-topbar{
     position:fixed !important;top:0 !important;left:0 !important;right:0 !important;
-    height:52px !important;background:#3E2E1F !important;z-index:99999 !important;
+    height:52px !important;background:#FFFFFF !important;z-index:99999 !important;
     display:flex !important;align-items:center !important;padding:0 20px !important;gap:14px !important;
-    box-shadow:0 2px 12px rgba(0,0,0,0.4) !important;border-bottom:1px solid #5A4430 !important;}
+    box-shadow:none !important;border-bottom:1px solid #E5E5E5 !important;}
 
 /* ── Sidebar ── */
 section[data-testid="stSidebar"]{
-    background:#3E2E1F !important;border-right:1px solid #5A4430 !important;
+    background:#FFFFFF !important;border-right:1px solid #E5E5E5 !important;
     min-width:220px !important;margin-top:52px !important;padding-top:0 !important;}
 section[data-testid="stSidebar"] > div{padding-top:0 !important;overflow-y:auto !important;}
 section[data-testid="stSidebar"] > div::-webkit-scrollbar{width:4px;}
-section[data-testid="stSidebar"] > div::-webkit-scrollbar-track{background:#3E2E1F;}
-section[data-testid="stSidebar"] > div::-webkit-scrollbar-thumb{background:#6B5138;border-radius:4px;}
-section[data-testid="stSidebar"] *{color:#D9C9AE !important;}
+section[data-testid="stSidebar"] > div::-webkit-scrollbar-track{background:#FFFFFF;}
+section[data-testid="stSidebar"] > div::-webkit-scrollbar-thumb{background:#D4D4D4;border-radius:4px;}
+section[data-testid="stSidebar"] *{color:#5C5C5C !important;}
 section[data-testid="stSidebar"] .stButton>button{
-    background:transparent !important;color:#E8DCC6 !important;border:none !important;
-    border-radius:7px !important;font-weight:500 !important;font-size:0.81rem !important;
+    background:transparent !important;color:#1A1A1A !important;border:none !important;
+    border-radius:6px !important;font-weight:500 !important;font-size:0.81rem !important;
     text-align:left !important;justify-content:flex-start !important;
     padding:8px 14px !important;width:100% !important;box-shadow:none !important;
     margin-bottom:1px !important;transition:background .15s,color .15s !important;}
-section[data-testid="stSidebar"] .stButton>button:hover{background:#4A3726 !important;color:#C9A227 !important;}
-section[data-testid="stSidebar"] .stSelectbox>div>div{background:#4A3726 !important;border:1px solid #C9A22766 !important;}
-section[data-testid="stSidebar"] .st-key-login button{background:#C9A227 !important;justify-content:center !important;font-weight:700 !important;}
-section[data-testid="stSidebar"] .st-key-login button *{color:#3E2E1F !important;}
+section[data-testid="stSidebar"] .stButton>button *{color:#1A1A1A !important;}
+section[data-testid="stSidebar"] .stButton>button > div{justify-content:flex-start !important;}
+section[data-testid="stSidebar"] .stButton>button:hover{background:#F5F5F5 !important;}
+section[data-testid="stSidebar"] .stButton>button:hover *{color:#000000 !important;}
+section[data-testid="stSidebar"] .stSelectbox>div>div{background:#FFFFFF !important;border:1px solid #D4D4D4 !important;}
+section[data-testid="stSidebar"] .stSelectbox *{color:#000000 !important;}
+section[data-testid="stSidebar"] .st-key-login button{background:#000000 !important;justify-content:center !important;font-weight:600 !important;}
+section[data-testid="stSidebar"] .st-key-login button > div{justify-content:center !important;}
+section[data-testid="stSidebar"] .st-key-login button *{color:#FFFFFF !important;}
+section[data-testid="stSidebar"] .st-key-login button:hover{background:#1A1A1A !important;}
 
 /* ── Main content ── */
 .main .block-container{
@@ -90,26 +97,33 @@ section[data-testid="stSidebar"] .st-key-login button *{color:#3E2E1F !important
     padding-left:1.5rem !important;padding-right:1.5rem !important;}
 
 /* ── Componentes gerais ── */
-.stButton>button{background:#C9A227 !important;color:#3E2E1F !important;border:none !important;
-    border-radius:8px !important;font-weight:600 !important;font-size:0.82rem !important;}
-.stButton>button:hover{background:#3E2E1F !important;color:#C9A227 !important;}
-.stTabs [data-baseweb="tab-list"]{background:#FBF7F0;border-radius:10px;padding:4px;gap:4px;border:1px solid #E3D5BC;}
-.stTabs [data-baseweb="tab"]{border-radius:7px !important;color:#6B5138 !important;padding:7px 16px !important;font-size:0.82rem !important;font-weight:600 !important;}
-.stTabs [aria-selected="true"]{background:#3E2E1F !important;color:#C9A227 !important;}
-.stSelectbox>div>div,.stTextInput>div>div>input,.stTextArea>div>div>textarea{background:#FBF7F0 !important;border:1px solid #E3D5BC !important;border-radius:8px !important;color:#3E2E1F !important;}
-.stDataFrame{background:#FBF7F0 !important;border-radius:10px !important;}
+.stButton>button{background:#000000 !important;color:#FFFFFF !important;border:1px solid #000000 !important;
+    border-radius:6px !important;font-weight:600 !important;font-size:0.82rem !important;}
+.stButton>button *{color:#FFFFFF !important;}
+.stButton>button:hover{background:#1A1A1A !important;border-color:#C9A227 !important;}
+.stButton>button:focus-visible{outline:2px solid #C9A227 !important;outline-offset:2px !important;}
+.stTabs [data-baseweb="tab-list"]{background:transparent;border-radius:0;padding:0;gap:4px;border-bottom:1px solid #E5E5E5;}
+.stTabs [data-baseweb="tab"]{border-radius:0 !important;color:#5C5C5C !important;padding:8px 14px !important;font-size:0.82rem !important;font-weight:600 !important;background:transparent !important;}
+.stTabs [aria-selected="true"]{background:transparent !important;color:#000000 !important;box-shadow:inset 0 -2px 0 #C9A227 !important;}
+.stTabs [data-baseweb="tab-highlight"],.stTabs [data-baseweb="tab-border"]{display:none !important;}
+.stSelectbox>div>div,.stTextInput>div>div>input,.stTextArea>div>div>textarea{background:#FFFFFF !important;border:1px solid #D4D4D4 !important;border-radius:6px !important;color:#000000 !important;}
+.stTextInput>div>div>input:focus,.stTextArea>div>div>textarea:focus{border-color:#000000 !important;box-shadow:0 0 0 1px #000000 !important;}
+.stDataFrame{background:#FFFFFF !important;border:1px solid #E5E5E5 !important;border-radius:8px !important;}
+[data-testid="stExpander"]{background:#FFFFFF !important;border:1px solid #E5E5E5 !important;border-radius:8px !important;}
+[data-testid="stMetricValue"]{font-variant-numeric:tabular-nums;}
 div[data-testid="stVerticalBlock"]{gap:0.4rem !important;}
 
 /* ── Home: atalhos ── */
 .atalho-btn .stButton>button{
-    background:#FBF7F0 !important;color:#8A6A12 !important;
-    border:1px solid #C9A22755 !important;border-top:none !important;
-    border-radius:0 0 10px 10px !important;
+    background:#FFFFFF !important;color:#000000 !important;
+    border:1px solid #E5E5E5 !important;border-top:none !important;
+    border-radius:0 0 8px 8px !important;
     font-weight:600 !important;font-size:0.73rem !important;
     padding:6px 12px !important;text-align:center !important;
     justify-content:center !important;width:100% !important;
     box-shadow:none !important;}
-.atalho-btn .stButton>button:hover{background:#C9A227 !important;color:#3E2E1F !important;}
+.atalho-btn .stButton>button *{color:#000000 !important;}
+.atalho-btn .stButton>button:hover{background:#F5F5F5 !important;}
 
 /* ── Ocultar widgets nativos Streamlit Cloud ── */
 [data-testid="stStatusWidget"],
@@ -355,8 +369,8 @@ USUARIOS = {
     "ana.lima@meridian.com":      {"nome":"Ana Lima",        "perfil":"aprovador"},
     "fernando.dias@meridian.com": {"nome":"Fernando Dias",   "perfil":"aprovador"},
 }
-PERFIL_COR   = {"consultante":"#2F6FB0","curador":"#8A6A12","aprovador":"#2E7D46"}
-COR_PERFIL_ESCURO = "#C9A227"
+PERFIL_COR   = {"consultante":"#1A1A1A","curador":"#000000","aprovador":"#1E7F4F"}
+COR_PERFIL_NAV = "#000000"
 PERFIL_LABEL = {"consultante":"👁️ Consultante","curador":"✏️ Curador","aprovador":"✅ Aprovador"}
 
 # ════════════════════════════════════════════════════════════════════
@@ -464,32 +478,32 @@ def load_solicitacoes_qualidade():
 # ════════════════════════════════════════════════════════════════════
 def page_header(icone, titulo, subtitulo=""):
     perfil = st.session_state.get("perfil_atual","consultante")
-    cor    = PERFIL_COR.get(perfil,"#2F6FB0")
+    cor    = PERFIL_COR.get(perfil,"#1A1A1A")
     nome   = st.session_state.get("nome_atual","")
     label  = PERFIL_LABEL.get(perfil,"")
     st.markdown(f"""
-    <div style="background:linear-gradient(135deg,#FBF7F0,#F1E7D6);
-                border:1px solid #E3D5BC;border-radius:12px;
+    <div style="background:linear-gradient(135deg,#FFFFFF,#F5F5F5);
+                border:1px solid #E5E5E5;border-radius:12px;
                 padding:14px 20px;margin-bottom:16px;
                 display:flex;align-items:center;justify-content:space-between;">
         <div style="display:flex;align-items:center;gap:10px;">
             <div style="background:#C9A22722;border-radius:8px;padding:8px;font-size:1.2rem;">{icone}</div>
             <div>
-                <div style="color:#3E2E1F;font-size:1.05rem;font-weight:800;">{titulo}</div>
-                {f'<div style="color:#6B5138;font-size:0.75rem;">{subtitulo}</div>' if subtitulo else ''}
+                <div style="color:#000000;font-size:1.05rem;font-weight:800;">{titulo}</div>
+                {f'<div style="color:#5C5C5C;font-size:0.75rem;">{subtitulo}</div>' if subtitulo else ''}
             </div>
         </div>
         <div style="text-align:right;">
             <div style="color:{cor};font-size:0.72rem;font-weight:600;">{label}</div>
-            <div style="color:#6B5138;font-size:0.68rem;">{nome}</div>
+            <div style="color:#5C5C5C;font-size:0.68rem;">{nome}</div>
         </div>
     </div>""", unsafe_allow_html=True)
 
 def kpi(valor, label, cor="#C9A227", icone="", tooltip=""):
     tip = f'title="{tooltip}"' if tooltip else ""
-    return f"""<div {tip} style="background:#FBF7F0;border:1px solid #E3D5BC;
+    return f"""<div {tip} style="background:#FFFFFF;border:1px solid #E5E5E5;
         border-radius:10px;padding:14px 16px;border-top:3px solid {cor};cursor:help;">
-        <div style="font-size:0.62rem;color:#6B5138;font-weight:700;
+        <div style="font-size:0.62rem;color:#5C5C5C;font-weight:700;
                     text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
             {icone} {label}</div>
         <div style="font-size:1.7rem;font-weight:800;color:{cor};">{valor}</div>
@@ -498,10 +512,10 @@ def kpi(valor, label, cor="#C9A227", icone="", tooltip=""):
 def section_divider(titulo):
     st.markdown(f"""
     <div style="display:flex;align-items:center;gap:10px;margin:18px 0 12px;">
-        <div style="height:1px;background:#E3D5BC;flex:1;"></div>
-        <span style="color:#6B5138;font-size:0.65rem;font-weight:700;
+        <div style="height:1px;background:#E5E5E5;flex:1;"></div>
+        <span style="color:#5C5C5C;font-size:0.65rem;font-weight:700;
                      text-transform:uppercase;letter-spacing:1.5px;">{titulo}</span>
-        <div style="height:1px;background:#E3D5BC;flex:1;"></div>
+        <div style="height:1px;background:#E5E5E5;flex:1;"></div>
     </div>""", unsafe_allow_html=True)
 
 def avatar(nome, cor="#C9A227", size=36):
@@ -513,20 +527,20 @@ def avatar(nome, cor="#C9A227", size=36):
 
 def estado_vazio(icone, titulo, descricao):
     st.markdown(f"""
-    <div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:12px;
+    <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
                 padding:40px;text-align:center;">
         <div style="font-size:2.5rem;margin-bottom:10px;">{icone}</div>
-        <div style="color:#3E2E1F;font-weight:700;margin-bottom:6px;">{titulo}</div>
-        <div style="color:#6B5138;font-size:0.82rem;">{descricao}</div>
+        <div style="color:#000000;font-weight:700;margin-bottom:6px;">{titulo}</div>
+        <div style="color:#5C5C5C;font-size:0.82rem;">{descricao}</div>
     </div>""", unsafe_allow_html=True)
 
 def copyright_footer():
     st.markdown("""
-    <div style="border-top:1px solid #E3D5BC;padding:12px 0;margin-top:32px;text-align:center;">
-        <div style="color:#6B5138;font-size:0.65rem;line-height:1.6;">
+    <div style="border-top:1px solid #E5E5E5;padding:12px 0;margin-top:32px;text-align:center;">
+        <div style="color:#5C5C5C;font-size:0.65rem;line-height:1.6;">
             © Plataforma de Governança de Dados — Concepção, arquitetura,
             funcionalidades, regras e estratégias são de propriedade intelectual de
-            <span style="color:#8A6A12;font-weight:600;">Tereza Cristina</span>.<br>
+            <span style="color:#000000;font-weight:600;">Tereza Cristina</span>.<br>
             Reprodução, cópia ou adaptação proibidas sem autorização expressa da autora.
         </div>
     </div>""", unsafe_allow_html=True)
@@ -543,7 +557,7 @@ with st.sidebar:
         <div style="padding:28px 16px 16px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
                 <svg width="34" height="34" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-                  <circle cx="20" cy="20" r="19" stroke="#C9A227" stroke-width="1.8" fill="#3E2E1F"/>
+                  <circle cx="20" cy="20" r="19" stroke="#C9A227" stroke-width="1.8" fill="#FFFFFF"/>
                   <circle cx="20" cy="20" r="15.5" stroke="#C9A227" stroke-width="0.9" fill="none"/>
                   <text x="20" y="22" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="13" font-weight="bold" fill="#C9A227">G</text>
                   <circle cx="14" cy="30" r="1.8" fill="#C9A227"/>
@@ -554,8 +568,8 @@ with st.sidebar:
                   <path d="M23.5 36 Q26 33 28.5 36" stroke="#C9A227" stroke-width="1.2" fill="none" stroke-linecap="round"/>
                 </svg>
                 <div>
-                    <div style="font-family:Lora,serif;font-size:13px;font-weight:700;color:#E2D4A8;letter-spacing:1.5px;">Governantes<sup style="font-size:7px;color:#C9A227;">®</sup></div>
-                    <div style="font-size:8.5px;color:#B5A089;letter-spacing:0.8px;text-transform:uppercase;">Governança de Dados</div>
+                    <div style="font-family:Lora,serif;font-size:13px;font-weight:700;color:#000000;letter-spacing:2px;text-transform:uppercase;">Governantes<sup style="font-size:7px;color:#C9A227;">®</sup></div>
+                    <div style="font-size:8.5px;color:#C9A227;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;">Governança de Dados</div>
                 </div>
             </div>
         </div>""", unsafe_allow_html=True)
@@ -610,10 +624,10 @@ with st.sidebar:
         is_active = st.session_state["pagina"] == dest
         if is_active:
             st.markdown(f"""
-            <div style="background:linear-gradient(90deg,#C9A22722,#C9A2270A);
-                        border-left:3px solid #C9A227;border-radius:0 7px 7px 0;
+            <div style="background:#F5F5F5;
+                        border-left:3px solid #C9A227;border-radius:0 6px 6px 0;
                         padding:8px 14px;display:flex;align-items:center;gap:10px;
-                        margin:1px 8px 1px 0;font-size:0.81rem;font-weight:700;color:#FFFFFF;">
+                        margin:1px 8px 1px 0;font-size:0.81rem;font-weight:700;color:#000000 !important;">
                 <span style="font-size:0.9rem;">{icon}</span><span>{label}</span>
             </div>""", unsafe_allow_html=True)
         else:
@@ -627,19 +641,19 @@ with st.sidebar:
     iniciais_u = "".join([n[0].upper() for n in u["nome"].split()[:2]])
     st.markdown(f"""
     <div style="position:absolute;bottom:0;left:0;right:0;
-                border-top:1px solid #5A4430;padding:14px 14px 16px;
-                background:#3E2E1F;">
+                border-top:1px solid #E5E5E5;padding:14px 14px 16px;
+                background:#FFFFFF;">
         <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:1.5px;
-                    color:#B5A089;margin-bottom:10px;font-weight:700;">Perfil Atual</div>
+                    color:#6E6E6E;margin-bottom:10px;font-weight:700;">Perfil Atual</div>
         <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:32px;height:32px;border-radius:50%;background:{COR_PERFIL_ESCURO}22;
-                        border:1.5px solid {COR_PERFIL_ESCURO}55;display:flex;align-items:center;
-                        justify-content:center;color:{COR_PERFIL_ESCURO};font-weight:800;
+            <div style="width:32px;height:32px;border-radius:50%;background:{COR_PERFIL_NAV}22;
+                        border:1.5px solid {COR_PERFIL_NAV}55;display:flex;align-items:center;
+                        justify-content:center;color:{COR_PERFIL_NAV};font-weight:800;
                         font-size:12px;flex-shrink:0;">{iniciais_u}</div>
             <div style="overflow:hidden;">
-                <div style="color:#F3EBDD;font-size:0.78rem;font-weight:700;
+                <div style="color:#000000;font-size:0.78rem;font-weight:700;
                             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{u['nome']}</div>
-                <div style="color:{COR_PERFIL_ESCURO};font-size:0.67rem;">{PERFIL_LABEL[perfil]}</div>
+                <div style="color:{COR_PERFIL_NAV};font-size:0.67rem;">{PERFIL_LABEL[perfil]}</div>
             </div>
         </div>
     </div>""", unsafe_allow_html=True)
@@ -655,7 +669,7 @@ _nome_tb  = st.session_state.get("nome_atual", "")
 _perf_tb  = st.session_state.get("perfil_atual", "consultante")
 _perf_lbl = PERFIL_LABEL.get(_perf_tb, "")
 _iniciais = "".join([n[0].upper() for n in _nome_tb.split()[:2]]) if _nome_tb else "U"
-_cor_tb   = COR_PERFIL_ESCURO
+_cor_tb   = COR_PERFIL_NAV
 
 st.markdown(f"""
 <div class="gov-topbar">
@@ -663,7 +677,7 @@ st.markdown(f"""
     <div class="topbar-logo" style="display:flex;align-items:center;gap:10px;min-width:190px;">
         <!-- Governantes® circular logo -->
         <svg width="34" height="34" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-          <circle cx="20" cy="20" r="19" stroke="#C9A227" stroke-width="1.8" fill="#3E2E1F"/>
+          <circle cx="20" cy="20" r="19" stroke="#C9A227" stroke-width="1.8" fill="#FFFFFF"/>
           <circle cx="20" cy="20" r="15.5" stroke="#C9A227" stroke-width="0.9" fill="none"/>
           <text x="20" y="22" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="13" font-weight="bold" fill="#C9A227">G</text>
           <circle cx="14" cy="30" r="1.8" fill="#C9A227"/>
@@ -674,35 +688,35 @@ st.markdown(f"""
           <path d="M23.5 36 Q26 33 28.5 36" stroke="#C9A227" stroke-width="1.2" fill="none" stroke-linecap="round"/>
         </svg>
         <div>
-            <div style="font-family:Lora,serif;font-size:12.5px;font-weight:700;color:#E2D4A8;letter-spacing:1.5px;line-height:1.2;">Governantes<sup style="font-size:7px;color:#C9A227;">®</sup></div>
-            <div style="font-size:8px;color:#D9C9AE;letter-spacing:0.8px;text-transform:uppercase;line-height:1.2;">Governança de Dados & IA</div>
+            <div style="font-family:Lora,serif;font-size:12.5px;font-weight:700;color:#000000;letter-spacing:2px;text-transform:uppercase;line-height:1.2;">Governantes<sup style="font-size:7px;color:#C9A227;">®</sup></div>
+            <div style="font-size:8px;color:#C9A227;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;line-height:1.2;">Governança de Dados & IA</div>
         </div>
     </div>
     <!-- Jornadas -->
     <div class="topbar-jornadas" style="display:flex;align-items:center;gap:6px;margin:0 12px;">
-        <span onclick="__govNav('descobrir')" style="color:#D9C9AE;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #5A4430;cursor:pointer;white-space:nowrap;" title="Catálogo e descoberta de ativos">🔍 Descobrir</span>
-        <span onclick="__govNav('entender')" style="color:#D9C9AE;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #5A4430;cursor:pointer;white-space:nowrap;" title="Glossário e definições">📖 Entender</span>
-        <span onclick="__govNav('confiar')" style="color:#D9C9AE;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #5A4430;cursor:pointer;white-space:nowrap;" title="Qualidade e scorecard">🛡️ Confiar</span>
-        <span onclick="__govNav('agir')" style="color:#D9C9AE;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #5A4430;cursor:pointer;white-space:nowrap;" title="Curadoria e solicitações">⚡ Agir</span>
-        <span onclick="__govNav('decidir')" style="color:#D9C9AE;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #5A4430;cursor:pointer;white-space:nowrap;" title="Indicadores e gestão">📊 Decidir</span>
+        <span onclick="__govNav('descobrir')" style="color:#5C5C5C;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid #E5E5E5;cursor:pointer;white-space:nowrap;" title="Catálogo e descoberta de ativos">🔍 Descobrir</span>
+        <span onclick="__govNav('entender')" style="color:#5C5C5C;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid #E5E5E5;cursor:pointer;white-space:nowrap;" title="Glossário e definições">📖 Entender</span>
+        <span onclick="__govNav('confiar')" style="color:#5C5C5C;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid #E5E5E5;cursor:pointer;white-space:nowrap;" title="Qualidade e scorecard">🛡️ Confiar</span>
+        <span onclick="__govNav('agir')" style="color:#5C5C5C;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid #E5E5E5;cursor:pointer;white-space:nowrap;" title="Curadoria e solicitações">⚡ Agir</span>
+        <span onclick="__govNav('decidir')" style="color:#5C5C5C;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid #E5E5E5;cursor:pointer;white-space:nowrap;" title="Indicadores e gestão">📊 Decidir</span>
     </div>
     <!-- Busca -->
     <div class="topbar-busca" style="flex:1;max-width:380px;">
-        <div onclick="__govNav('busca')" style="background:#4A3726;border:1px solid #C9A22733;border-radius:8px;
+        <div onclick="__govNav('busca')" style="background:#F5F5F5;border:1px solid #E5E5E5;border-radius:6px;
                     padding:6px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;">
-            <span style="color:#B5A089;font-size:12px;">🔍</span>
-            <span style="color:#B5A089;font-size:0.78rem;">Buscar dados, termos, regras...</span>
+            <span style="color:#6E6E6E;font-size:12px;">🔍</span>
+            <span style="color:#6E6E6E;font-size:0.78rem;">Buscar dados, termos, regras...</span>
         </div>
     </div>
     <!-- Usuário -->
     <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0;">
-        <span style="color:#B5A089;font-size:1rem;" title="Sem notificações pendentes">🔔</span>
+        <span style="color:#6E6E6E;font-size:1rem;" title="Sem notificações pendentes">🔔</span>
         <div style="text-align:right;display:none;">
-            <div style="color:#F3EBDD;font-size:0.75rem;font-weight:700;line-height:1.2;">{_nome_tb}</div>
+            <div style="color:#000000;font-size:0.75rem;font-weight:700;line-height:1.2;">{_nome_tb}</div>
             <div style="color:{_cor_tb};font-size:0.65rem;line-height:1.2;">{_perf_lbl}</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;">
-            <div style="color:#F3EBDD;font-size:0.73rem;font-weight:700;line-height:1.2;">{_nome_tb}</div>
+            <div style="color:#000000;font-size:0.73rem;font-weight:700;line-height:1.2;">{_nome_tb}</div>
             <div style="color:{_cor_tb};font-size:0.63rem;line-height:1.2;">{_perf_lbl}</div>
         </div>
         <div style="width:30px;height:30px;border-radius:50%;background:{_cor_tb}22;
@@ -779,12 +793,12 @@ st.markdown("""
 # ── Badge ambiente demo ───────────────────────────────────────────────
 st.markdown("""
 <div class="demo-badge" style="position:fixed;bottom:16px;right:16px;z-index:9999;
-            background:#FBF7F0;border:1px solid #C9A22766;border-radius:6px;
+            background:#FFFFFF;border:1px solid #E5E5E5;border-radius:6px;
             padding:4px 10px;display:flex;align-items:center;gap:6px;
-            box-shadow:0 2px 8px rgba(62,46,31,0.12);">
-  <div style="width:7px;height:7px;border-radius:50%;background:#F97316;animation:pulse 2s infinite;"></div>
-  <span style="color:#8A6A12;font-size:0.65rem;font-weight:700;letter-spacing:1px;">AMBIENTE DEMO</span>
-  <span style="color:#7D6650;font-size:0.6rem;">dados fictícios</span>
+            box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+  <div style="width:7px;height:7px;border-radius:50%;background:#B26A00;animation:pulse 2s infinite;"></div>
+  <span style="color:#000000;font-size:0.65rem;font-weight:700;letter-spacing:1px;">AMBIENTE DEMO</span>
+  <span style="color:#6E6E6E;font-size:0.6rem;">dados fictícios</span>
 </div>
 <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}</style>
 """, unsafe_allow_html=True)
@@ -861,33 +875,38 @@ if pagina == "🏠 Início":
     # A. BANNER
     # ══════════════════════════════════════════════════════════════════
     st.markdown("""
-    <div style="background:linear-gradient(105deg,#FBF7F0 40%,#FBF7F0CC 60%,#3E2E1F55 85%),
-                url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
-                border-radius:14px;padding:36px 36px 32px;margin-bottom:16px;
+    <div style="background:
+                radial-gradient(circle at 78% 30%,#C9A2271F 0 2px,transparent 3px) 0 0/28px 28px,
+                linear-gradient(90deg,#FFFFFF 38%,rgba(255,255,255,0.6) 70%,rgba(255,255,255,0) 100%),
+                linear-gradient(#EDEDED 1px,transparent 1px) 0 0/28px 28px,
+                linear-gradient(90deg,#EDEDED 1px,transparent 1px) 0 0/28px 28px,
+                #FFFFFF;
+                border:1px solid #E5E5E5;border-radius:10px;padding:36px 36px 32px;margin-bottom:16px;
                 position:relative;min-height:160px;overflow:hidden;
                 display:flex;align-items:center;justify-content:space-between;gap:32px;"
              class="banner-inner">
         <div style="flex:1;min-width:0;">
-            <div style="color:#6B5138;font-size:0.62rem;letter-spacing:3px;
-                        text-transform:uppercase;margin-bottom:10px;font-weight:700;">
+            <div style="color:#5C5C5C;font-size:0.62rem;letter-spacing:3px;
+                        text-transform:uppercase;margin-bottom:10px;font-weight:700;
+                        border-left:2px solid #C9A227;padding-left:8px;">
                 PLATAFORMA DE GOVERNANÇA DE DADOS
             </div>
-            <div style="color:#3E2E1F;font-size:clamp(1.1rem,2.2vw,1.55rem);font-weight:800;line-height:1.25;
-                        margin-bottom:10px;font-family:'Lora',serif;letter-spacing:-0.3px;">
+            <div style="color:#000000;font-size:clamp(1.1rem,2.2vw,1.55rem);font-weight:700;line-height:1.25;
+                        margin-bottom:10px;font-family:'Inter',sans-serif;letter-spacing:-0.02em;">
                 Dados bem governados impulsionam grandes decisões
             </div>
-            <div style="color:#6B5138;font-size:0.84rem;line-height:1.6;">
+            <div style="color:#5C5C5C;font-size:0.84rem;line-height:1.6;">
                 Encontre, entenda, confie e aja sobre os dados da sua organização.
             </div>
         </div>
-        <div class="banner-missao" style="flex-shrink:0;background:rgba(62,46,31,0.94);border:1px solid #C9A22766;
-                    border-radius:12px;padding:18px 20px;width:190px;
+        <div class="banner-missao" style="flex-shrink:0;background:#FFFFFF;border:1px solid #E5E5E5;border-top:2px solid #C9A227;
+                    border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,0.04);padding:18px 20px;width:190px;
                     backdrop-filter:blur(10px);">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <span style="color:#C9A227;font-size:0.8rem;font-weight:700;">Nossa missão</span>
+                <span style="color:#000000;font-size:0.8rem;font-weight:700;">Nossa missão</span>
             </div>
-            <div style="color:#E8DCC6;font-size:0.71rem;line-height:1.6;">
+            <div style="color:#1A1A1A;font-size:0.71rem;line-height:1.6;">
                 Transformar dados em confiança para impulsionar decisões que geram valor real para a organização.
             </div>
         </div>
@@ -906,16 +925,16 @@ if pagina == "🏠 Início":
     ]
     _cards_html = "".join([
         f"""<div onclick="__govNav('{nav_key}')"
-             style="background:#FBF7F0;border:1px solid #C9A22733;
+             style="background:#FFFFFF;border:1px solid #E5E5E5;
                     border-bottom:3px solid #C9A227;border-radius:10px;
-                    padding:18px 14px 16px;box-shadow:0 2px 8px rgba(62,46,31,0.08);
+                    padding:18px 14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);
                     cursor:pointer;transition:all 0.2s;"
-             onmouseover="this.style.background='#F1E7D6'"
-             onmouseout="this.style.background='#FBF7F0'">
+             onmouseover="this.style.background='#F5F5F5'"
+             onmouseout="this.style.background='#FFFFFF'">
             <div style="font-size:1.4rem;margin-bottom:8px;">{ic}</div>
-            <div style="color:#8A6A12;font-weight:700;font-size:0.8rem;
+            <div style="color:#000000;font-weight:700;font-size:0.8rem;
                         margin-bottom:5px;line-height:1.3;">{tit}</div>
-            <div style="color:#6B5138;font-size:0.68rem;line-height:1.4;">{desc}</div>
+            <div style="color:#5C5C5C;font-size:0.68rem;line-height:1.4;">{desc}</div>
         </div>"""
         for ic, tit, nav_key, desc in ATALHOS
     ])
@@ -932,7 +951,7 @@ if pagina == "🏠 Início":
     # ══════════════════════════════════════════════════════════════════
     st.markdown("""
     <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
-                color:#8A6A12;border-bottom:1px solid #C9A22733;padding-bottom:8px;
+                color:#000000;border-bottom:1px solid #E5E5E5;padding-bottom:8px;
                 margin-bottom:12px;">Panorama Geral</div>
     """, unsafe_allow_html=True)
 
@@ -941,10 +960,10 @@ if pagina == "🏠 Início":
     # ── KPI tiles ────────────────────────────────────────────────────
     with pan_left:
         st.markdown("""
-        <div style="background:#FBF7F0;border:1px solid #C9A22733;border-radius:12px;
-                    padding:16px 18px;height:100%;box-shadow:0 2px 8px rgba(62,46,31,0.08);">
+        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
+                    padding:16px 18px;height:100%;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
             <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1px;color:#8A6A12;margin-bottom:14px;">Indicadores</div>
+                        letter-spacing:1px;color:#000000;margin-bottom:14px;">Indicadores</div>
         """, unsafe_allow_html=True)
 
         _db_ok = not bool(st.session_state.get("_db_err"))
@@ -956,10 +975,10 @@ if pagina == "🏠 Início":
             (total_termos,  "Termos de Negócio",      "#C9A227", "📖",
              "gd_glossario", "Total de conceitos de negócio no glossário.",
              "Fórmula: COUNT(glossary_id) todos os status", "Período: atual"),
-            (qual_str,      "Qualidade Média",         "#2E7D46", "🛡️",
+            (qual_str,      "Qualidade Média",         "#1E7F4F", "🛡️",
              "gd_quality_dimensions", "Média do score_final de todas as dimensões de qualidade avaliadas.",
              "Fórmula: AVG(score_final) por domínio · População: ativos avaliados", "Período: última avaliação"),
-            (sol_abertas,   "Solicitações em Aberto",  "#B45309", "📬",
+            (sol_abertas,   "Solicitações em Aberto",  "#B26A00", "📬",
              "solicitacoes_acesso + solicitacoes_qualidade",
              "Contagem de solicitações sem status de fechamento.",
              "Fórmula: COUNT WHERE status NOT IN (concluido, aprovado, cancelado)", "Período: atual"),
@@ -968,14 +987,14 @@ if pagina == "🏠 Início":
             _cor_icon = cor_k if cor_k != "#0A0A0A" else "#C9A227"
             st.markdown(f"""
             <div style="display:flex;align-items:center;gap:10px;padding:9px 0;
-                        border-bottom:1px solid #E3D5BC;" title="{definicao}&#10;{formula}&#10;Fonte: {fonte}&#10;{periodo}">
+                        border-bottom:1px solid #E5E5E5;" title="{definicao}&#10;{formula}&#10;Fonte: {fonte}&#10;{periodo}">
                 <div style="width:34px;height:34px;border-radius:8px;background:{_cor_icon}22;
                             display:flex;align-items:center;justify-content:center;
                             font-size:1rem;flex-shrink:0;">{ic_k}</div>
                 <div style="flex:1;min-width:0;">
-                    <div style="color:#6B5138;font-size:0.65rem;">{lbl}</div>
-                    <div style="color:{cor_k if cor_k != "#0A0A0A" else "#3E2E1F"};font-size:1.35rem;font-weight:800;line-height:1.2;">{val}</div>
-                    <div style="color:#7D6650;font-size:0.56rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{formula[:60]}</div>
+                    <div style="color:#5C5C5C;font-size:0.65rem;">{lbl}</div>
+                    <div style="color:{cor_k if cor_k != "#0A0A0A" else "#000000"};font-size:1.35rem;font-weight:800;line-height:1.2;">{val}</div>
+                    <div style="color:#6E6E6E;font-size:0.56rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{formula[:60]}</div>
                 </div>
             </div>""", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -983,10 +1002,10 @@ if pagina == "🏠 Início":
     # ── Qualidade por Domínio ────────────────────────────────────────
     with pan_mid:
         st.markdown("""
-        <div style="background:#FBF7F0;border:1px solid #C9A22733;border-radius:12px;
-                    padding:16px 18px;box-shadow:0 2px 8px rgba(62,46,31,0.08);">
+        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
+                    padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
             <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1px;color:#8A6A12;margin-bottom:12px;">Qualidade por Domínio</div>
+                        letter-spacing:1px;color:#000000;margin-bottom:12px;">Qualidade por Domínio</div>
         """, unsafe_allow_html=True)
 
         if not df_qual.empty and "dominio" in df_qual.columns and "score_final" in df_qual.columns:
@@ -998,35 +1017,35 @@ if pagina == "🏠 Início":
             for idx, row in dom_qual.iterrows():
                 sc    = round(float(row["score_final"]), 1)
                 n     = int(row["total"])
-                cor_bar="#2E7D46" if sc >= 80 else "#C9A227" if sc >= 60 else "#B3261E"
+                cor_bar="#1E7F4F" if sc >= 80 else "#C9A227" if sc >= 60 else "#C62828"
                 st.markdown(f"""
                 <div style="margin-bottom:9px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-                        <div style="color:#E2E8F0;font-size:0.73rem;font-weight:600;
+                        <div style="color:#E5E5E5;font-size:0.73rem;font-weight:600;
                                     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%;">{row['dominio']}</div>
                         <div style="display:flex;align-items:center;gap:6px;">
-                            <div style="color:#6B5138;font-size:0.6rem;">{n} reg.</div>
+                            <div style="color:#5C5C5C;font-size:0.6rem;">{n} reg.</div>
                             <div style="color:{cor_bar};font-size:0.73rem;font-weight:800;">{sc}%</div>
                         </div>
                     </div>
-                    <div style="background:#E3D5BC;border-radius:99px;height:5px;overflow:hidden;">
+                    <div style="background:#E5E5E5;border-radius:99px;height:5px;overflow:hidden;">
                         <div style="width:{sc}%;height:100%;background:{cor_bar};border-radius:99px;"></div>
                     </div>
                 </div>""", unsafe_allow_html=True)
         elif st.session_state.get("_db_err"):
-            st.markdown('<div style="color:#B3261E;font-size:0.78rem;padding:20px 0;text-align:center;">⚠️ Erro de conexão com Databricks</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#C62828;font-size:0.78rem;padding:20px 0;text-align:center;">⚠️ Erro de conexão com Databricks</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div style="color:#6B5138;font-size:0.78rem;padding:20px 0;text-align:center;">Nenhum dado de qualidade encontrado</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#5C5C5C;font-size:0.78rem;padding:20px 0;text-align:center;">Nenhum dado de qualidade encontrado</div>', unsafe_allow_html=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
 
     # ── Rosca Solicitações ───────────────────────────────────────────
     with pan_right:
         st.markdown("""
-        <div style="background:#FBF7F0;border:1px solid #C9A22733;border-radius:12px;
-                    padding:16px 18px;box-shadow:0 2px 8px rgba(62,46,31,0.08);">
+        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
+                    padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
             <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1px;color:#8A6A12;margin-bottom:10px;">Status das Solicitações</div>
+                        letter-spacing:1px;color:#000000;margin-bottom:10px;">Status das Solicitações</div>
         """, unsafe_allow_html=True)
 
         frames = []
@@ -1039,27 +1058,27 @@ if pagina == "🏠 Início":
             status_counts = df_all_sol["status"].value_counts().reset_index()
             status_counts.columns = ["status","total"]
             STATUS_COLORS = {
-                "pendente":"#B45309","em_analise":"#2F6FB0","aprovado":"#2E7D46",
-                "concluido":"#2E7D46","cancelado":"#6B5138","em_revisao":"#7A4FB3",
-                "reprovado":"#B3261E","concluída":"#2E7D46","aprovada":"#2E7D46",
+                "pendente":"#B26A00","em_analise":"#1A1A1A","aprovado":"#1E7F4F",
+                "concluido":"#1E7F4F","cancelado":"#5C5C5C","em_revisao":"#3D3D3D",
+                "reprovado":"#C62828","concluída":"#1E7F4F","aprovada":"#1E7F4F",
             }
-            cores_rosca = [STATUS_COLORS.get(s,"#CBD5E1") for s in status_counts["status"]]
+            cores_rosca = [STATUS_COLORS.get(s,"#D4D4D4") for s in status_counts["status"]]
             total_sol = status_counts["total"].sum()
 
             fig_donut = go.Figure(go.Pie(
                 labels=status_counts["status"],
                 values=status_counts["total"],
                 hole=0.62,
-                marker=dict(colors=cores_rosca, line=dict(color="#3E2E1F", width=2)),
+                marker=dict(colors=cores_rosca, line=dict(color="#000000", width=2)),
                 textinfo="none",
                 hovertemplate="%{label}: %{value}<extra></extra>",
             ))
             fig_donut.add_annotation(
                 text=f"<b>{total_sol}</b>",
-                x=0.5, y=0.55, showarrow=False, font=dict(size=22, color="#3E2E1F"))
+                x=0.5, y=0.55, showarrow=False, font=dict(size=22, color="#000000"))
             fig_donut.add_annotation(
                 text="total", x=0.5, y=0.4, showarrow=False,
-                font=dict(size=10, color="#6B5138"))
+                font=dict(size=10, color="#5C5C5C"))
             fig_donut.update_layout(
                 showlegend=False, margin=dict(t=0,b=0,l=0,r=0),
                 height=150, paper_bgcolor="rgba(0,0,0,0)",
@@ -1068,17 +1087,17 @@ if pagina == "🏠 Início":
 
             # Legenda
             for _, row in status_counts.iterrows():
-                cor_l = STATUS_COLORS.get(row["status"],"#CBD5E1")
+                cor_l = STATUS_COLORS.get(row["status"],"#D4D4D4")
                 st.markdown(f"""
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                     <div style="width:8px;height:8px;border-radius:50%;background:{cor_l};flex-shrink:0;"></div>
-                    <div style="color:#6B5138;font-size:0.67rem;flex:1;">{row['status']}</div>
-                    <div style="color:#E2E8F0;font-size:0.73rem;font-weight:700;">{row['total']}</div>
+                    <div style="color:#5C5C5C;font-size:0.67rem;flex:1;">{row['status']}</div>
+                    <div style="color:#E5E5E5;font-size:0.73rem;font-weight:700;">{row['total']}</div>
                 </div>""", unsafe_allow_html=True)
         elif st.session_state.get("_db_err"):
-            st.markdown('<div style="color:#B3261E;font-size:0.78rem;padding:20px 0;text-align:center;">⚠️ Erro de conexão com Databricks</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#C62828;font-size:0.78rem;padding:20px 0;text-align:center;">⚠️ Erro de conexão com Databricks</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div style="color:#6B5138;font-size:0.78rem;padding:20px 0;text-align:center;">Nenhuma solicitação registrada</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#5C5C5C;font-size:0.78rem;padding:20px 0;text-align:center;">Nenhuma solicitação registrada</div>', unsafe_allow_html=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1089,7 +1108,7 @@ if pagina == "🏠 Início":
     # ══════════════════════════════════════════════════════════════════
     st.markdown("""
     <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
-                color:#8A6A12;border-bottom:1px solid #C9A22733;padding-bottom:8px;
+                color:#000000;border-bottom:1px solid #E5E5E5;padding-bottom:8px;
                 margin-bottom:12px;">Área Operacional</div>
     """, unsafe_allow_html=True)
 
@@ -1098,12 +1117,12 @@ if pagina == "🏠 Início":
     # ── Ativos de destaque ────────────────────────────────────────────
     with op1:
         st.markdown("""
-        <div style="background:#FBF7F0;border:1px solid #C9A22733;border-radius:12px;
-                    padding:14px 16px;box-shadow:0 2px 8px rgba(62,46,31,0.08);">
+        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
+                    padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                 <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
-                            letter-spacing:1.5px;color:#8A6A12;">Ativos em Destaque</div>
-                <span style="font-size:0.6rem;color:#6B5138;font-style:italic;">por qualidade</span>
+                            letter-spacing:1.5px;color:#000000;">Ativos em Destaque</div>
+                <span style="font-size:0.6rem;color:#5C5C5C;font-style:italic;">por qualidade</span>
             </div>
         """, unsafe_allow_html=True)
 
@@ -1118,25 +1137,25 @@ if pagina == "🏠 Início":
             for _, row in exibir_ativos.iterrows():
                 st.markdown(f"""
                 <div style="display:flex;align-items:center;gap:8px;padding:7px 0;
-                            border-bottom:1px solid #E3D5BC;">
+                            border-bottom:1px solid #E5E5E5;">
                     <span style="font-size:0.9rem;">🗂️</span>
                     <div style="flex:1;min-width:0;">
-                        <div style="color:#E2E8F0;font-size:0.72rem;font-weight:600;
+                        <div style="color:#E5E5E5;font-size:0.72rem;font-weight:600;
                                     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{row['table_name']}</div>
-                        <div style="color:#6B5138;font-size:0.63rem;">{row['dominio']}</div>
+                        <div style="color:#5C5C5C;font-size:0.63rem;">{row['dominio']}</div>
                     </div>
                 </div>""", unsafe_allow_html=True)
         else:
-            st.markdown('<div style="color:#6B5138;font-size:0.75rem;padding:10px 0;">Sem dados disponíveis</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#5C5C5C;font-size:0.75rem;padding:10px 0;">Sem dados disponíveis</div>', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     # ── Pendências dos meus dados ─────────────────────────────────────
     with op2:
         st.markdown("""
-        <div style="background:#FBF7F0;border:1px solid #C9A22733;border-radius:12px;
-                    padding:14px 16px;box-shadow:0 2px 8px rgba(62,46,31,0.08);">
+        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
+                    padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
             <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1.5px;color:#8A6A12;margin-bottom:10px;">Pendências Abertas</div>
+                        letter-spacing:1.5px;color:#000000;margin-bottom:10px;">Pendências Abertas</div>
         """, unsafe_allow_html=True)
 
         pendencias = []
@@ -1155,34 +1174,34 @@ if pagina == "🏠 Início":
                 st_p = row.get("status","—")
                 pendencias.append((tipo, desc, st_p))
 
-        STATUS_COR_PILL = {"pendente":"#B45309","em_analise":"#2F6FB0","em_revisao":"#7A4FB3"}
+        STATUS_COR_PILL = {"pendente":"#B26A00","em_analise":"#1A1A1A","em_revisao":"#3D3D3D"}
         if pendencias:
             for tipo_p, desc_p, status_p in pendencias[:5]:
-                cor_p = STATUS_COR_PILL.get(status_p.lower(),"#6B5138")
+                cor_p = STATUS_COR_PILL.get(status_p.lower(),"#5C5C5C")
                 tipo_ic = "📬" if tipo_p=="Acesso" else "🛡️"
                 st.markdown(f"""
-                <div style="padding:7px 0;border-bottom:1px solid #E3D5BC;">
+                <div style="padding:7px 0;border-bottom:1px solid #E5E5E5;">
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
                         <span style="font-size:0.85rem;">{tipo_ic}</span>
-                        <span style="color:#E2E8F0;font-size:0.71rem;font-weight:600;">{tipo_p}</span>
+                        <span style="color:#E5E5E5;font-size:0.71rem;font-weight:600;">{tipo_p}</span>
                         <span style="background:{cor_p}18;color:{cor_p};border-radius:20px;
                                      padding:1px 7px;font-size:0.6rem;font-weight:700;margin-left:auto;">{status_p}</span>
                     </div>
-                    <div style="color:#6B5138;font-size:0.65rem;padding-left:22px;">{desc_p}</div>
+                    <div style="color:#5C5C5C;font-size:0.65rem;padding-left:22px;">{desc_p}</div>
                 </div>""", unsafe_allow_html=True)
         elif _db_fail:
-            st.markdown('<div style="color:#B3261E;font-size:0.73rem;padding:16px 0;text-align:center;">⚠️ Dados indisponíveis — BD offline</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#C62828;font-size:0.73rem;padding:16px 0;text-align:center;">⚠️ Dados indisponíveis — BD offline</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div style="color:#6B5138;font-size:0.75rem;padding:16px 0;text-align:center;">✓ Nenhuma pendência em aberto</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#5C5C5C;font-size:0.75rem;padding:16px 0;text-align:center;">✓ Nenhuma pendência em aberto</div>', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     # ── Últimas atividades ────────────────────────────────────────────
     with op3:
         st.markdown("""
-        <div style="background:#FBF7F0;border:1px solid #C9A22733;border-radius:12px;
-                    padding:14px 16px;box-shadow:0 2px 8px rgba(62,46,31,0.08);">
+        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
+                    padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
             <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1.5px;color:#8A6A12;margin-bottom:10px;">Últimas Atividades</div>
+                        letter-spacing:1.5px;color:#000000;margin-bottom:10px;">Últimas Atividades</div>
         """, unsafe_allow_html=True)
 
         if not df_tl.empty:
@@ -1199,23 +1218,23 @@ if pagina == "🏠 Início":
                         except:
                             data_a = str(row[dc])[:10]
                         break
-                cor_a="#2E7D46" if "conclu" in status_a.lower() or "aprova" in status_a.lower() \
-                        else "#B45309" if "penden" in status_a.lower() else "#6B5138"
+                cor_a="#1E7F4F" if "conclu" in status_a.lower() or "aprova" in status_a.lower() \
+                        else "#B26A00" if "penden" in status_a.lower() else "#5C5C5C"
                 st.markdown(f"""
-                <div style="padding:7px 0;border-bottom:1px solid #E3D5BC;display:flex;align-items:flex-start;gap:8px;">
+                <div style="padding:7px 0;border-bottom:1px solid #E5E5E5;display:flex;align-items:flex-start;gap:8px;">
                     <div style="width:7px;height:7px;border-radius:50%;background:{cor_a};
                                 margin-top:4px;flex-shrink:0;"></div>
                     <div style="flex:1;min-width:0;">
-                        <div style="color:#E2E8F0;font-size:0.71rem;font-weight:600;
+                        <div style="color:#E5E5E5;font-size:0.71rem;font-weight:600;
                                     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{tipo_a}</div>
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
-                            <span style="color:#6B5138;font-size:0.62rem;">{responsavel}</span>
-                            <span style="color:#6B5138;font-size:0.6rem;">{data_a}</span>
+                            <span style="color:#5C5C5C;font-size:0.62rem;">{responsavel}</span>
+                            <span style="color:#5C5C5C;font-size:0.6rem;">{data_a}</span>
                         </div>
                     </div>
                 </div>""", unsafe_allow_html=True)
         else:
-            st.markdown('<div style="color:#6B5138;font-size:0.75rem;padding:16px 0;text-align:center;">Sem atividades registradas</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#5C5C5C;font-size:0.75rem;padding:16px 0;text-align:center;">Sem atividades registradas</div>', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
@@ -1225,19 +1244,19 @@ if pagina == "🏠 Início":
     # ══════════════════════════════════════════════════════════════════
     st.markdown("""
     <div style="font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;
-                color:#6B5138;margin-bottom:10px;">Jornadas de Exploração</div>
+                color:#5C5C5C;margin-bottom:10px;">Jornadas de Exploração</div>
     """, unsafe_allow_html=True)
 
     JORNADAS = [
-        ("📋","Busca e Catálogo de Dados",   "📋 Catálogo",  "#3E2E1F",
+        ("📋","Busca e Catálogo de Dados",   "📋 Catálogo",  "#000000",
          "Explore o inventário de ativos, filtros e metadados da organização."),
-        ("🗂️","Detalhe do Ativo de Dados",   "📋 Catálogo",  "#7A4FB3",
+        ("🗂️","Detalhe do Ativo de Dados",   "📋 Catálogo",  "#3D3D3D",
          "Acesse informações técnicas, responsáveis e qualidade de cada ativo."),
-        ("🏆","Qualidade de Dados",           "🏆 Qualidade", "#2E7D46",
+        ("🏆","Qualidade de Dados",           "🏆 Qualidade", "#1E7F4F",
          "Veja as dimensões de qualidade, domínios e indicadores registrados."),
-        ("🔗","Linhagem e Atividades",        "🔗 Linhagem",  "#B45309",
+        ("🔗","Linhagem e Atividades",        "🔗 Linhagem",  "#B26A00",
          "Rastreie a origem, o fluxo e as transformações dos dados."),
-        ("📬","Solicitações e Tarefas",       "⚡ Meu Espaço","#B3261E",
+        ("📬","Solicitações e Tarefas",       "⚡ Meu Espaço","#C62828",
          "Gerencie acessos, relatos de qualidade e suas tarefas pendentes."),
     ]
 
@@ -1247,7 +1266,7 @@ if pagina == "🏠 Início":
     for i, (ic_j, tit_j, dest_j, cor_j, desc_j) in enumerate(JORNADAS):
         with j_cols[i]:
             st.markdown(f"""
-            <div style="background:#FBF7F0;border:1px solid #C9A22733;border-radius:12px;
+            <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
                         overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
                 <div style="background:{cor_j};padding:14px 14px 12px;min-height:70px;">
                     <div style="font-size:1.6rem;margin-bottom:5px;">{ic_j}</div>
@@ -1255,7 +1274,7 @@ if pagina == "🏠 Início":
                                 font-weight:700;line-height:1.3;">{tit_j}</div>
                 </div>
                 <div style="padding:10px 14px;">
-                    <div style="color:#6B5138;font-size:0.68rem;line-height:1.5;
+                    <div style="color:#5C5C5C;font-size:0.68rem;line-height:1.5;
                                 min-height:44px;">{desc_j}</div>
                 </div>
             </div>""", unsafe_allow_html=True)
@@ -1276,9 +1295,9 @@ elif pagina == "📖 Glossário":
                 "A linguagem comum da organização — definições, regras e responsáveis.")
 
     st.markdown("""
-    <div style="background:#FBF7F099;border:1px solid #E3D5BC;border-radius:8px;
+    <div style="background:#FFFFFF99;border:1px solid #E5E5E5;border-radius:8px;
                 padding:10px 14px;margin-bottom:16px;">
-        <div style="color:#6B5138;font-size:0.78rem;line-height:1.6;">
+        <div style="color:#5C5C5C;font-size:0.78rem;line-height:1.6;">
             O Glossário reúne as definições oficiais dos conceitos utilizados pela organização.
             Ele garante que diferentes áreas compartilhem o mesmo entendimento sobre termos,
             indicadores e processos — eliminando interpretações divergentes.
@@ -1294,11 +1313,11 @@ elif pagina == "📖 Glossário":
         m1,m2,m3,m4 = st.columns(4)
         with m1: st.markdown(kpi(len(df_g),"Total de Conceitos","#C9A227","📖",
             "Total de conceitos de negócio cadastrados no glossário."), unsafe_allow_html=True)
-        with m2: st.markdown(kpi(len(df_g[df_g["status"]=="homologado"]),"Homologados","#2E7D46",tooltip=
+        with m2: st.markdown(kpi(len(df_g[df_g["status"]=="homologado"]),"Homologados","#1E7F4F",tooltip=
             "Conceitos revisados e aprovados formalmente pela governança."), unsafe_allow_html=True)
-        with m3: st.markdown(kpi(len(df_g[df_g["status"]=="em_revisao"]),"Em Revisão","#2F6FB0",tooltip=
+        with m3: st.markdown(kpi(len(df_g[df_g["status"]=="em_revisao"]),"Em Revisão","#1A1A1A",tooltip=
             "Conceitos submetidos e aguardando aprovação."), unsafe_allow_html=True)
-        with m4: st.markdown(kpi(len(df_g[df_g["status"]=="rascunho"]),"Rascunho","#6B5138",tooltip=
+        with m4: st.markdown(kpi(len(df_g[df_g["status"]=="rascunho"]),"Rascunho","#5C5C5C",tooltip=
             "Conceitos em elaboração, ainda não submetidos para revisão."), unsafe_allow_html=True)
 
         st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
@@ -1310,7 +1329,7 @@ elif pagina == "📖 Glossário":
 
         # ── CONCEITOS ─────────────────────────────────────────────
         with tabs_g[0]:
-            st.markdown('<div style="color:#6B5138;font-size:0.75rem;margin-bottom:12px;">Conceitos utilizados para representar assuntos relevantes para o negócio que possuem uma definição oficial.</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#5C5C5C;font-size:0.75rem;margin-bottom:12px;">Conceitos utilizados para representar assuntos relevantes para o negócio que possuem uma definição oficial.</div>', unsafe_allow_html=True)
             col_lista, col_det = st.columns([1,2])
             with col_lista:
                 busca_g = st.text_input("Buscar conceito", placeholder="🔍 Nome, definição ou domínio...", key="g_busca", label_visibility="collapsed")
@@ -1364,7 +1383,7 @@ elif pagina == "📖 Glossário":
                             else: st.warning("Preencha Nome e Definição.")
                 else:
                     with st.expander("💡 Sugerir novo conceito"):
-                        st.markdown('<div style="color:#6B5138;font-size:0.75rem;margin-bottom:8px;">Sua sugestão será analisada pela equipe de Governança antes de ser publicada.</div>', unsafe_allow_html=True)
+                        st.markdown('<div style="color:#5C5C5C;font-size:0.75rem;margin-bottom:8px;">Sua sugestão será analisada pela equipe de Governança antes de ser publicada.</div>', unsafe_allow_html=True)
                         sn_nome  = st.text_input("Nome sugerido *", key="sn_nome")
                         sn_def   = st.text_area("Definição *", key="sn_def", height=70)
                         sn_just  = st.text_area("Por que este conceito é importante?", key="sn_just", height=50)
@@ -1383,63 +1402,63 @@ elif pagina == "📖 Glossário":
                     row_d = df_g[df_g["glossary_id"]==gid]
                     if not row_d.empty:
                         row    = row_d.iloc[0]
-                        cor_st = {"homologado":"#2E7D46","em_revisao":"#2F6FB0","rascunho":"#6B5138"}.get(row["status"],"#6B5138")
-                        cor_cr = {"Crítico":"#B3261E","Alto":"#B3261E","Médio":"#8A6A12","Baixo":"#2E7D46"}.get(str(row.get("criticidade","")),"#6B5138")
+                        cor_st = {"homologado":"#1E7F4F","em_revisao":"#1A1A1A","rascunho":"#5C5C5C"}.get(row["status"],"#5C5C5C")
+                        cor_cr = {"Crítico":"#C62828","Alto":"#C62828","Médio":"#000000","Baixo":"#1E7F4F"}.get(str(row.get("criticidade","")),"#5C5C5C")
                         links_t = df_links[df_links["glossary_id"]==gid] if not df_links.empty else pd.DataFrame()
                         rules_t = df_rules[df_rules["glossary_id"]==gid] if not df_rules.empty else pd.DataFrame()
                         n_tab = links_t["table_name"].nunique() if not links_t.empty else 0
                         n_reg = len(rules_t)
 
                         st.markdown(f"""
-                        <div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:12px;padding:20px;">
+                        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;padding:20px;">
                             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
-                                <div style="color:#3E2E1F;font-size:1.2rem;font-weight:800;">{row['termo']}</div>
+                                <div style="color:#000000;font-size:1.2rem;font-weight:800;">{row['termo']}</div>
                                 <span style="background:{cor_st}22;color:{cor_st};border-radius:20px;padding:3px 12px;font-size:0.72rem;font-weight:600;border:1px solid {cor_st}44;">
                                     {'✅ Homologado' if row['status']=='homologado' else '🔵 Em Revisão' if row['status']=='em_revisao' else '📄 Rascunho'}</span>
                             </div>
-                            <div style="color:#3E2E1F;font-size:0.85rem;line-height:1.6;margin-bottom:12px;">{row['definicao']}</div>
-                            {f'<div style="color:#6B5138;font-size:0.75rem;margin-bottom:10px;">Também conhecido como: <span style="color:#8A6A12;">{row["sinonimos"]}</span></div>' if row.get("sinonimos") else ''}
+                            <div style="color:#000000;font-size:0.85rem;line-height:1.6;margin-bottom:12px;">{row['definicao']}</div>
+                            {f'<div style="color:#5C5C5C;font-size:0.75rem;margin-bottom:10px;">Também conhecido como: <span style="color:#000000;">{row["sinonimos"]}</span></div>' if row.get("sinonimos") else ''}
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-                                <div style="background:#F1E7D6;border-radius:8px;padding:9px;">
-                                    <div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;letter-spacing:1px;">DOMÍNIO</div>
-                                    <div style="color:#3E2E1F;font-weight:600;font-size:0.82rem;">{row['dominio']}</div>
+                                <div style="background:#F5F5F5;border-radius:8px;padding:9px;">
+                                    <div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:1px;">DOMÍNIO</div>
+                                    <div style="color:#000000;font-weight:600;font-size:0.82rem;">{row['dominio']}</div>
                                 </div>
-                                <div style="background:#F1E7D6;border-radius:8px;padding:9px;">
-                                    <div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;letter-spacing:1px;">CRITICIDADE</div>
+                                <div style="background:#F5F5F5;border-radius:8px;padding:9px;">
+                                    <div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:1px;">CRITICIDADE</div>
                                     <div style="color:{cor_cr};font-weight:600;font-size:0.82rem;">{row.get('criticidade','—')}</div>
                                 </div>
-                                <div style="background:#F1E7D6;border-radius:8px;padding:9px;">
-                                    <div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;letter-spacing:1px;">RESPONSÁVEL (OWNER)</div>
-                                    <div style="color:#3E2E1F;font-size:0.78rem;">{row.get('owner','—')}</div>
+                                <div style="background:#F5F5F5;border-radius:8px;padding:9px;">
+                                    <div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:1px;">RESPONSÁVEL (OWNER)</div>
+                                    <div style="color:#000000;font-size:0.78rem;">{row.get('owner','—')}</div>
                                 </div>
-                                <div style="background:#F1E7D6;border-radius:8px;padding:9px;">
-                                    <div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;letter-spacing:1px;">CRIADO POR</div>
-                                    <div style="color:#3E2E1F;font-size:0.78rem;">{row.get('criado_por','—')}</div>
+                                <div style="background:#F5F5F5;border-radius:8px;padding:9px;">
+                                    <div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:1px;">CRIADO POR</div>
+                                    <div style="color:#000000;font-size:0.78rem;">{row.get('criado_por','—')}</div>
                                 </div>
                             </div>
-                            <div style="background:#F1E7D6;border:1px solid #E3D5BC;border-radius:8px;padding:10px 14px;">
-                                <div style="font-size:0.6rem;color:#6B5138;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">ONDE ESTE CONCEITO APARECE</div>
+                            <div style="background:#F5F5F5;border:1px solid #E5E5E5;border-radius:8px;padding:10px 14px;">
+                                <div style="font-size:0.6rem;color:#5C5C5C;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">ONDE ESTE CONCEITO APARECE</div>
                                 <div style="display:flex;gap:20px;">
-                                    <div title="Tabelas e ativos que utilizam este conceito"><span style="color:#2F6FB0;font-size:1.3rem;font-weight:800;">{n_tab}</span><span style="color:#6B5138;font-size:0.7rem;margin-left:4px;">ativos</span></div>
-                                    <div title="Regras de negócio vinculadas a este conceito"><span style="color:#7A4FB3;font-size:1.3rem;font-weight:800;">{n_reg}</span><span style="color:#6B5138;font-size:0.7rem;margin-left:4px;">regras</span></div>
-                                    <div title="Domínio de negócio responsável"><span style="color:#8A6A12;font-size:1.3rem;font-weight:800;">1</span><span style="color:#6B5138;font-size:0.7rem;margin-left:4px;">domínio</span></div>
+                                    <div title="Tabelas e ativos que utilizam este conceito"><span style="color:#1A1A1A;font-size:1.3rem;font-weight:800;">{n_tab}</span><span style="color:#5C5C5C;font-size:0.7rem;margin-left:4px;">ativos</span></div>
+                                    <div title="Regras de negócio vinculadas a este conceito"><span style="color:#3D3D3D;font-size:1.3rem;font-weight:800;">{n_reg}</span><span style="color:#5C5C5C;font-size:0.7rem;margin-left:4px;">regras</span></div>
+                                    <div title="Domínio de negócio responsável"><span style="color:#000000;font-size:1.3rem;font-weight:800;">1</span><span style="color:#5C5C5C;font-size:0.7rem;margin-left:4px;">domínio</span></div>
                                 </div>
                             </div>
                         </div>""", unsafe_allow_html=True)
 
                         if not rules_t.empty:
-                            st.markdown('<div style="color:#3E2E1F;font-weight:700;font-size:0.82rem;margin:12px 0 6px;">📏 Regras vinculadas</div>', unsafe_allow_html=True)
+                            st.markdown('<div style="color:#000000;font-weight:700;font-size:0.82rem;margin:12px 0 6px;">📏 Regras vinculadas</div>', unsafe_allow_html=True)
                             for _,r in rules_t.iterrows():
                                 st.markdown(f"""
-                                <div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:6px;padding:8px 12px;margin-bottom:5px;">
+                                <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:6px;padding:8px 12px;margin-bottom:5px;">
                                     <div style="display:flex;justify-content:space-between;">
-                                        <span style="color:#3E2E1F;font-size:0.8rem;font-weight:600;">{r['nome_regra']}</span>
-                                        <span style="background:#BC8CFF22;color:#7A4FB3;border-radius:4px;padding:1px 6px;font-size:0.65rem;">{r['categoria']}</span>
+                                        <span style="color:#000000;font-size:0.8rem;font-weight:600;">{r['nome_regra']}</span>
+                                        <span style="background:#BC8CFF22;color:#3D3D3D;border-radius:4px;padding:1px 6px;font-size:0.65rem;">{r['categoria']}</span>
                                     </div>
-                                    <div style="color:#6B5138;font-size:0.73rem;margin-top:2px;">{r['descricao_regra']}</div>
+                                    <div style="color:#5C5C5C;font-size:0.73rem;margin-top:2px;">{r['descricao_regra']}</div>
                                 </div>""", unsafe_allow_html=True)
                         else:
-                            st.markdown('<div style="color:#6B5138;font-size:0.75rem;padding:8px 0;">Nenhuma regra vinculada a este conceito ainda.</div>', unsafe_allow_html=True)
+                            st.markdown('<div style="color:#5C5C5C;font-size:0.75rem;padding:8px 0;">Nenhuma regra vinculada a este conceito ainda.</div>', unsafe_allow_html=True)
 
                         if is_curador and row["status"]=="rascunho":
                             if st.button("📤 Submeter para Revisão",key=f"gsub_{gid}",use_container_width=True):
@@ -1461,18 +1480,18 @@ elif pagina == "📖 Glossário":
 
         # ── REGRAS DE NEGÓCIO ─────────────────────────────────────
         with tabs_g[1]:
-            st.markdown('<div style="color:#6B5138;font-size:0.75rem;margin-bottom:12px;">Uma regra de negócio define critérios utilizados para calcular, classificar, validar ou determinar uma informação.</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#5C5C5C;font-size:0.75rem;margin-bottom:12px;">Uma regra de negócio define critérios utilizados para calcular, classificar, validar ou determinar uma informação.</div>', unsafe_allow_html=True)
             df_rg,_ = qry("SELECT g.termo, r.nome_regra, r.descricao_regra, r.categoria FROM meridian_governanca.business_rules r JOIN meridian_governanca.business_glossary g ON r.glossary_id=g.glossary_id ORDER BY g.termo, r.categoria")
             if not df_rg.empty:
                 for _,r in df_rg.iterrows():
                     st.markdown(f"""
-                    <div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:8px;padding:10px 14px;margin-bottom:6px;">
+                    <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:8px;padding:10px 14px;margin-bottom:6px;">
                         <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
-                            <span style="color:#8A6A12;font-size:0.75rem;font-weight:700;">{r['termo']}</span>
-                            <span style="background:#BC8CFF22;color:#7A4FB3;border-radius:4px;padding:1px 7px;font-size:0.65rem;">{r['categoria']}</span>
+                            <span style="color:#000000;font-size:0.75rem;font-weight:700;">{r['termo']}</span>
+                            <span style="background:#BC8CFF22;color:#3D3D3D;border-radius:4px;padding:1px 7px;font-size:0.65rem;">{r['categoria']}</span>
                         </div>
-                        <div style="color:#3E2E1F;font-size:0.82rem;font-weight:600;">{r['nome_regra']}</div>
-                        <div style="color:#6B5138;font-size:0.73rem;margin-top:2px;">{r['descricao_regra']}</div>
+                        <div style="color:#000000;font-size:0.82rem;font-weight:600;">{r['nome_regra']}</div>
+                        <div style="color:#5C5C5C;font-size:0.73rem;margin-top:2px;">{r['descricao_regra']}</div>
                     </div>""", unsafe_allow_html=True)
             else:
                 estado_vazio("📏","Nenhuma regra cadastrada","As regras de negócio serão exibidas aqui quando forem cadastradas.")
@@ -1481,7 +1500,7 @@ elif pagina == "📖 Glossário":
             st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
             if not is_curador:
                 with st.expander("💡 Sugerir nova regra de negócio"):
-                    st.markdown('<div style="color:#6B5138;font-size:0.75rem;margin-bottom:8px;">Sua sugestão será analisada pela equipe de Governança antes de ser publicada.</div>', unsafe_allow_html=True)
+                    st.markdown('<div style="color:#5C5C5C;font-size:0.75rem;margin-bottom:8px;">Sua sugestão será analisada pela equipe de Governança antes de ser publicada.</div>', unsafe_allow_html=True)
                     sr_nome = st.text_input("Nome da regra *", key="sr_nome")
                     sr_desc = st.text_area("Descrição *", key="sr_desc", height=70)
                     sr_regra = st.text_area("Como deve ser aplicada", key="sr_regra", height=50)
@@ -1497,7 +1516,7 @@ elif pagina == "📖 Glossário":
 
         # ── RELACIONAMENTOS ───────────────────────────────────────
         with tabs_g[2]:
-            st.markdown('<div style="color:#6B5138;font-size:0.75rem;margin-bottom:12px;">Mostra como conceitos de negócio estão conectados a ativos de dados técnicos da organização.</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#5C5C5C;font-size:0.75rem;margin-bottom:12px;">Mostra como conceitos de negócio estão conectados a ativos de dados técnicos da organização.</div>', unsafe_allow_html=True)
             if not df_links.empty and not df_g.empty:
                 termos_dict  = dict(zip(df_g["glossary_id"],df_g["termo"]))
                 termos_uniq  = df_links["glossary_id"].unique().tolist()
@@ -1509,17 +1528,17 @@ elif pagina == "📖 Glossário":
                 for g,(x,y) in t_pos.items():
                     nx.append(x); ny.append(y); nt.append(termos_dict.get(g,g[:8])); nc.append("#C9A227"); ns.append(20)
                 for t,(x,y) in a_pos.items():
-                    nx.append(x); ny.append(y); nt.append(t); nc.append("#2F6FB0"); ns.append(16)
+                    nx.append(x); ny.append(y); nt.append(t); nc.append("#1A1A1A"); ns.append(16)
                 for _,l in df_links.iterrows():
                     if l["glossary_id"] in t_pos and l["table_name"] in a_pos:
                         x0,y0=t_pos[l["glossary_id"]]; x1,y1=a_pos[l["table_name"]]
                         ex+=[x0,x1,None]; ey+=[y0,y1,None]
                 fig_g = go.Figure()
-                fig_g.add_trace(go.Scatter(x=ex,y=ey,mode="lines",line=dict(color="#3E2E1F",width=1.5),hoverinfo="none"))
-                fig_g.add_trace(go.Scatter(x=nx,y=ny,mode="markers+text",marker=dict(color=nc,size=ns,line=dict(color="#FBF7F0",width=2)),text=nt,textposition="middle right",textfont=dict(color="#3E2E1F",size=11),hoverinfo="text"))
-                fig_g.update_layout(paper_bgcolor="#FBF7F0",plot_bgcolor="#FBF7F0",showlegend=False,height=420,margin=dict(t=10,b=10,l=10,r=10),xaxis=dict(showgrid=False,zeroline=False,showticklabels=False),yaxis=dict(showgrid=False,zeroline=False,showticklabels=False))
+                fig_g.add_trace(go.Scatter(x=ex,y=ey,mode="lines",line=dict(color="#000000",width=1.5),hoverinfo="none"))
+                fig_g.add_trace(go.Scatter(x=nx,y=ny,mode="markers+text",marker=dict(color=nc,size=ns,line=dict(color="#FFFFFF",width=2)),text=nt,textposition="middle right",textfont=dict(color="#000000",size=11),hoverinfo="text"))
+                fig_g.update_layout(paper_bgcolor="#FFFFFF",plot_bgcolor="#FFFFFF",showlegend=False,height=420,margin=dict(t=10,b=10,l=10,r=10),xaxis=dict(showgrid=False,zeroline=False,showticklabels=False),yaxis=dict(showgrid=False,zeroline=False,showticklabels=False))
                 st.plotly_chart(fig_g,use_container_width=True)
-                st.markdown('<div style="display:flex;gap:16px;margin-top:4px;"><div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:50%;background:#C9A227;"></div><span style="color:#6B5138;font-size:0.72rem;">Conceitos de Negócio</span></div><div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:50%;background:#58A6FF;"></div><span style="color:#6B5138;font-size:0.72rem;">Ativos Técnicos</span></div></div>', unsafe_allow_html=True)
+                st.markdown('<div style="display:flex;gap:16px;margin-top:4px;"><div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:50%;background:#C9A227;"></div><span style="color:#5C5C5C;font-size:0.72rem;">Conceitos de Negócio</span></div><div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:50%;background:#8A8A8A;"></div><span style="color:#5C5C5C;font-size:0.72rem;">Ativos Técnicos</span></div></div>', unsafe_allow_html=True)
             else:
                 estado_vazio("🔗","Nenhum relacionamento cadastrado","Os vínculos entre conceitos e ativos técnicos serão exibidos aqui.")
 
@@ -1529,7 +1548,7 @@ elif pagina == "📖 Glossário":
             if not df_wf.empty:
                 for _,r in df_wf.iterrows():
                     ts = str(r["criado_em"])[:16] if r["criado_em"] else "—"
-                    st.markdown(f'<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:6px;padding:8px 12px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#8A6A12;font-size:0.78rem;font-weight:700;">{r["termo"]}</span><span style="color:#6B5138;font-size:0.72rem;margin-left:8px;">{r["acao"]}</span></div><span style="color:#6B5138;font-size:0.7rem;">{ts}</span></div>', unsafe_allow_html=True)
+                    st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:6px;padding:8px 12px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#000000;font-size:0.78rem;font-weight:700;">{r["termo"]}</span><span style="color:#5C5C5C;font-size:0.72rem;margin-left:8px;">{r["acao"]}</span></div><span style="color:#5C5C5C;font-size:0.7rem;">{ts}</span></div>', unsafe_allow_html=True)
             else:
                 estado_vazio("🕐","Nenhum histórico ainda","As aprovações e alterações de conceitos aparecerão aqui.")
 
@@ -1537,12 +1556,12 @@ elif pagina == "📖 Glossário":
         if is_curador and len(tabs_g)>4:
             with tabs_g[4]:
                 wf_cols = st.columns(3)
-                for col,(tit,st_wf,cor_wf) in zip(wf_cols,[("📄 Rascunho","rascunho","#6B5138"),("🔵 Em Revisão","em_revisao","#2F6FB0"),("✅ Homologado","homologado","#2E7D46")]):
+                for col,(tit,st_wf,cor_wf) in zip(wf_cols,[("📄 Rascunho","rascunho","#5C5C5C"),("🔵 Em Revisão","em_revisao","#1A1A1A"),("✅ Homologado","homologado","#1E7F4F")]):
                     df_wfc = df_g[df_g["status"]==st_wf]
                     with col:
-                        st.markdown(f'<div style="background:#FBF7F0;border:1px solid {cor_wf}44;border-radius:10px;padding:12px;"><div style="color:{cor_wf};font-weight:700;font-size:0.82rem;margin-bottom:8px;">{tit} ({len(df_wfc)})</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div style="background:#FFFFFF;border:1px solid {cor_wf}44;border-radius:10px;padding:12px;"><div style="color:{cor_wf};font-weight:700;font-size:0.82rem;margin-bottom:8px;">{tit} ({len(df_wfc)})</div>', unsafe_allow_html=True)
                         for _,r in df_wfc.iterrows():
-                            st.markdown(f'<div style="background:#F1E7D6;border:1px solid #E3D5BC;border-radius:6px;padding:7px 9px;margin-bottom:5px;"><div style="color:#3E2E1F;font-size:0.78rem;font-weight:600;">{r["termo"]}</div><div style="color:#6B5138;font-size:0.68rem;">{r["dominio"]}</div></div>', unsafe_allow_html=True)
+                            st.markdown(f'<div style="background:#F5F5F5;border:1px solid #E5E5E5;border-radius:6px;padding:7px 9px;margin-bottom:5px;"><div style="color:#000000;font-size:0.78rem;font-weight:600;">{r["termo"]}</div><div style="color:#5C5C5C;font-size:0.68rem;">{r["dominio"]}</div></div>', unsafe_allow_html=True)
                         st.markdown("</div>", unsafe_allow_html=True)
     else:
         if _glos_db_fail:
@@ -1561,9 +1580,9 @@ elif pagina == "📋 Catálogo":
     page_header("📋","Catálogo de Dados","Descubra, compreenda e confie nos dados antes de utilizá-los.")
 
     st.markdown("""
-    <div style="background:#FBF7F099;border:1px solid #E3D5BC;border-radius:8px;
+    <div style="background:#FFFFFF99;border:1px solid #E5E5E5;border-radius:8px;
                 padding:10px 14px;margin-bottom:16px;">
-        <div style="color:#6B5138;font-size:0.78rem;line-height:1.6;">
+        <div style="color:#5C5C5C;font-size:0.78rem;line-height:1.6;">
             O Catálogo reúne os ativos de dados disponíveis na organização. Cada ativo possui informações
             sobre seu conteúdo, responsáveis, qualidade e relacionamento com conceitos de negócio.
             Use a busca ou os filtros para encontrar o dado que você precisa.
@@ -1576,8 +1595,8 @@ elif pagina == "📋 Catálogo":
         schemas = df_cat["schema_name"].value_counts()
         k1,k2,k3 = st.columns(3)
         with k1: st.markdown(kpi(len(df_cat),"Ativos Catalogados","#C9A227",tooltip="Total de tabelas e ativos de dados disponíveis no catálogo."), unsafe_allow_html=True)
-        with k2: st.markdown(kpi(f"{schemas.get('ouro',0)} · {schemas.get('prata',0)} · {schemas.get('bronze',0)}","Ouro · Prata · Bronze","#2F6FB0",tooltip="Distribuição dos ativos por camada de maturidade dos dados."), unsafe_allow_html=True)
-        with k3: st.markdown(kpi(df_cat["dominio"].nunique(),"Domínios Representados","#7A4FB3",tooltip="Quantidade de domínios de negócio com ativos catalogados."), unsafe_allow_html=True)
+        with k2: st.markdown(kpi(f"{schemas.get('ouro',0)} · {schemas.get('prata',0)} · {schemas.get('bronze',0)}","Ouro · Prata · Bronze","#1A1A1A",tooltip="Distribuição dos ativos por camada de maturidade dos dados."), unsafe_allow_html=True)
+        with k3: st.markdown(kpi(df_cat["dominio"].nunique(),"Domínios Representados","#3D3D3D",tooltip="Quantidade de domínios de negócio com ativos catalogados."), unsafe_allow_html=True)
 
         st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
         busca_c = st.text_input("Buscar no catálogo", placeholder="🔍 Pesquise por conceito, responsável, domínio ou ativo...", key="cat_busca", label_visibility="collapsed")
@@ -1603,7 +1622,7 @@ elif pagina == "📋 Catálogo":
         if df_f.empty:
             estado_vazio("🔍","Nenhum ativo encontrado","Tente outros termos ou ajuste os filtros acima.")
         else:
-            st.markdown(f'<div style="color:#6B5138;font-size:0.75rem;margin:8px 0;">{len(df_f)} ativo(s) encontrado(s)</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="color:#5C5C5C;font-size:0.75rem;margin:8px 0;">{len(df_f)} ativo(s) encontrado(s)</div>', unsafe_allow_html=True)
 
             if "cat_sel" not in st.session_state:
                 st.session_state["cat_sel"] = None
@@ -1612,7 +1631,7 @@ elif pagina == "📋 Catálogo":
             for row_df in rows_c:
                 cols_c = st.columns(3)
                 for i,(_,item) in enumerate(row_df.iterrows()):
-                    cor_c="#2E7D46" if item["score_completude"]==100 else "#C9A227" if item["score_completude"]>=60 else "#B3261E"
+                    cor_c="#1E7F4F" if item["score_completude"]==100 else "#C9A227" if item["score_completude"]>=60 else "#C62828"
                     desc   = item["descricao"][:80]+"..." if item["descricao"] and len(item["descricao"])>80 else item["descricao"] or "Sem descrição cadastrada."
                     chave  = f"{item['schema_name']}.{item['table_name']}"
                     is_sel = st.session_state["cat_sel"] == chave
@@ -1644,54 +1663,54 @@ elif pagina == "📋 Catálogo":
                 row_c = df_cat[(df_cat["schema_name"]==sc)&(df_cat["table_name"]==tb)]
                 if not row_c.empty:
                     item  = row_c.iloc[0]
-                    cor_c2= "#2E7D46" if item["score_completude"]==100 else "#C9A227" if item["score_completude"]>=60 else "#B3261E"
+                    cor_c2= "#1E7F4F" if item["score_completude"]==100 else "#C9A227" if item["score_completude"]>=60 else "#C62828"
                     df_links_ativo = load_links()
                     termos_ativo = df_links_ativo[df_links_ativo["table_name"]==tb] if not df_links_ativo.empty else pd.DataFrame()
                     df_g_full = load_glossario()
 
                     st.markdown(f"""
-                    <div style="background:#FBF7F0;border:1px solid {cor_c2}44;border-radius:12px;padding:18px;margin-top:8px;">
+                    <div style="background:#FFFFFF;border:1px solid {cor_c2}44;border-radius:12px;padding:18px;margin-top:8px;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-                            <div style="color:#3E2E1F;font-size:1.05rem;font-weight:800;">{item['table_name']}</div>
+                            <div style="color:#000000;font-size:1.05rem;font-weight:800;">{item['table_name']}</div>
                             <div style="text-align:right;">
                                 <div style="color:{cor_c2};font-size:1.5rem;font-weight:800;" title="Score de documentação: percentual de metadados obrigatórios preenchidos">{item['score_completude']}%</div>
-                                <div style="color:#6B5138;font-size:0.62rem;">documentação</div>
+                                <div style="color:#5C5C5C;font-size:0.62rem;">documentação</div>
                             </div>
                         </div>
                         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
-                            <div style="background:#F1E7D6;border-radius:8px;padding:8px;">
-                                <div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;margin-bottom:2px;">O QUE É</div>
-                                <div style="color:#3E2E1F;font-size:0.78rem;">{item['descricao'] or '—'}</div>
+                            <div style="background:#F5F5F5;border-radius:8px;padding:8px;">
+                                <div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;margin-bottom:2px;">O QUE É</div>
+                                <div style="color:#000000;font-size:0.78rem;">{item['descricao'] or '—'}</div>
                             </div>
-                            <div style="background:#F1E7D6;border-radius:8px;padding:8px;">
-                                <div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;margin-bottom:2px;">DOMÍNIO</div>
-                                <div style="color:#3E2E1F;font-size:0.78rem;">{item['dominio'] or '—'}</div>
+                            <div style="background:#F5F5F5;border-radius:8px;padding:8px;">
+                                <div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;margin-bottom:2px;">DOMÍNIO</div>
+                                <div style="color:#000000;font-size:0.78rem;">{item['dominio'] or '—'}</div>
                             </div>
-                            <div style="background:#F1E7D6;border-radius:8px;padding:8px;">
-                                <div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;margin-bottom:2px;">RESPONSÁVEL (OWNER)</div>
-                                <div style="color:#3E2E1F;font-size:0.78rem;">{item['data_owner'] or '—'}</div>
+                            <div style="background:#F5F5F5;border-radius:8px;padding:8px;">
+                                <div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;margin-bottom:2px;">RESPONSÁVEL (OWNER)</div>
+                                <div style="color:#000000;font-size:0.78rem;">{item['data_owner'] or '—'}</div>
                             </div>
-                            <div style="background:#F1E7D6;border-radius:8px;padding:8px;">
-                                <div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;margin-bottom:2px;">GESTOR DO DADO (STEWARD)</div>
-                                <div style="color:#3E2E1F;font-size:0.78rem;">{item['data_steward'] or '—'}</div>
+                            <div style="background:#F5F5F5;border-radius:8px;padding:8px;">
+                                <div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;margin-bottom:2px;">GESTOR DO DADO (STEWARD)</div>
+                                <div style="color:#000000;font-size:0.78rem;">{item['data_steward'] or '—'}</div>
                             </div>
-                            <div style="background:#F1E7D6;border-radius:8px;padding:8px;">
-                                <div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;margin-bottom:2px;">CLASSIFICAÇÃO</div>
-                                <div style="color:#3E2E1F;font-size:0.78rem;">{item.get('classificacao') or '—'}</div>
+                            <div style="background:#F5F5F5;border-radius:8px;padding:8px;">
+                                <div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;margin-bottom:2px;">CLASSIFICAÇÃO</div>
+                                <div style="color:#000000;font-size:0.78rem;">{item.get('classificacao') or '—'}</div>
                             </div>
-                            <div style="background:#F1E7D6;border-radius:8px;padding:8px;">
-                                <div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;margin-bottom:2px;">STATUS</div>
-                                <div style="color:#3E2E1F;font-size:0.78rem;">{item.get('status') or '—'}</div>
+                            <div style="background:#F5F5F5;border-radius:8px;padding:8px;">
+                                <div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;margin-bottom:2px;">STATUS</div>
+                                <div style="color:#000000;font-size:0.78rem;">{item.get('status') or '—'}</div>
                             </div>
                         </div>""", unsafe_allow_html=True)
 
                     if not termos_ativo.empty and not df_g_full.empty:
-                        st.markdown('<div style="background:#F1E7D6;border-radius:8px;padding:10px 14px;margin-bottom:2px;"><div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;margin-bottom:6px;">CONCEITOS DE NEGÓCIO VINCULADOS</div>', unsafe_allow_html=True)
+                        st.markdown('<div style="background:#F5F5F5;border-radius:8px;padding:10px 14px;margin-bottom:2px;"><div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;margin-bottom:6px;">CONCEITOS DE NEGÓCIO VINCULADOS</div>', unsafe_allow_html=True)
                         for _,lk in termos_ativo.iterrows():
                             t_row = df_g_full[df_g_full["glossary_id"]==lk["glossary_id"]]
                             if not t_row.empty:
                                 t = t_row.iloc[0]
-                                st.markdown(f'<span style="background:#C9A22722;color:#8A6A12;border-radius:4px;padding:2px 9px;font-size:0.72rem;margin-right:4px;">{t["termo"]}</span>', unsafe_allow_html=True)
+                                st.markdown(f'<span style="background:#C9A22722;color:#000000;border-radius:4px;padding:2px 9px;font-size:0.72rem;margin-right:4px;">{t["termo"]}</span>', unsafe_allow_html=True)
                         st.markdown('</div>', unsafe_allow_html=True)
 
                     st.markdown('</div>', unsafe_allow_html=True)
@@ -1753,11 +1772,11 @@ elif pagina == "🏛️ Domínios":
         with k1:
             st.markdown(kpi(len(dominios), "Domínios", "#C9A227", tooltip="Domínios presentes nos ativos catalogados."), unsafe_allow_html=True)
         with k2:
-            st.markdown(kpi(total_owners, "Owners distintos", "#2F6FB0", tooltip="Quantidade de responsáveis distintos associados aos ativos."), unsafe_allow_html=True)
+            st.markdown(kpi(total_owners, "Owners distintos", "#1A1A1A", tooltip="Quantidade de responsáveis distintos associados aos ativos."), unsafe_allow_html=True)
         with k3:
-            st.markdown(kpi(total_stewards, "Stewards distintos", "#7A4FB3", tooltip="Quantidade de gestores operacionais distintos associados aos ativos."), unsafe_allow_html=True)
+            st.markdown(kpi(total_stewards, "Stewards distintos", "#3D3D3D", tooltip="Quantidade de gestores operacionais distintos associados aos ativos."), unsafe_allow_html=True)
         with k4:
-            st.markdown(kpi(f"{pct_homologados}%", "Conceitos homologados", "#2E7D46", tooltip="Percentual de conceitos distintos homologados."), unsafe_allow_html=True)
+            st.markdown(kpi(f"{pct_homologados}%", "Conceitos homologados", "#1E7F4F", tooltip="Percentual de conceitos distintos homologados."), unsafe_allow_html=True)
 
         st.caption("Selecione um domínio para consultar seus responsáveis, ativos e conceitos. A documentação média mede preenchimento de metadados, não qualidade efetiva dos dados.")
 
@@ -1851,9 +1870,9 @@ elif pagina == "🛡️ Scorecard":
                 "Visão consolidada de documentação, responsabilidade, relacionamentos, completude de metadados e certificação.")
 
     st.markdown("""
-    <div style="background:#FBF7F099;border:1px solid #E3D5BC;border-radius:8px;
+    <div style="background:#FFFFFF99;border:1px solid #E5E5E5;border-radius:8px;
                 padding:10px 14px;margin-bottom:16px;">
-        <div style="color:#6B5138;font-size:0.78rem;line-height:1.6;">
+        <div style="color:#5C5C5C;font-size:0.78rem;line-height:1.6;">
             O Scorecard resume cinco medidas operacionais com pesos iguais.
             O resultado é um índice indicativo de governança, não uma certificação nem uma avaliação formal de maturidade.
             Selecione um pilar para entender sua definição e como melhorar o resultado.
@@ -1884,43 +1903,43 @@ elif pagina == "🛡️ Scorecard":
         else:
             cert = 0
         ger  = (doc+own+rel+qual+cert)/5
-        cor_g="#2E7D46" if ger>=80 else "#C9A227" if ger>=60 else "#B3261E"
+        cor_g="#1E7F4F" if ger>=80 else "#C9A227" if ger>=60 else "#C62828"
 
         st.markdown(f"""
-        <div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:16px;
+        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:16px;
                     padding:20px;text-align:center;margin-bottom:20px;">
-            <div style="font-size:0.7rem;color:#6B5138;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">
+            <div style="font-size:0.7rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">
                 Índice Indicativo de Governança</div>
             <div style="font-size:3.5rem;font-weight:800;color:{cor_g};line-height:1;">{ger:.0f}%</div>
-            <div style="color:#6B5138;font-size:0.75rem;margin-top:4px;">
+            <div style="color:#5C5C5C;font-size:0.75rem;margin-top:4px;">
                 Média simples dos cinco pilares, com peso igual. Não representa qualidade efetiva dos dados nem maturidade formal.</div>
-            <div style="color:#6B5138;font-size:0.7rem;margin-top:6px;">
+            <div style="color:#5C5C5C;font-size:0.7rem;margin-top:6px;">
                 Documentação · Responsabilidade · Relacionamentos · Completude de Metadados · Certificação</div>
         </div>""", unsafe_allow_html=True)
 
         PILARES_INFO = {
             "Documentação":  {
-                "icone":"📝","cor":"#2F6FB0","val":doc,
+                "icone":"📝","cor":"#1A1A1A","val":doc,
                 "conceito":"Mede se os ativos possuem descrição de negócio preenchida. Uma boa documentação permite que qualquer usuário entenda o propósito do dado sem precisar consultar o time técnico.",
                 "como_melhorar":"Acesse Curadoria → Tabela Individual e preencha a descrição de cada ativo. O botão 'Sugerir com IA' acelera esse processo."
             },
             "Responsabilidade": {
-                "icone":"👤","cor":"#8A6A12","val":own,
+                "icone":"👤","cor":"#000000","val":own,
                 "conceito":"Avalia se cada ativo possui um Responsável pelo Dado (Data Owner) formalmente definido. O Owner responde pelas decisões sobre qualidade e uso correto do dado.",
                 "como_melhorar":"Acesse Curadoria → Tabela Individual ou Edição em Lote e atribua um Responsável para os ativos sem dono definido."
             },
             "Relacionamentos":{
-                "icone":"🔗","cor":"#7A4FB3","val":rel,
+                "icone":"🔗","cor":"#3D3D3D","val":rel,
                 "conceito":"Verifica se os ativos técnicos estão conectados a conceitos de negócio do Glossário. Ativos conectados são mais fáceis de descobrir e entender pelas áreas de negócio.",
                 "como_melhorar":"Acesse o Glossário → Relacionamentos e vincule cada conceito às tabelas correspondentes."
             },
             "Completude de Metadados":     {
-                "icone":"⭐","cor":"#2E7D46","val":qual,
+                "icone":"⭐","cor":"#1E7F4F","val":qual,
                 "conceito":"Percentual médio de preenchimento dos metadados obrigatórios. Este indicador mede completude documental; não representa, por si só, a qualidade efetiva dos dados.",
                 "como_melhorar":"Preencha todos os campos obrigatórios na Curadoria. Cada campo preenchido adiciona 20 pontos ao score do ativo."
             },
             "Certificação":  {
-                "icone":"🏆","cor":"#B3261E","val":cert,
+                "icone":"🏆","cor":"#C62828","val":cert,
                 "conceito":"Percentual de ativos com status formal de certificação registrado no campo selo. O preenchimento de metadados, isoladamente, não equivale à certificação.",
                 "como_melhorar":"Siga o fluxo formal de certificação e confirme o atendimento aos critérios definidos antes de conceder o selo."
             },
@@ -1931,17 +1950,17 @@ elif pagina == "🛡️ Scorecard":
 
         cols_p = st.columns(5)
         for col,(nome,info) in zip(cols_p,PILARES_INFO.items()):
-            cor_p="#2E7D46" if info["val"]>=80 else "#C9A227" if info["val"]>=60 else "#B3261E"
+            cor_p="#1E7F4F" if info["val"]>=80 else "#C9A227" if info["val"]>=60 else "#C62828"
             is_sel = st.session_state["sc_pilar"] == nome
             with col:
                 st.markdown(f"""
-                <div style="background:{'#C9A22714' if is_sel else '#FBF7F0'};
-                            border:1px solid {'#C9A227' if is_sel else '#E3D5BC'};
+                <div style="background:{'#C9A22714' if is_sel else '#FFFFFF'};
+                            border:1px solid {'#C9A227' if is_sel else '#E5E5E5'};
                             border-radius:12px;padding:16px;text-align:center;margin-bottom:2px;">
                     <div style="font-size:1.3rem;margin-bottom:5px;">{info['icone']}</div>
                     <div style="font-size:1.8rem;font-weight:800;color:{cor_p};">{info['val']:.0f}%</div>
-                    <div style="color:#6B5138;font-size:0.72rem;margin-bottom:8px;">{nome}</div>
-                    <div style="background:#E3D5BC;border-radius:4px;height:4px;">
+                    <div style="color:#5C5C5C;font-size:0.72rem;margin-bottom:8px;">{nome}</div>
+                    <div style="background:#E5E5E5;border-radius:4px;height:4px;">
                         <div style="background:{cor_p};border-radius:4px;height:4px;width:{min(info['val'],100):.0f}%;"></div>
                     </div>
                 </div>""", unsafe_allow_html=True)
@@ -1961,24 +1980,24 @@ elif pagina == "🛡️ Scorecard":
         st.session_state["sc_pilar"] = pilar_sel
         if pilar_sel and pilar_sel in PILARES_INFO:
             info  = PILARES_INFO[pilar_sel]
-            cor_p2 = "#2E7D46" if info["val"]>=80 else "#C9A227" if info["val"]>=60 else "#B3261E"
+            cor_p2 = "#1E7F4F" if info["val"]>=80 else "#C9A227" if info["val"]>=60 else "#C62828"
             st.markdown(f"""
-            <div style="background:#FBF7F0;border:1px solid {cor_p2}44;border-radius:12px;padding:18px;margin:8px 0 16px;">
+            <div style="background:#FFFFFF;border:1px solid {cor_p2}44;border-radius:12px;padding:18px;margin:8px 0 16px;">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
                     <span style="font-size:1.5rem;">{info['icone']}</span>
                     <div>
-                        <div style="color:#3E2E1F;font-size:1rem;font-weight:800;">{pilar_sel}</div>
+                        <div style="color:#000000;font-size:1rem;font-weight:800;">{pilar_sel}</div>
                         <div style="color:{cor_p2};font-size:1.3rem;font-weight:800;">{info['val']:.0f}%</div>
                     </div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                    <div style="background:#F1E7D6;border-radius:8px;padding:12px;">
-                        <div style="color:#6B5138;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">💡 O QUE SIGNIFICA</div>
-                        <div style="color:#3E2E1F;font-size:0.8rem;line-height:1.5;">{info['conceito']}</div>
+                    <div style="background:#F5F5F5;border-radius:8px;padding:12px;">
+                        <div style="color:#5C5C5C;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">💡 O QUE SIGNIFICA</div>
+                        <div style="color:#000000;font-size:0.8rem;line-height:1.5;">{info['conceito']}</div>
                     </div>
-                    <div style="background:#F1E7D6;border-radius:8px;padding:12px;">
-                        <div style="color:#6B5138;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🚀 COMO MELHORAR</div>
-                        <div style="color:#3E2E1F;font-size:0.8rem;line-height:1.5;">{info['como_melhorar']}</div>
+                    <div style="background:#F5F5F5;border-radius:8px;padding:12px;">
+                        <div style="color:#5C5C5C;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🚀 COMO MELHORAR</div>
+                        <div style="color:#000000;font-size:0.8rem;line-height:1.5;">{info['como_melhorar']}</div>
                     </div>
                 </div>
             </div>""", unsafe_allow_html=True)
@@ -1993,19 +2012,19 @@ elif pagina == "🛡️ Scorecard":
                 df_pilar = df_sc_f.sort_values("score_completude",ascending=False)
                 label_col = "score_completude"
 
-            st.markdown(f'<div style="color:#3E2E1F;font-weight:700;font-size:0.82rem;margin-bottom:8px;">📋 Ativos — {pilar_sel}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="color:#000000;font-weight:700;font-size:0.82rem;margin-bottom:8px;">📋 Ativos — {pilar_sel}</div>', unsafe_allow_html=True)
             for _,row_p in df_pilar.head(10).iterrows():
                 val_campo = row_p.get(label_col,"")
                 tem = bool(val_campo)
-                cor_t="#2E7D46" if tem else "#B3261E"
+                cor_t="#1E7F4F" if tem else "#C62828"
                 display = str(val_campo)[:30] if tem and label_col != "score_completude" else f"{val_campo}%" if label_col == "score_completude" else "—"
                 st.markdown(f"""
-                <div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:6px;
+                <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:6px;
                             padding:7px 12px;margin-bottom:4px;
                             display:flex;justify-content:space-between;align-items:center;">
                     <div>
-                        <span style="color:#8A6A12;font-size:0.78rem;font-weight:600;">{row_p['table_name']}</span>
-                        <span style="background:#58A6FF22;color:#2F6FB0;border-radius:3px;padding:1px 5px;font-size:0.62rem;margin-left:5px;">{row_p['schema_name']}</span>
+                        <span style="color:#000000;font-size:0.78rem;font-weight:600;">{row_p['table_name']}</span>
+                        <span style="background:#58A6FF22;color:#1A1A1A;border-radius:3px;padding:1px 5px;font-size:0.62rem;margin-left:5px;">{row_p['schema_name']}</span>
                     </div>
                     <span style="color:{cor_t};font-size:0.75rem;font-weight:600;">
                         {'✅ ' if tem else '❌ '}{display}
@@ -2021,18 +2040,18 @@ elif pagina == "🛡️ Scorecard":
             estado_vazio("📊","Nenhum dado disponível","Atribua domínios aos ativos na Curadoria para ver o ranking.")
         else:
             for i,(_,row) in enumerate(dom_sc.iterrows()):
-                cor_o="#2E7D46" if row["score_completude"]>=80 else "#C9A227" if row["score_completude"]>=60 else "#B3261E"
+                cor_o="#1E7F4F" if row["score_completude"]>=80 else "#C9A227" if row["score_completude"]>=60 else "#C62828"
                 medalha = ["🥇","🥈","🥉"][i] if i<3 else f"#{i+1}"
                 st.markdown(f"""
                 <div style="display:flex;justify-content:space-between;align-items:center;
-                            background:#FBF7F0;border:1px solid #E3D5BC;border-radius:8px;
+                            background:#FFFFFF;border:1px solid #E5E5E5;border-radius:8px;
                             padding:10px 14px;margin-bottom:5px;">
                     <div style="display:flex;align-items:center;gap:10px;">
                         <span style="font-size:1.1rem;width:28px;text-align:center;">{medalha}</span>
-                        <span style="color:#3E2E1F;font-size:0.85rem;font-weight:600;">{row['dominio']}</span>
+                        <span style="color:#000000;font-size:0.85rem;font-weight:600;">{row['dominio']}</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:12px;">
-                        <div style="background:#E3D5BC;border-radius:4px;height:6px;width:120px;">
+                        <div style="background:#E5E5E5;border-radius:4px;height:6px;width:120px;">
                             <div style="background:{cor_o};border-radius:4px;height:6px;width:{min(row['score_completude'],100):.0f}%;"></div>
                         </div>
                         <span style="color:{cor_o};font-weight:800;font-size:0.88rem;width:40px;text-align:right;">{row['score_completude']:.0f}%</span>
@@ -2063,10 +2082,10 @@ elif pagina == "⚡ Meu Espaço":
         meus_reg   = df_sug_re[df_sug_re["solicitante"]==usuario] if not df_sug_re.empty else pd.DataFrame()
 
         k1,k2,k3,k4 = st.columns(4)
-        with k1: st.markdown(kpi(len(meus_acess),"Solicitações de Acesso","#2F6FB0",tooltip="Suas solicitações de acesso a ativos de dados."), unsafe_allow_html=True)
-        with k2: st.markdown(kpi(len(meus_qual),"Solicitações de Qualidade","#7A4FB3",tooltip="Seus reportes de problemas de qualidade."), unsafe_allow_html=True)
+        with k1: st.markdown(kpi(len(meus_acess),"Solicitações de Acesso","#1A1A1A",tooltip="Suas solicitações de acesso a ativos de dados."), unsafe_allow_html=True)
+        with k2: st.markdown(kpi(len(meus_qual),"Solicitações de Qualidade","#3D3D3D",tooltip="Seus reportes de problemas de qualidade."), unsafe_allow_html=True)
         with k3: st.markdown(kpi(len(meus_conc),"Sugestões de Conceitos","#C9A227",tooltip="Conceitos que você sugeriu ao glossário."), unsafe_allow_html=True)
-        with k4: st.markdown(kpi(len(meus_reg),"Sugestões de Regras","#2E7D46",tooltip="Regras de negócio que você sugeriu."), unsafe_allow_html=True)
+        with k4: st.markdown(kpi(len(meus_reg),"Sugestões de Regras","#1E7F4F",tooltip="Regras de negócio que você sugeriu."), unsafe_allow_html=True)
 
         # Workflow timeline
         df_tl2=load_timeline()
@@ -2084,8 +2103,8 @@ elif pagina == "⚡ Meu Espaço":
                 sid=sol["id"]
                 tl_sol=df_tl2[df_tl2["solicitacao_id"]==sid] if not df_tl2.empty else pd.DataFrame()
                 etapas=ETAPAS_TIPO.get(sol["tipo"],["abertura","owner","governanca"])
-                cs_sol={"pendente":"#8A6A12","aprovado":"#2E7D46","rejeitado":"#B3261E"}.get(sol["status"],"#9CA3AF")
-                st.markdown(f'<div style="background:#FBF7F0;border:1px solid #C9A22733;border-radius:12px;padding:14px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><div style="color:#E2E8F0;font-weight:700;font-size:0.85rem;">{sol["titulo"]}</div><span style="background:{cs_sol}22;color:{cs_sol};border-radius:20px;padding:2px 10px;font-size:0.7rem;font-weight:600;">● {sol["status"]}</span></div>',unsafe_allow_html=True)
+                cs_sol={"pendente":"#000000","aprovado":"#1E7F4F","rejeitado":"#C62828"}.get(sol["status"],"#8A8A8A")
+                st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;padding:14px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><div style="color:#E5E5E5;font-weight:700;font-size:0.85rem;">{sol["titulo"]}</div><span style="background:{cs_sol}22;color:{cs_sol};border-radius:20px;padding:2px 10px;font-size:0.7rem;font-weight:600;">● {sol["status"]}</span></div>',unsafe_allow_html=True)
                 eh=""
                 for i,etapa in enumerate(etapas):
                     tl_e=tl_sol[tl_sol["etapa"]==etapa].iloc[0] if not tl_sol.empty and etapa in tl_sol["etapa"].values else None
@@ -2093,11 +2112,11 @@ elif pagina == "⚡ Meu Espaço":
                         se=tl_e["status_etapa"]; ie={"concluido":"✅","atrasado":"⏰","pendente":"⏳"}.get(se,"🔵")
                         hg=tl_e.get("horas_gastas"); sl_h=tl_e.get("sla_horas",0)
                         dn=tl_e.get("dentro_sla",True); hg_txt=f"{hg:.0f}h/{sl_h}h" if hg is not None else "—"
-                        cs2="#2E7D46" if dn else "#B3261E"
-                        eh+=f'<div style="text-align:center;flex:1;background:{"#0D2117" if se=="concluido" else "#1F0808" if se=="atrasado" else "#141414"};border:1px solid {"#1F4731" if se=="concluido" else "#4A1010" if se=="atrasado" else "#2A2A2A"};border-radius:8px;padding:8px;"><div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">{ie}</div><div style="font-size:0.6rem;color:{cs2};font-weight:600;">{hg_txt}</div></div>'
+                        cs2="#1E7F4F" if dn else "#C62828"
+                        eh+=f'<div style="text-align:center;flex:1;background:{"#E8F5EE" if se=="concluido" else "#FDECEA" if se=="atrasado" else "#F5F5F5"};border:1px solid {"#E8F5EE" if se=="concluido" else "#FDECEA" if se=="atrasado" else "#E5E5E5"};border-radius:8px;padding:8px;"><div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">{ie}</div><div style="font-size:0.6rem;color:{cs2};font-weight:600;">{hg_txt}</div></div>'
                     else:
-                        eh+=f'<div style="text-align:center;flex:1;background:#F1E7D6;border:1px solid #E3D5BC;border-radius:8px;padding:8px;opacity:0.4;"><div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">⭕</div><div style="font-size:0.6rem;color:#6B5138;">—</div></div>'
-                    if i<len(etapas)-1: eh+=f'<div style="flex:0;color:#7D6650;font-size:1rem;padding:0 4px;align-self:center;">→</div>'
+                        eh+=f'<div style="text-align:center;flex:1;background:#F5F5F5;border:1px solid #E5E5E5;border-radius:8px;padding:8px;opacity:0.4;"><div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">⭕</div><div style="font-size:0.6rem;color:#5C5C5C;">—</div></div>'
+                    if i<len(etapas)-1: eh+=f'<div style="flex:0;color:#6E6E6E;font-size:1rem;padding:0 4px;align-self:center;">→</div>'
                 st.markdown(f'<div style="display:flex;gap:6px;">{eh}</div></div>',unsafe_allow_html=True)
 
         section_divider("MINHAS SOLICITAÇÕES DE ACESSO")
@@ -2105,8 +2124,8 @@ elif pagina == "⚡ Meu Espaço":
             estado_vazio("🔑","Nenhuma solicitação de acesso","Quando você solicitar acesso a um ativo no Catálogo, ela aparecerá aqui.")
         else:
             for _,r in meus_acess.iterrows():
-                cor_s = {"pendente":"#8A6A12","aprovado":"#2E7D46","rejeitado":"#B3261E"}.get(r["status"],"#6B5138")
-                st.markdown(f'<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#8A6A12;font-weight:700;font-size:0.82rem;">{r["ativo_solicitado"]}</span><span style="color:#6B5138;font-size:0.72rem;margin-left:8px;">{r["tipo_acesso"]}</span></div><span style="color:{cor_s};font-size:0.72rem;font-weight:600;">● {r["status"]}</span></div>', unsafe_allow_html=True)
+                cor_s = {"pendente":"#000000","aprovado":"#1E7F4F","rejeitado":"#C62828"}.get(r["status"],"#5C5C5C")
+                st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#000000;font-weight:700;font-size:0.82rem;">{r["ativo_solicitado"]}</span><span style="color:#5C5C5C;font-size:0.72rem;margin-left:8px;">{r["tipo_acesso"]}</span></div><span style="color:{cor_s};font-size:0.72rem;font-weight:600;">● {r["status"]}</span></div>', unsafe_allow_html=True)
 
         section_divider("MINHAS SUGESTÕES")
         tab_conc, tab_reg = st.tabs(["💡 Conceitos sugeridos","📏 Regras sugeridas"])
@@ -2115,15 +2134,15 @@ elif pagina == "⚡ Meu Espaço":
                 estado_vazio("💡","Nenhuma sugestão de conceito","Acesse o Glossário e use '💡 Sugerir novo conceito' para contribuir.")
             else:
                 for _,r in meus_conc.iterrows():
-                    cor_s = {"pendente":"#8A6A12","aprovado":"#2E7D46","rejeitado":"#B3261E"}.get(r["status"],"#6B5138")
-                    st.markdown(f'<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#8A6A12;font-weight:700;font-size:0.82rem;">{r["nome_sugerido"]}</span></div><span style="color:{cor_s};font-size:0.72rem;font-weight:600;">● {r["status"]}</span></div>', unsafe_allow_html=True)
+                    cor_s = {"pendente":"#000000","aprovado":"#1E7F4F","rejeitado":"#C62828"}.get(r["status"],"#5C5C5C")
+                    st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#000000;font-weight:700;font-size:0.82rem;">{r["nome_sugerido"]}</span></div><span style="color:{cor_s};font-size:0.72rem;font-weight:600;">● {r["status"]}</span></div>', unsafe_allow_html=True)
         with tab_reg:
             if meus_reg.empty:
                 estado_vazio("📏","Nenhuma sugestão de regra","Acesse o Glossário → Regras de Negócio para sugerir.")
             else:
                 for _,r in meus_reg.iterrows():
-                    cor_s = {"pendente":"#8A6A12","aprovado":"#2E7D46","rejeitado":"#B3261E"}.get(r["status"],"#6B5138")
-                    st.markdown(f'<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#8A6A12;font-weight:700;font-size:0.82rem;">{r["nome_regra"]}</span></div><span style="color:{cor_s};font-size:0.72rem;font-weight:600;">● {r["status"]}</span></div>', unsafe_allow_html=True)
+                    cor_s = {"pendente":"#000000","aprovado":"#1E7F4F","rejeitado":"#C62828"}.get(r["status"],"#5C5C5C")
+                    st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#000000;font-weight:700;font-size:0.82rem;">{r["nome_regra"]}</span></div><span style="color:{cor_s};font-size:0.72rem;font-weight:600;">● {r["status"]}</span></div>', unsafe_allow_html=True)
 
     # ── CURADOR / APROVADOR ───────────────────────────────────────
     else:
@@ -2136,36 +2155,36 @@ elif pagina == "⚡ Meu Espaço":
         total_pend  = pend_aprov+sem_desc+sem_owner+sem_steward+sem_dom
 
         st.markdown(f"""
-        <div style="background:linear-gradient(135deg,#FBF7F0,#E3D5BC);border:1px solid #C9A22733;
+        <div style="background:linear-gradient(135deg,#FFFFFF,#E5E5E5);border:1px solid #E5E5E5;
                     border-radius:12px;padding:14px 18px;margin-bottom:16px;
                     display:flex;align-items:center;gap:12px;">
             <div style="background:#C9A22722;border-radius:8px;padding:8px;font-size:1.2rem;">⚡</div>
             <div>
-                <div style="color:#3E2E1F;font-weight:700;font-size:0.9rem;">
-                    Você possui <span style="color:#8A6A12;">{total_pend}</span> ações pendentes.</div>
-                <div style="color:#6B5138;font-size:0.72rem;margin-top:2px;">Revise e tome as ações necessárias.</div>
+                <div style="color:#000000;font-weight:700;font-size:0.9rem;">
+                    Você possui <span style="color:#000000;">{total_pend}</span> ações pendentes.</div>
+                <div style="color:#5C5C5C;font-size:0.72rem;margin-top:2px;">Revise e tome as ações necessárias.</div>
             </div>
         </div>""", unsafe_allow_html=True)
 
         section_divider("AÇÕES PRIORITÁRIAS")
         acoes = [
             ("APROVAR",f"{pend_aprov} conceitos aguardam aprovação","#C9A227","→ Workflow",pend_aprov),
-            ("DOCUMENTAR",f"{sem_desc} ativos sem descrição","#2F6FB0","→ Curadoria",sem_desc),
-            ("ATRIBUIR",f"{sem_owner} ativos sem Responsável definido","#B3261E","→ Curadoria",sem_owner),
-            ("ALOCAR",f"{sem_steward} ativos sem Gestor definido","#B3261E","→ Curadoria",sem_steward),
-            ("CLASSIFICAR",f"{sem_dom} ativos sem domínio","#7A4FB3","→ Curadoria",sem_dom),
+            ("DOCUMENTAR",f"{sem_desc} ativos sem descrição","#1A1A1A","→ Curadoria",sem_desc),
+            ("ATRIBUIR",f"{sem_owner} ativos sem Responsável definido","#C62828","→ Curadoria",sem_owner),
+            ("ALOCAR",f"{sem_steward} ativos sem Gestor definido","#C62828","→ Curadoria",sem_steward),
+            ("CLASSIFICAR",f"{sem_dom} ativos sem domínio","#3D3D3D","→ Curadoria",sem_dom),
         ]
         tem_acao = False
         for tipo,msg,cor_a,dest,qtd in acoes:
             if qtd>0:
                 tem_acao = True
-                st.markdown(f'<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:8px;padding:11px 16px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:10px;"><span style="background:{cor_a}22;color:{cor_a};border-radius:4px;padding:2px 8px;font-size:0.65rem;font-weight:700;">{tipo}</span><span style="color:#3E2E1F;font-size:0.82rem;">{msg}</span></div><span style="color:#6B5138;font-size:0.72rem;">{dest}</span></div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:8px;padding:11px 16px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:10px;"><span style="background:{cor_a}22;color:{cor_a};border-radius:4px;padding:2px 8px;font-size:0.65rem;font-weight:700;">{tipo}</span><span style="color:#000000;font-size:0.82rem;">{msg}</span></div><span style="color:#5C5C5C;font-size:0.72rem;">{dest}</span></div>', unsafe_allow_html=True)
         if not tem_acao:
             if _meu_db_fail and df_meta.empty and df_gloss.empty:
                 estado_vazio("⚠️", "Dados indisponíveis",
                              "Não foi possível conectar ao banco de dados. As pendências serão exibidas quando a conexão for restabelecida.")
             else:
-                st.markdown('<div style="color:#2E7D46;font-size:0.85rem;padding:12px;">✅ Nenhuma pendência no momento. Tudo em dia!</div>', unsafe_allow_html=True)
+                st.markdown('<div style="color:#1E7F4F;font-size:0.85rem;padding:12px;">✅ Nenhuma pendência no momento. Tudo em dia!</div>', unsafe_allow_html=True)
 
         section_divider("MINHAS RESPONSABILIDADES")
         if df_meta.empty and _meu_db_fail:
@@ -2174,11 +2193,11 @@ elif pagina == "⚡ Meu Espaço":
         elif not df_meta.empty:
             k1,k2,k3,k4 = st.columns(4)
             with k1: st.markdown(kpi(len(df_meta[df_meta["data_owner"]==usuario]),"Como Responsável (Owner)","#C9A227",tooltip="Ativos pelos quais você é o Data Owner."), unsafe_allow_html=True)
-            with k2: st.markdown(kpi(len(df_meta[df_meta["data_steward"]==usuario]),"Como Gestor (Steward)","#2F6FB0",tooltip="Ativos pelos quais você é o Data Steward."), unsafe_allow_html=True)
-            with k3: st.markdown(kpi(df_meta["dominio"].nunique(),"Domínios Acompanhados","#7A4FB3"), unsafe_allow_html=True)
+            with k2: st.markdown(kpi(len(df_meta[df_meta["data_steward"]==usuario]),"Como Gestor (Steward)","#1A1A1A",tooltip="Ativos pelos quais você é o Data Steward."), unsafe_allow_html=True)
+            with k3: st.markdown(kpi(df_meta["dominio"].nunique(),"Domínios Acompanhados","#3D3D3D"), unsafe_allow_html=True)
             with k4:
                 doc_media = df_meta["score_completude"].mean()
-                cor_d="#2E7D46" if doc_media>=80 else "#C9A227" if doc_media>=60 else "#B3261E"
+                cor_d="#1E7F4F" if doc_media>=80 else "#C9A227" if doc_media>=60 else "#C62828"
                 st.markdown(kpi(f"{doc_media:.0f}%","Score Médio de Documentação",cor_d,tooltip="Média do score de documentação de todos os ativos."), unsafe_allow_html=True)
 
         # Sugestões pendentes — visível para curador/aprovador
@@ -2190,7 +2209,7 @@ elif pagina == "⚡ Meu Espaço":
         if not pend_conc.empty or not pend_reg.empty:
             section_divider("SUGESTÕES AGUARDANDO ANÁLISE")
             if not pend_conc.empty:
-                st.markdown(f'<div style="color:#8A6A12;font-size:0.78rem;font-weight:700;margin-bottom:6px;">💡 {len(pend_conc)} sugestão(ões) de conceito pendente(s)</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="color:#000000;font-size:0.78rem;font-weight:700;margin-bottom:6px;">💡 {len(pend_conc)} sugestão(ões) de conceito pendente(s)</div>', unsafe_allow_html=True)
                 for _,r in pend_conc.iterrows():
                     with st.expander(f"💡 {r['nome_sugerido']} — por {r['solicitante']}"):
                         st.markdown(f"**Definição:** {r['definicao']}")
@@ -2234,7 +2253,7 @@ elif pagina == "⚡ Meu Espaço":
                 tl_sol=df_tl3[df_tl3["solicitacao_id"]==sid]
                 etapas=ETAPAS_TIPO3.get(tipo,["abertura","owner","governanca"])
                 tem_atraso=any(tl_sol["status_etapa"]=="atrasado") if not tl_sol.empty else False
-                st.markdown(f'<div style="background:#FBF7F0;border:1px solid {"#B91C1C44" if tem_atraso else "#C9A22733"};border-radius:12px;padding:14px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><div><div style="color:#E2E8F0;font-weight:700;font-size:0.85rem;">{titulo}</div><div style="color:#6B5138;font-size:0.7rem;">{dom} · {tipo}</div></div>{"<span style=background:#B91C1C22;color:#B3261E;border-radius:20px;padding:2px 10px;font-size:0.7rem;font-weight:600;>⏰ ATRASADO</span>" if tem_atraso else ""}</div>',unsafe_allow_html=True)
+                st.markdown(f'<div style="background:#FFFFFF;border:1px solid {"#B91C1C44" if tem_atraso else "#E5E5E5"};border-radius:12px;padding:14px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><div><div style="color:#E5E5E5;font-weight:700;font-size:0.85rem;">{titulo}</div><div style="color:#5C5C5C;font-size:0.7rem;">{dom} · {tipo}</div></div>{"<span style=background:#B91C1C22;color:#C62828;border-radius:20px;padding:2px 10px;font-size:0.7rem;font-weight:600;>⏰ ATRASADO</span>" if tem_atraso else ""}</div>',unsafe_allow_html=True)
                 eh=""
                 for i,etapa in enumerate(etapas):
                     tl_e=tl_sol[tl_sol["etapa"]==etapa].iloc[0] if etapa in tl_sol["etapa"].values else None
@@ -2243,11 +2262,11 @@ elif pagina == "⚡ Meu Espaço":
                         hg=tl_e.get("horas_gastas"); sl_h=tl_e.get("sla_horas",0)
                         dn=tl_e.get("dentro_sla",True); resp=str(tl_e.get("responsavel","")).split("@")[0]
                         hg_txt=f"{hg:.0f}h/{sl_h}h" if hg is not None else "—"
-                        cs_t="#2E7D46" if dn else "#B3261E"
-                        eh+=f'<div style="text-align:center;flex:1;background:{"#0D2117" if se=="concluido" else "#1F0808" if se=="atrasado" else "#141414"};border:1px solid {"#1F4731" if se=="concluido" else "#4A1010" if se=="atrasado" else "#2A2A2A"};border-radius:8px;padding:8px;"><div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">{ie}</div><div style="font-size:0.65rem;color:#3E2E1F;font-weight:600;">{resp}</div><div style="font-size:0.6rem;color:{cs_t};">{hg_txt}</div></div>'
+                        cs_t="#1E7F4F" if dn else "#C62828"
+                        eh+=f'<div style="text-align:center;flex:1;background:{"#E8F5EE" if se=="concluido" else "#FDECEA" if se=="atrasado" else "#F5F5F5"};border:1px solid {"#E8F5EE" if se=="concluido" else "#FDECEA" if se=="atrasado" else "#E5E5E5"};border-radius:8px;padding:8px;"><div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">{ie}</div><div style="font-size:0.65rem;color:#000000;font-weight:600;">{resp}</div><div style="font-size:0.6rem;color:{cs_t};">{hg_txt}</div></div>'
                     else:
-                        eh+=f'<div style="text-align:center;flex:1;background:#F1E7D6;border:1px solid #E3D5BC;border-radius:8px;padding:8px;opacity:0.4;"><div style="font-size:0.6rem;color:#6B5138;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">⭕</div></div>'
-                    if i<len(etapas)-1: eh+=f'<div style="flex:0;color:#7D6650;font-size:1rem;padding:0 4px;align-self:center;">→</div>'
+                        eh+=f'<div style="text-align:center;flex:1;background:#F5F5F5;border:1px solid #E5E5E5;border-radius:8px;padding:8px;opacity:0.4;"><div style="font-size:0.6rem;color:#5C5C5C;text-transform:uppercase;">{etapa.upper()}</div><div style="font-size:1.3rem;">⭕</div></div>'
+                    if i<len(etapas)-1: eh+=f'<div style="flex:0;color:#6E6E6E;font-size:1rem;padding:0 4px;align-self:center;">→</div>'
                 st.markdown(f'<div style="display:flex;gap:6px;">{eh}</div></div>',unsafe_allow_html=True)
         elif _tl3_db_fail:
             estado_vazio("⚠️", "Workflow indisponível",
@@ -2260,8 +2279,8 @@ elif pagina == "⚡ Meu Espaço":
         df_meus = df_gloss[df_gloss["criado_por"]==usuario] if not df_gloss.empty else pd.DataFrame()
         if not df_meus.empty:
             for _,row in df_meus.iterrows():
-                cor_s = {"homologado":"#2E7D46","em_revisao":"#2F6FB0","rascunho":"#6B5138"}.get(row["status"],"#6B5138")
-                st.markdown(f'<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:8px;padding:9px 14px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;"><span style="color:#3E2E1F;font-size:0.82rem;font-weight:600;">{row["termo"]}</span><span style="color:{cor_s};font-size:0.75rem;font-weight:600;">● {row["status"].replace("_"," ").title()}</span></div>', unsafe_allow_html=True)
+                cor_s = {"homologado":"#1E7F4F","em_revisao":"#1A1A1A","rascunho":"#5C5C5C"}.get(row["status"],"#5C5C5C")
+                st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:8px;padding:9px 14px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;"><span style="color:#000000;font-size:0.82rem;font-weight:600;">{row["termo"]}</span><span style="color:{cor_s};font-size:0.75rem;font-weight:600;">● {row["status"].replace("_"," ").title()}</span></div>', unsafe_allow_html=True)
         else:
             estado_vazio("📖","Nenhum conceito vinculado","Não há conceitos vinculados ao seu usuário como Gestor (Steward).")
 
@@ -2293,13 +2312,13 @@ elif pagina == "✏️ Curadoria":
                     cert_p = 100 if sel_t in cert_tabelas_cur else 0
                     qual_p = row["score_completude"]
 
-                    st.markdown(f'<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:10px;padding:12px 16px;margin-bottom:12px;"><div style="color:#8A6A12;font-weight:700;font-size:0.9rem;">{sel_t}</div><div style="color:#6B5138;font-size:0.72rem;margin-top:2px;">{row["descricao"][:60]+"..." if row["descricao"] and len(row["descricao"])>60 else row["descricao"] or "Sem descrição cadastrada."}</div></div>', unsafe_allow_html=True)
+                    st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:12px 16px;margin-bottom:12px;"><div style="color:#000000;font-weight:700;font-size:0.9rem;">{sel_t}</div><div style="color:#5C5C5C;font-size:0.72rem;margin-top:2px;">{row["descricao"][:60]+"..." if row["descricao"] and len(row["descricao"])>60 else row["descricao"] or "Sem descrição cadastrada."}</div></div>', unsafe_allow_html=True)
 
                     pp1,pp2,pp3,pp4,pp5 = st.columns(5)
                     for pcol,pn,pv in [(pp1,"DOCUMENTAÇÃO",doc_p),(pp2,"RESPONSÁVEL",own_p),(pp3,"RELACION.",0),(pp4,"QUALIDADE",qual_p),(pp5,"CERTIFICAÇÃO",cert_p)]:
-                        cor_pp="#2E7D46" if pv>=80 else "#C9A227" if pv>0 else "#B3261E"
+                        cor_pp="#1E7F4F" if pv>=80 else "#C9A227" if pv>0 else "#C62828"
                         with pcol:
-                            st.markdown(f'<div style="background:#F1E7D6;border:1px solid #E3D5BC;border-radius:8px;padding:9px;text-align:center;margin-bottom:10px;"><div style="font-size:0.55rem;color:#6B5138;text-transform:uppercase;letter-spacing:0.8px;">{pn}</div><div style="font-size:1.1rem;font-weight:800;color:{cor_pp};">{f"{pv}%" if pv>0 else "—"}</div></div>', unsafe_allow_html=True)
+                            st.markdown(f'<div style="background:#F5F5F5;border:1px solid #E5E5E5;border-radius:8px;padding:9px;text-align:center;margin-bottom:10px;"><div style="font-size:0.55rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:0.8px;">{pn}</div><div style="font-size:1.1rem;font-weight:800;color:{cor_pp};">{f"{pv}%" if pv>0 else "—"}</div></div>', unsafe_allow_html=True)
 
                     ed1,ed2 = st.columns(2)
                     with ed1:
@@ -2355,7 +2374,7 @@ elif pagina == "✏️ Curadoria":
                             st.session_state["ai_desc"] = sug[0]; st.session_state["ai_dom"] = sug[1]; st.rerun()
 
                     if "ai_desc" in st.session_state:
-                        st.markdown('<div style="background:#C9A22711;border:1px solid #C9A22733;border-radius:8px;padding:10px 14px;margin-top:8px;"><div style="color:#8A6A12;font-weight:700;font-size:0.75rem;">🤖 Sugestão da IA — revise antes de salvar</div></div>', unsafe_allow_html=True)
+                        st.markdown('<div style="background:#C9A22711;border:1px solid #E5E5E5;border-radius:8px;padding:10px 14px;margin-top:8px;"><div style="color:#000000;font-weight:700;font-size:0.75rem;">🤖 Sugestão da IA — revise antes de salvar</div></div>', unsafe_allow_html=True)
                         sug_d = st.text_area("Descrição sugerida",value=st.session_state["ai_desc"],key="sug_d")
                         so = ["","Crédito","Pagamentos","Clientes","Compliance","Produtos"]
                         sv = st.session_state["ai_dom"]; si = so.index(sv) if sv in so else 0
@@ -2398,7 +2417,7 @@ elif pagina == "✏️ Curadoria":
                 edited = st.data_editor(df_led.rename(columns={"schema_name":"Schema","table_name":"Tabela","score_completude":"Score","status":"Status"}),use_container_width=True,hide_index=True,column_config={"Selecionar":st.column_config.CheckboxColumn()})
                 sels = edited[edited["Selecionar"]==True]
                 if len(sels)>0:
-                    st.markdown(f'<div style="color:#8A6A12;font-size:0.82rem;margin:6px 0;">{len(sels)} tabela(s) selecionada(s)</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div style="color:#000000;font-size:0.82rem;margin:6px 0;">{len(sels)} tabela(s) selecionada(s)</div>', unsafe_allow_html=True)
                     lb1,lb2,lb3 = st.columns(3)
                     with lb1: l_dom = st.selectbox("Domínio",["","Crédito","Pagamentos","Clientes","Compliance","Produtos"],key="l_dom")
                     with lb2: l_own = st.text_input("Responsável (Owner)",key="l_own")
@@ -2462,8 +2481,8 @@ elif pagina == "🕐 Auditoria":
             total = len(df_aud); manual = len(df_aud[df_aud["origem"]=="manual"]); ia_c = len(df_aud[df_aud["origem"]=="ia"])
             k1,k2,k3 = st.columns(3)
             with k1: st.markdown(kpi(total,"Total de Registros","#C9A227"), unsafe_allow_html=True)
-            with k2: st.markdown(kpi(manual,"Alterações Manuais","#2F6FB0"), unsafe_allow_html=True)
-            with k3: st.markdown(kpi(ia_c,"Via Inteligência Artificial","#7A4FB3"), unsafe_allow_html=True)
+            with k2: st.markdown(kpi(manual,"Alterações Manuais","#1A1A1A"), unsafe_allow_html=True)
+            with k3: st.markdown(kpi(ia_c,"Via Inteligência Artificial","#3D3D3D"), unsafe_allow_html=True)
 
             st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
             af1,af2,af3 = st.columns(3)
@@ -2476,15 +2495,15 @@ elif pagina == "🕐 Auditoria":
             if f_or != "Todos": df_af = df_af[df_af["origem"]==f_or]
             df_af = df_af.head(f_lim)
 
-            st.markdown('<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:10px;overflow:hidden;margin-top:8px;"><table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:1px solid #E3D5BC;"><th style="color:#6B5138;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">DATA/HORA</th><th style="color:#6B5138;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">SCHEMA</th><th style="color:#6B5138;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">TABELA</th><th style="color:#6B5138;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">CAMPO</th><th style="color:#6B5138;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">VALOR ANTERIOR</th><th style="color:#6B5138;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">VALOR NOVO</th><th style="color:#6B5138;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">ORIGEM</th></tr></thead><tbody>', unsafe_allow_html=True)
+            st.markdown('<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;overflow:hidden;margin-top:8px;"><table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:1px solid #E5E5E5;"><th style="color:#5C5C5C;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">DATA/HORA</th><th style="color:#5C5C5C;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">SCHEMA</th><th style="color:#5C5C5C;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">TABELA</th><th style="color:#5C5C5C;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">CAMPO</th><th style="color:#5C5C5C;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">VALOR ANTERIOR</th><th style="color:#5C5C5C;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">VALOR NOVO</th><th style="color:#5C5C5C;font-size:0.62rem;font-weight:700;text-transform:uppercase;padding:9px 12px;text-align:left;">ORIGEM</th></tr></thead><tbody>', unsafe_allow_html=True)
 
             for _,row in df_af.iterrows():
                 ts = str(row["timestamp_op"])[:16] if row["timestamp_op"] else "—"
-                oc="#7A4FB3" if row["origem"]=="ia" else "#2F6FB0"
+                oc="#3D3D3D" if row["origem"]=="ia" else "#1A1A1A"
                 ot = "IA" if row["origem"]=="ia" else "Manual"
                 va = str(row["valor_anterior"])[:30] if row["valor_anterior"] else "—"
                 vn = str(row["valor_novo"])[:40] if row["valor_novo"] else "—"
-                st.markdown(f'<tr style="border-bottom:1px solid #E3D5BC;"><td style="color:#6B5138;font-size:0.73rem;padding:8px 12px;">{ts}</td><td style="color:#2F6FB0;font-size:0.73rem;padding:8px 12px;">{row["schema_name"] or "—"}</td><td style="color:#3E2E1F;font-size:0.73rem;padding:8px 12px;font-weight:600;">{row["table_name"] or "—"}</td><td style="color:#6B5138;font-size:0.73rem;padding:8px 12px;">{row["campo_alterado"] or "—"}</td><td style="color:#6B5138;font-size:0.73rem;padding:8px 12px;">{va}</td><td style="color:#3E2E1F;font-size:0.73rem;padding:8px 12px;">{vn}</td><td style="padding:8px 12px;"><span style="background:{oc}22;color:{oc};border-radius:4px;padding:2px 8px;font-size:0.65rem;font-weight:700;">{ot}</span></td></tr>', unsafe_allow_html=True)
+                st.markdown(f'<tr style="border-bottom:1px solid #E5E5E5;"><td style="color:#5C5C5C;font-size:0.73rem;padding:8px 12px;">{ts}</td><td style="color:#1A1A1A;font-size:0.73rem;padding:8px 12px;">{row["schema_name"] or "—"}</td><td style="color:#000000;font-size:0.73rem;padding:8px 12px;font-weight:600;">{row["table_name"] or "—"}</td><td style="color:#5C5C5C;font-size:0.73rem;padding:8px 12px;">{row["campo_alterado"] or "—"}</td><td style="color:#5C5C5C;font-size:0.73rem;padding:8px 12px;">{va}</td><td style="color:#000000;font-size:0.73rem;padding:8px 12px;">{vn}</td><td style="padding:8px 12px;"><span style="background:{oc}22;color:{oc};border-radius:4px;padding:2px 8px;font-size:0.65rem;font-weight:700;">{ot}</span></td></tr>', unsafe_allow_html=True)
 
             st.markdown("</tbody></table></div>", unsafe_allow_html=True)
 
@@ -2495,12 +2514,12 @@ elif pagina == "🕐 Auditoria":
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "📊 Indicadores":
     if not is_curador:
-        st.markdown(f'<div style="background:#FBF7F0;border:1px solid #C9A22733;border-radius:12px;padding:40px;text-align:center;"><div style="font-size:2.2rem;margin-bottom:10px;">🔒</div><div style="font-family:Lora,serif;color:#8A6A12;font-weight:700;margin-bottom:6px;">Acesso restrito</div><div style="color:#6B5138;font-size:0.8rem;">Esta área é destinada a Curadores e Aprovadores.</div></div>',unsafe_allow_html=True)
+        st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;padding:40px;text-align:center;"><div style="font-size:2.2rem;margin-bottom:10px;">🔒</div><div style="font-family:Lora,serif;color:#000000;font-weight:700;margin-bottom:6px;">Acesso restrito</div><div style="color:#5C5C5C;font-size:0.8rem;">Esta área é destinada a Curadores e Aprovadores.</div></div>',unsafe_allow_html=True)
         st.stop()
     page_header("📊","Painel de Indicadores de Gestão",
                 "Evolução da governança + SLA e atendimento de solicitações.")
-    st.markdown("""<div style="background:#FBF7F099;border:1px solid #E3D5BC;border-radius:8px;
-                padding:10px 14px;margin-bottom:16px;"><div style="color:#6B5138;font-size:0.78rem;line-height:1.6;">
+    st.markdown("""<div style="background:#FFFFFF99;border:1px solid #E5E5E5;border-radius:8px;
+                padding:10px 14px;margin-bottom:16px;"><div style="color:#5C5C5C;font-size:0.78rem;line-height:1.6;">
                 Este painel mostra como os principais indicadores de governança evoluíram ao longo do tempo.
                 Use o filtro de domínio para acompanhar a maturidade de uma área específica.</div></div>""",
                 unsafe_allow_html=True)
@@ -2546,36 +2565,36 @@ elif pagina == "📊 Indicadores":
         if ultimo is not None:
             def delta(a,b,c):
                 if b is None: return ""
-                d = a[c]-b[c]; cor="#2E7D46" if d>0 else "#B3261E" if d<0 else "#6B5138"; s="↑" if d>0 else "↓" if d<0 else "→"
+                d = a[c]-b[c]; cor="#1E7F4F" if d>0 else "#C62828" if d<0 else "#5C5C5C"; s="↑" if d>0 else "↓" if d<0 else "→"
                 return f'<span style="color:{cor};font-size:0.65rem;font-weight:700;margin-left:4px;">{s}{abs(d):.1f}%</span>'
             k1,k2,k3,k4 = st.columns(4)
             for col,(lbl,campo,cor_k) in zip([k1,k2,k3,k4],[
-                ("Documentação","score_doc","#2F6FB0"),("Ownership","score_ownership","#C9A227"),
-                ("Qualidade","score_qualidade","#2E7D46"),("Score Geral","score_geral","#7A4FB3")]):
+                ("Documentação","score_doc","#1A1A1A"),("Ownership","score_ownership","#C9A227"),
+                ("Qualidade","score_qualidade","#1E7F4F"),("Score Geral","score_geral","#3D3D3D")]):
                 val=ultimo[campo]; d=delta(ultimo,anterior,campo)
-                cor_v="#2E7D46" if val>=80 else "#C9A227" if val>=60 else "#B3261E"
+                cor_v="#1E7F4F" if val>=80 else "#C9A227" if val>=60 else "#C62828"
                 with col:
-                    st.markdown(f'<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:10px;padding:14px 16px;border-top:3px solid {cor_k};"><div style="font-size:0.62rem;color:#6B5138;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">{lbl}</div><div style="display:flex;align-items:baseline;gap:4px;"><span style="font-size:1.7rem;font-weight:800;color:{cor_v};">{val:.1f}%</span>{d}</div></div>',unsafe_allow_html=True)
+                    st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:14px 16px;border-top:3px solid {cor_k};"><div style="font-size:0.62rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">{lbl}</div><div style="display:flex;align-items:baseline;gap:4px;"><span style="font-size:1.7rem;font-weight:800;color:{cor_v};">{val:.1f}%</span>{d}</div></div>',unsafe_allow_html=True)
         section_divider("EVOLUÇÃO DOS INDICADORES")
         if not df_sn.empty:
             fig = go.Figure()
-            for campo,cor_l,nome_l in [("score_doc","#2F6FB0","Documentação"),("score_ownership","#C9A227","Ownership"),("score_qualidade","#2E7D46","Qualidade"),("score_geral","#7A4FB3","Score Geral")]:
+            for campo,cor_l,nome_l in [("score_doc","#1A1A1A","Documentação"),("score_ownership","#C9A227","Ownership"),("score_qualidade","#1E7F4F","Qualidade"),("score_geral","#3D3D3D","Score Geral")]:
                 fig.add_trace(go.Scatter(x=pd.to_datetime(df_sn["data_snapshot"]),y=df_sn[campo],name=nome_l,line=dict(color=cor_l,width=2.5),mode="lines+markers",marker=dict(size=6)))
-            fig.update_layout(paper_bgcolor="#FBF7F0",plot_bgcolor="#FBF7F0",font=dict(color="#6B5138",size=11),legend=dict(orientation="h",yanchor="bottom",y=1.02,bgcolor="rgba(0,0,0,0)"),height=320,margin=dict(t=40,b=20,l=40,r=20),xaxis=dict(showgrid=False,color="#6B5138"),yaxis=dict(showgrid=True,gridcolor="#E3D5BC",range=[0,105],ticksuffix="%"))
+            fig.update_layout(paper_bgcolor="#FFFFFF",plot_bgcolor="#FFFFFF",font=dict(color="#5C5C5C",size=11),legend=dict(orientation="h",yanchor="bottom",y=1.02,bgcolor="rgba(0,0,0,0)"),height=320,margin=dict(t=40,b=20,l=40,r=20),xaxis=dict(showgrid=False,color="#5C5C5C"),yaxis=dict(showgrid=True,gridcolor="#E5E5E5",range=[0,105],ticksuffix="%"))
             st.plotly_chart(fig,use_container_width=True)
         section_divider("DISTRIBUIÇÃO POR DOMÍNIO")
         if not df_meta.empty:
             dom_agg=df_meta.groupby("dominio").agg(score_medio=("score_completude","mean")).reset_index().sort_values("score_medio",ascending=True)
-            fig2=go.Figure(go.Bar(x=dom_agg["score_medio"],y=dom_agg["dominio"],orientation="h",marker=dict(color=dom_agg["score_medio"],colorscale=[[0,"#B3261E"],[0.6,"#C9A227"],[1,"#2E7D46"]],cmin=0,cmax=100),text=[f"{v:.0f}%" for v in dom_agg["score_medio"]],textposition="outside",textfont=dict(color="#3E2E1F",size=11)))
-            fig2.update_layout(paper_bgcolor="#FBF7F0",plot_bgcolor="#FBF7F0",font=dict(color="#6B5138",size=11),height=260,margin=dict(t=10,b=10,l=10,r=60),xaxis=dict(showgrid=True,gridcolor="#E3D5BC",range=[0,115],ticksuffix="%"),yaxis=dict(showgrid=False,color="#3E2E1F"))
+            fig2=go.Figure(go.Bar(x=dom_agg["score_medio"],y=dom_agg["dominio"],orientation="h",marker=dict(color=dom_agg["score_medio"],colorscale=[[0,"#C62828"],[0.6,"#C9A227"],[1,"#1E7F4F"]],cmin=0,cmax=100),text=[f"{v:.0f}%" for v in dom_agg["score_medio"]],textposition="outside",textfont=dict(color="#000000",size=11)))
+            fig2.update_layout(paper_bgcolor="#FFFFFF",plot_bgcolor="#FFFFFF",font=dict(color="#5C5C5C",size=11),height=260,margin=dict(t=10,b=10,l=10,r=60),xaxis=dict(showgrid=True,gridcolor="#E5E5E5",range=[0,115],ticksuffix="%"),yaxis=dict(showgrid=False,color="#000000"))
             st.plotly_chart(fig2,use_container_width=True)
         section_divider("RESUMO DE CERTIFICAÇÃO")
         if not df_cert.empty:
             cert_status=df_cert["status_cert"].value_counts().reset_index(); cert_status.columns=["status","qtd"]
-            cor_cert={"certificado":"#2E7D46","em_analise":"#8A6A12","pendente":"#2F6FB0","nao_iniciado":"#BBBBBB"}
+            cor_cert={"certificado":"#1E7F4F","em_analise":"#000000","pendente":"#1A1A1A","nao_iniciado":"#8A8A8A"}
             cols_cert=st.columns(len(cert_status))
             for col,(_,row) in zip(cols_cert,cert_status.iterrows()):
-                cor_c=cor_cert.get(row["status"],"#6B5138")
+                cor_c=cor_cert.get(row["status"],"#5C5C5C")
                 label_c={"certificado":"✅ Certificados","em_analise":"🔵 Em Análise","pendente":"⏳ Pendentes","nao_iniciado":"📋 Não Iniciados"}.get(row["status"],row["status"])
                 with col: st.markdown(kpi(row["qtd"],label_c,cor_c),unsafe_allow_html=True)
 
@@ -2588,26 +2607,26 @@ elif pagina == "📊 Indicadores":
             estado_vazio("📋", "Nenhum dado de SLA",
                          "Os dados de SLA serão exibidos após o registro das primeiras solicitações.")
     elif not df_sla.empty:
-        st.markdown(f'<div style="display:flex;align-items:center;gap:10px;margin:16px 0 12px;"><div style="height:1px;background:#F1E7D6;flex:1;"></div><span style="color:#6B5138;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">SLA E ATENDIMENTO DE SOLICITAÇÕES</span><div style="height:1px;background:#F1E7D6;flex:1;"></div></div>',unsafe_allow_html=True)
+        st.markdown(f'<div style="display:flex;align-items:center;gap:10px;margin:16px 0 12px;"><div style="height:1px;background:#F5F5F5;flex:1;"></div><span style="color:#5C5C5C;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">SLA E ATENDIMENTO DE SOLICITAÇÕES</span><div style="height:1px;background:#F5F5F5;flex:1;"></div></div>',unsafe_allow_html=True)
         df_slaf=df_sla.copy()
         if fi_dom!="Todos": df_slaf=df_slaf[df_slaf["dominio"]==fi_dom]
         ult_sla=df_slaf[df_slaf["data_snapshot"]==df_slaf["data_snapshot"].max()] if not df_slaf.empty else pd.DataFrame()
         if not ult_sla.empty:
             tot_ab=int(ult_sla["total_abertas"].sum()); tot_re=int(ult_sla["total_resolvidas"].sum())
             tot_at=int(ult_sla["total_atrasadas"].sum()); tm=ult_sla["tempo_medio_hrs"].mean(); tsla=ult_sla["taxa_sla_pct"].mean()
-            cs_sla="#2E7D46" if tsla>=90 else "#A16207" if tsla>=70 else "#B3261E"
+            cs_sla="#1E7F4F" if tsla>=90 else "#B26A00" if tsla>=70 else "#C62828"
             ss=st.columns(5)
             with ss[0]: st.markdown(kpi(tot_ab,"Abertas","#C9A227"),unsafe_allow_html=True)
-            with ss[1]: st.markdown(kpi(tot_re,"Resolvidas","#2E7D46"),unsafe_allow_html=True)
-            with ss[2]: st.markdown(kpi(tot_at,"Atrasadas","#B3261E"),unsafe_allow_html=True)
-            with ss[3]: st.markdown(kpi(f"{tm:.0f}h","Tempo Médio","#7A4FB3",tooltip="Tempo médio de resolução em horas."),unsafe_allow_html=True)
+            with ss[1]: st.markdown(kpi(tot_re,"Resolvidas","#1E7F4F"),unsafe_allow_html=True)
+            with ss[2]: st.markdown(kpi(tot_at,"Atrasadas","#C62828"),unsafe_allow_html=True)
+            with ss[3]: st.markdown(kpi(f"{tm:.0f}h","Tempo Médio","#3D3D3D",tooltip="Tempo médio de resolução em horas."),unsafe_allow_html=True)
             with ss[4]: st.markdown(kpi(f"{tsla:.0f}%","Taxa SLA",cs_sla,tooltip="% resolvidas dentro do prazo."),unsafe_allow_html=True)
 
-        st.markdown(f'<div style="display:flex;align-items:center;gap:10px;margin:12px 0 8px;"><div style="height:1px;background:#F1E7D6;flex:1;"></div><span style="color:#6B5138;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">GARGALOS POR DOMÍNIO</span><div style="height:1px;background:#F1E7D6;flex:1;"></div></div>',unsafe_allow_html=True)
+        st.markdown(f'<div style="display:flex;align-items:center;gap:10px;margin:12px 0 8px;"><div style="height:1px;background:#F5F5F5;flex:1;"></div><span style="color:#5C5C5C;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;">GARGALOS POR DOMÍNIO</span><div style="height:1px;background:#F5F5F5;flex:1;"></div></div>',unsafe_allow_html=True)
         for _,row in ult_sla.iterrows() if not ult_sla.empty else []:
-            cs_g="#2E7D46" if row["taxa_sla_pct"]>=90 else "#A16207" if row["taxa_sla_pct"]>=70 else "#B3261E"
+            cs_g="#1E7F4F" if row["taxa_sla_pct"]>=90 else "#B26A00" if row["taxa_sla_pct"]>=70 else "#C62828"
             gb=row.get("gargalo_etapa","—"); gr=str(row.get("gargalo_resp","—")).split("@")[0]
-            st.markdown(f'<div style="background:#FBF7F0;border:1px solid #C9A22733;border-radius:10px;padding:10px 14px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#E2E8F0;font-weight:700;font-size:0.82rem;">{row["dominio"]}</span><span style="color:#6B5138;font-size:0.7rem;margin-left:8px;">{row["tipo_sol"]}</span></div><div style="display:flex;gap:16px;font-size:0.7rem;"><span>Abertas: <b style="color:#3E2E1F;">{row["total_abertas"]}</b></span><span>Atrasadas: <b style="color:#B3261E;">{row["total_atrasadas"]}</b></span><span>Gargalo: <b style="color:#B3261E;">{gb} ({gr})</b></span><span style="background:{cs_g}22;color:{cs_g};border-radius:20px;padding:2px 8px;font-weight:700;">SLA {row["taxa_sla_pct"]:.0f}%</span></div></div>',unsafe_allow_html=True)
+            st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:10px 14px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#E5E5E5;font-weight:700;font-size:0.82rem;">{row["dominio"]}</span><span style="color:#5C5C5C;font-size:0.7rem;margin-left:8px;">{row["tipo_sol"]}</span></div><div style="display:flex;gap:16px;font-size:0.7rem;"><span>Abertas: <b style="color:#000000;">{row["total_abertas"]}</b></span><span>Atrasadas: <b style="color:#C62828;">{row["total_atrasadas"]}</b></span><span>Gargalo: <b style="color:#C62828;">{gb} ({gr})</b></span><span style="background:{cs_g}22;color:{cs_g};border-radius:20px;padding:2px 8px;font-weight:700;">SLA {row["taxa_sla_pct"]:.0f}%</span></div></div>',unsafe_allow_html=True)
     copyright_footer()
 
 # ════════════════════════════════════════════════════════════════════
@@ -2615,8 +2634,8 @@ elif pagina == "📊 Indicadores":
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "🏆 Qualidade":
     page_header("🏆","Score de Qualidade de Dados","Avaliação multidimensional — Completude · Unicidade · Validade · Atualidade · Consistência.")
-    st.markdown("""<div style="background:#FBF7F099;border:1px solid #E3D5BC;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#6B5138;font-size:0.78rem;line-height:1.6;">A qualidade dos dados é avaliada em <strong style="color:#8A6A12;">5 dimensões independentes</strong>. O Score Final é a média simples das 5 dimensões.</div></div>""",unsafe_allow_html=True)
-    DIMENSOES={"completude_pct":{"nome":"Completude","icone":"📋","cor":"#2F6FB0","conceito":"% de campos obrigatórios preenchidos."},"unicidade_pct":{"nome":"Unicidade","icone":"🔑","cor":"#8A6A12","conceito":"% de registros únicos na chave primária."},"validade_pct":{"nome":"Validade","icone":"✅","cor":"#2E7D46","conceito":"% de valores no formato e domínio esperados."},"atualidade_pct":{"nome":"Atualidade","icone":"🕐","cor":"#7A4FB3","conceito":"% de registros dentro da janela de tempo esperada."},"consistencia_pct":{"nome":"Consistência","icone":"🔗","cor":"#B3261E","conceito":"% de registros consistentes com tabelas relacionadas."}}
+    st.markdown("""<div style="background:#FFFFFF99;border:1px solid #E5E5E5;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#5C5C5C;font-size:0.78rem;line-height:1.6;">A qualidade dos dados é avaliada em <strong style="color:#000000;">5 dimensões independentes</strong>. O Score Final é a média simples das 5 dimensões.</div></div>""",unsafe_allow_html=True)
+    DIMENSOES={"completude_pct":{"nome":"Completude","icone":"📋","cor":"#1A1A1A","conceito":"% de campos obrigatórios preenchidos."},"unicidade_pct":{"nome":"Unicidade","icone":"🔑","cor":"#000000","conceito":"% de registros únicos na chave primária."},"validade_pct":{"nome":"Validade","icone":"✅","cor":"#1E7F4F","conceito":"% de valores no formato e domínio esperados."},"atualidade_pct":{"nome":"Atualidade","icone":"🕐","cor":"#3D3D3D","conceito":"% de registros dentro da janela de tempo esperada."},"consistencia_pct":{"nome":"Consistência","icone":"🔗","cor":"#C62828","conceito":"% de registros consistentes com tabelas relacionadas."}}
     df_qual=load_quality_dimensions()
     if df_qual.empty:
         if st.session_state.get("_db_err"):
@@ -2624,13 +2643,13 @@ elif pagina == "🏆 Qualidade":
         else:
             estado_vazio("🏆","Nenhum dado de qualidade","Execute a avaliação de qualidade na Curadoria.")
     else:
-        media_geral=df_qual["score_final"].mean(); cor_mg="#2E7D46" if media_geral>=80 else "#C9A227" if media_geral>=60 else "#B3261E"
-        st.markdown(f'<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:16px;padding:20px;text-align:center;margin-bottom:20px;"><div style="font-size:0.7rem;color:#6B5138;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">{len(df_qual)} ativos avaliados</div><div style="font-size:3.5rem;font-weight:800;color:{cor_mg};line-height:1;">{media_geral:.1f}%</div><div style="color:#6B5138;font-size:0.75rem;margin-top:6px;">Alta (≥80%): {len(df_qual[df_qual["nivel"]=="Alta"])} · Média (40–79%): {len(df_qual[df_qual["nivel"]=="Media"])} · Baixa (&lt;40%): {len(df_qual[df_qual["nivel"]=="Baixa"])}</div></div>',unsafe_allow_html=True)
+        media_geral=df_qual["score_final"].mean(); cor_mg="#1E7F4F" if media_geral>=80 else "#C9A227" if media_geral>=60 else "#C62828"
+        st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:16px;padding:20px;text-align:center;margin-bottom:20px;"><div style="font-size:0.7rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">{len(df_qual)} ativos avaliados</div><div style="font-size:3.5rem;font-weight:800;color:{cor_mg};line-height:1;">{media_geral:.1f}%</div><div style="color:#5C5C5C;font-size:0.75rem;margin-top:6px;">Alta (≥80%): {len(df_qual[df_qual["nivel"]=="Alta"])} · Média (40–79%): {len(df_qual[df_qual["nivel"]=="Media"])} · Baixa (&lt;40%): {len(df_qual[df_qual["nivel"]=="Baixa"])}</div></div>',unsafe_allow_html=True)
         section_divider("MÉDIA POR DIMENSÃO")
         cols_dim=st.columns(5)
         for col,(campo,info) in zip(cols_dim,DIMENSOES.items()):
-            media_dim=df_qual[campo].mean(); cor_d="#2E7D46" if media_dim>=80 else "#C9A227" if media_dim>=60 else "#B3261E"
-            with col: st.markdown(f'<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:10px;padding:14px;text-align:center;" title="{info["conceito"]}"><div style="font-size:1.2rem;margin-bottom:4px;">{info["icone"]}</div><div style="font-size:1.6rem;font-weight:800;color:{cor_d};">{media_dim:.1f}%</div><div style="color:#6B5138;font-size:0.68rem;margin-bottom:8px;">{info["nome"]}</div><div style="background:#E3D5BC;border-radius:4px;height:3px;"><div style="background:{cor_d};border-radius:4px;height:3px;width:{min(media_dim,100):.0f}%;"></div></div><div style="color:#6B5138;font-size:0.6rem;margin-top:6px;line-height:1.3;">{info["conceito"]}</div></div>',unsafe_allow_html=True)
+            media_dim=df_qual[campo].mean(); cor_d="#1E7F4F" if media_dim>=80 else "#C9A227" if media_dim>=60 else "#C62828"
+            with col: st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:14px;text-align:center;" title="{info["conceito"]}"><div style="font-size:1.2rem;margin-bottom:4px;">{info["icone"]}</div><div style="font-size:1.6rem;font-weight:800;color:{cor_d};">{media_dim:.1f}%</div><div style="color:#5C5C5C;font-size:0.68rem;margin-bottom:8px;">{info["nome"]}</div><div style="background:#E5E5E5;border-radius:4px;height:3px;"><div style="background:{cor_d};border-radius:4px;height:3px;width:{min(media_dim,100):.0f}%;"></div></div><div style="color:#5C5C5C;font-size:0.6rem;margin-top:6px;line-height:1.3;">{info["conceito"]}</div></div>',unsafe_allow_html=True)
         section_divider("AVALIAÇÃO POR ATIVO")
         f1q,f2q,f3q=st.columns(3)
         with f1q: fq_dom=st.selectbox("Domínio",["Todos"]+sorted([str(d) for d in df_qual["dominio"].dropna().unique() if str(d).strip() and str(d) != "nan"]),key="q_dom")
@@ -2642,10 +2661,10 @@ elif pagina == "🏆 Qualidade":
         if fq_niv!="Todos": df_qf=df_qf[df_qf["nivel"]==fq_niv]
         df_qf=df_qf.sort_values("score_final",ascending=False)
         for _,row in df_qf.iterrows():
-            cor_q="#2E7D46" if row["score_final"]>=80 else "#C9A227" if row["score_final"]>=40 else "#B3261E"
-            nivel_badge={"Alta":"#2E7D46","Media":"#8A6A12","Baixa":"#B3261E"}.get(row["nivel"],"#6B5138")
-            dims_html="".join([f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#6B5138;margin-bottom:2px;">{info["icone"]} {info["nome"][:4]}.</div><div style="font-size:0.75rem;font-weight:700;color:{"#2E7D46" if row[campo]>=80 else "#C9A227" if row[campo]>=40 else "#B3261E"};">{row[campo]:.0f}%</div></div>' for campo,info in DIMENSOES.items()])
-            st.markdown(f'<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:10px;padding:12px 16px;margin-bottom:6px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div><span style="color:#8A6A12;font-weight:700;font-size:0.85rem;">{row["table_name"]}</span><span style="background:#58A6FF22;color:#2F6FB0;border-radius:3px;padding:1px 6px;font-size:0.62rem;margin-left:6px;">{row["schema_name"]}</span><span style="background:{nivel_badge}22;color:{nivel_badge};border-radius:3px;padding:1px 6px;font-size:0.62rem;margin-left:4px;">{row["nivel"]}</span></div><span style="color:{cor_q};font-size:1.1rem;font-weight:800;">{row["score_final"]:.1f}%</span></div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">{dims_html}</div></div>',unsafe_allow_html=True)
+            cor_q="#1E7F4F" if row["score_final"]>=80 else "#C9A227" if row["score_final"]>=40 else "#C62828"
+            nivel_badge={"Alta":"#1E7F4F","Media":"#000000","Baixa":"#C62828"}.get(row["nivel"],"#5C5C5C")
+            dims_html="".join([f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#5C5C5C;margin-bottom:2px;">{info["icone"]} {info["nome"][:4]}.</div><div style="font-size:0.75rem;font-weight:700;color:{"#1E7F4F" if row[campo]>=80 else "#C9A227" if row[campo]>=40 else "#C62828"};">{row[campo]:.0f}%</div></div>' for campo,info in DIMENSOES.items()])
+            st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:12px 16px;margin-bottom:6px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div><span style="color:#000000;font-weight:700;font-size:0.85rem;">{row["table_name"]}</span><span style="background:#58A6FF22;color:#1A1A1A;border-radius:3px;padding:1px 6px;font-size:0.62rem;margin-left:6px;">{row["schema_name"]}</span><span style="background:{nivel_badge}22;color:{nivel_badge};border-radius:3px;padding:1px 6px;font-size:0.62rem;margin-left:4px;">{row["nivel"]}</span></div><span style="color:{cor_q};font-size:1.1rem;font-weight:800;">{row["score_final"]:.1f}%</span></div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">{dims_html}</div></div>',unsafe_allow_html=True)
     copyright_footer()
 
 # ════════════════════════════════════════════════════════════════════
@@ -2653,11 +2672,11 @@ elif pagina == "🏆 Qualidade":
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "🥇 Certificação":
     page_header("🥇","Certificação de Ativos de Dados","Selos de maturidade — Ouro · Prata · Bronze — com critérios transparentes.")
-    st.markdown("""<div style="background:#FBF7F099;border:1px solid #E3D5BC;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#6B5138;font-size:0.78rem;line-height:1.6;">A certificação valida que um ativo atende a critérios mínimos de governança e qualidade. Os selos são concedidos após análise formal pela equipe de Governança.</div></div>""",unsafe_allow_html=True)
-    SELOS={"Ouro":{"cor":"#8A6A12","icone":"🥇","req_doc":100,"req_qual":90,"desc":"Gov. 100% + Qualidade ≥90% + todos os critérios atendidos"},"Prata":{"cor":"#6B6B70","icone":"🥈","req_doc":80,"req_qual":70,"desc":"Gov. ≥80% + Qualidade ≥70% + Owner e Domínio definidos"},"Bronze":{"cor":"#8A5A2B","icone":"🥉","req_doc":60,"req_qual":40,"desc":"Documentação parcial — ativo em processo de curadoria"}}
+    st.markdown("""<div style="background:#FFFFFF99;border:1px solid #E5E5E5;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#5C5C5C;font-size:0.78rem;line-height:1.6;">A certificação valida que um ativo atende a critérios mínimos de governança e qualidade. Os selos são concedidos após análise formal pela equipe de Governança.</div></div>""",unsafe_allow_html=True)
+    SELOS={"Ouro":{"cor":"#000000","icone":"🥇","req_doc":100,"req_qual":90,"desc":"Gov. 100% + Qualidade ≥90% + todos os critérios atendidos"},"Prata":{"cor":"#8A8A8A","icone":"🥈","req_doc":80,"req_qual":70,"desc":"Gov. ≥80% + Qualidade ≥70% + Owner e Domínio definidos"},"Bronze":{"cor":"#A8743F","icone":"🥉","req_doc":60,"req_qual":40,"desc":"Documentação parcial — ativo em processo de curadoria"}}
     col_selos=st.columns(3)
     for col,(nome,info) in zip(col_selos,SELOS.items()):
-        with col: st.markdown(f'<div style="background:#FBF7F0;border:2px solid {info["cor"]}44;border-radius:14px;padding:16px;text-align:center;"><div style="font-size:2rem;margin-bottom:6px;">{info["icone"]}</div><div style="color:{info["cor"]};font-weight:800;font-size:1rem;margin-bottom:4px;">Selo {nome}</div><div style="color:#6B5138;font-size:0.72rem;line-height:1.4;">{info["desc"]}</div><div style="background:#E3D5BC;border-radius:4px;height:1px;margin:10px 0;"></div><div style="font-size:0.65rem;color:#6B5138;">Gov. mín: {info["req_doc"]}% · Qual. mín: {info["req_qual"]}%</div></div>',unsafe_allow_html=True)
+        with col: st.markdown(f'<div style="background:#FFFFFF;border:2px solid {info["cor"]}44;border-radius:14px;padding:16px;text-align:center;"><div style="font-size:2rem;margin-bottom:6px;">{info["icone"]}</div><div style="color:{info["cor"]};font-weight:800;font-size:1rem;margin-bottom:4px;">Selo {nome}</div><div style="color:#5C5C5C;font-size:0.72rem;line-height:1.4;">{info["desc"]}</div><div style="background:#E5E5E5;border-radius:4px;height:1px;margin:10px 0;"></div><div style="font-size:0.65rem;color:#5C5C5C;">Gov. mín: {info["req_doc"]}% · Qual. mín: {info["req_qual"]}%</div></div>',unsafe_allow_html=True)
     section_divider("STATUS DE CERTIFICAÇÃO POR ATIVO")
     df_cert=load_cert()
     if df_cert.empty:
@@ -2751,7 +2770,7 @@ elif pagina == "🥇 Certificação":
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "🔗 Linhagem":
     page_header("🔗","Linhagem de Dados","Rastreie a origem e o destino de cada ativo — do dado bruto ao produto final.")
-    st.markdown("""<div style="background:#FBF7F099;border:1px solid #E3D5BC;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#6B5138;font-size:0.78rem;line-height:1.6;">A linhagem mostra como os dados fluem entre as camadas: Bronze (bruto) → Prata (tratado) → Ouro (pronto para uso).</div></div>""",unsafe_allow_html=True)
+    st.markdown("""<div style="background:#FFFFFF99;border:1px solid #E5E5E5;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#5C5C5C;font-size:0.78rem;line-height:1.6;">A linhagem mostra como os dados fluem entre as camadas: Bronze (bruto) → Prata (tratado) → Ouro (pronto para uso).</div></div>""",unsafe_allow_html=True)
     df_lin, _lin_err = load_linhagem()
     if df_lin.empty:
         if _lin_err:
@@ -2759,14 +2778,14 @@ elif pagina == "🔗 Linhagem":
         else:
             estado_vazio("🔗","Nenhuma linhagem cadastrada","A linhagem será exibida quando os relacionamentos entre ativos forem registrados.")
     else:
-        CAMADA_COR={"bronze":"#8A5A2B","prata":"#6B6B70","ouro":"#8A6A12"}
+        CAMADA_COR={"bronze":"#A8743F","prata":"#8A8A8A","ouro":"#000000"}
         CAMADA_X={"bronze":0.5,"prata":2.5,"ouro":4.5}
         k1,k2,k3=st.columns(3)
         b=df_lin["origem_tabela"][df_lin["origem_schema"]=="bronze"].nunique()
         p=df_lin["origem_tabela"][df_lin["origem_schema"]=="prata"].nunique()
         o=df_lin["destino_tabela"][df_lin["destino_schema"]=="ouro"].nunique()
-        with k1: st.markdown(kpi(b,"Ativos Bronze","#8A5A2B","🥉","Dados brutos de origem."),unsafe_allow_html=True)
-        with k2: st.markdown(kpi(p,"Ativos Prata","#6B6B70","🥈","Dados tratados."),unsafe_allow_html=True)
+        with k1: st.markdown(kpi(b,"Ativos Bronze","#A8743F","🥉","Dados brutos de origem."),unsafe_allow_html=True)
+        with k2: st.markdown(kpi(p,"Ativos Prata","#8A8A8A","🥈","Dados tratados."),unsafe_allow_html=True)
         with k3: st.markdown(kpi(o,"Ativos Ouro","#C9A227","🥇","Dados prontos para uso."),unsafe_allow_html=True)
         section_divider("MAPA VISUAL DE LINHAGEM")
         nos_o=df_lin[["origem_schema","origem_tabela"]].drop_duplicates().rename(columns={"origem_schema":"schema","origem_tabela":"tabela"})
@@ -2782,22 +2801,22 @@ elif pagina == "🔗 Linhagem":
             ko=f"{row['origem_schema']}.{row['origem_tabela']}"; kd=f"{row['destino_schema']}.{row['destino_tabela']}"
             if ko in pos_nos and kd in pos_nos:
                 x0,y0=pos_nos[ko]; x1,y1=pos_nos[kd]
-                fig_lin.add_trace(go.Scatter(x=[x0,x1],y=[y0,y1],mode="lines",line=dict(color="#3E2E1F",width=1.5),hovertext=row["descricao"],hoverinfo="text",showlegend=False))
+                fig_lin.add_trace(go.Scatter(x=[x0,x1],y=[y0,y1],mode="lines",line=dict(color="#000000",width=1.5),hovertext=row["descricao"],hoverinfo="text",showlegend=False))
         for chave,(x,y) in pos_nos.items():
-            cam,tabela=chave.split(".",1); cor_n=CAMADA_COR.get(cam,"#6B5138")
-            fig_lin.add_trace(go.Scatter(x=[x],y=[y],mode="markers+text",marker=dict(color=cor_n,size=16,line=dict(color="#FBF7F0",width=2)),text=[tabela],textposition="middle right",textfont=dict(color="#3E2E1F",size=10),hoverinfo="text",hovertext=chave,showlegend=False))
-        for cam,(x_c,cor_c) in [("bronze",(0.5,"#8A5A2B")),("prata",(2.5,"#6B6B70")),("ouro",(4.5,"#C9A227"))]:
+            cam,tabela=chave.split(".",1); cor_n=CAMADA_COR.get(cam,"#5C5C5C")
+            fig_lin.add_trace(go.Scatter(x=[x],y=[y],mode="markers+text",marker=dict(color=cor_n,size=16,line=dict(color="#FFFFFF",width=2)),text=[tabela],textposition="middle right",textfont=dict(color="#000000",size=10),hoverinfo="text",hovertext=chave,showlegend=False))
+        for cam,(x_c,cor_c) in [("bronze",(0.5,"#A8743F")),("prata",(2.5,"#8A8A8A")),("ouro",(4.5,"#C9A227"))]:
             ys=[p[1] for k,p in pos_nos.items() if k.startswith(cam)]
-            if ys: fig_lin.add_annotation(x=x_c,y=max(ys)+1.2,text=f"🏷️ {cam.upper()}",showarrow=False,font=dict(color=cor_c,size=12),bgcolor="#F1E7D6",borderpad=4)
-        fig_lin.update_layout(paper_bgcolor="#FBF7F0",plot_bgcolor="#FBF7F0",height=440,margin=dict(t=30,b=20,l=20,r=200),xaxis=dict(showgrid=False,zeroline=False,showticklabels=False,range=[-0.3,7]),yaxis=dict(showgrid=False,zeroline=False,showticklabels=False))
+            if ys: fig_lin.add_annotation(x=x_c,y=max(ys)+1.2,text=f"🏷️ {cam.upper()}",showarrow=False,font=dict(color=cor_c,size=12),bgcolor="#F5F5F5",borderpad=4)
+        fig_lin.update_layout(paper_bgcolor="#FFFFFF",plot_bgcolor="#FFFFFF",height=440,margin=dict(t=30,b=20,l=20,r=200),xaxis=dict(showgrid=False,zeroline=False,showticklabels=False,range=[-0.3,7]),yaxis=dict(showgrid=False,zeroline=False,showticklabels=False))
         st.plotly_chart(fig_lin,use_container_width=True)
         section_divider("DETALHAMENTO DAS TRANSFORMAÇÕES")
         f_lin=st.selectbox("Filtrar por origem",["Todas","bronze","prata"],key="lin_cam")
         df_lf=df_lin if f_lin=="Todas" else df_lin[df_lin["origem_schema"]==f_lin]
         for _,row in df_lf.iterrows():
-            cor_o2=CAMADA_COR.get(row["origem_schema"],"#6B5138"); cor_d2=CAMADA_COR.get(row["destino_schema"],"#6B5138")
+            cor_o2=CAMADA_COR.get(row["origem_schema"],"#5C5C5C"); cor_d2=CAMADA_COR.get(row["destino_schema"],"#5C5C5C")
             tipo_lbl="⚙️ Transformação" if row["tipo_relacao"]=="transformacao" else "📥 Consumo"
-            st.markdown(f'<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:10px;padding:12px 16px;margin-bottom:6px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;"><span style="background:{cor_o2}22;color:{cor_o2};border-radius:6px;padding:4px 10px;font-size:0.75rem;font-weight:700;">{row["origem_schema"]}.{row["origem_tabela"]}</span><span style="color:#6B5138;font-size:0.75rem;">{tipo_lbl} →</span><span style="background:{cor_d2}22;color:{cor_d2};border-radius:6px;padding:4px 10px;font-size:0.75rem;font-weight:700;">{row["destino_schema"]}.{row["destino_tabela"]}</span></div><div style="color:#6B5138;font-size:0.73rem;">{row["descricao"]}</div></div>',unsafe_allow_html=True)
+            st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:12px 16px;margin-bottom:6px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;"><span style="background:{cor_o2}22;color:{cor_o2};border-radius:6px;padding:4px 10px;font-size:0.75rem;font-weight:700;">{row["origem_schema"]}.{row["origem_tabela"]}</span><span style="color:#5C5C5C;font-size:0.75rem;">{tipo_lbl} →</span><span style="background:{cor_d2}22;color:{cor_d2};border-radius:6px;padding:4px 10px;font-size:0.75rem;font-weight:700;">{row["destino_schema"]}.{row["destino_tabela"]}</span></div><div style="color:#5C5C5C;font-size:0.73rem;">{row["descricao"]}</div></div>',unsafe_allow_html=True)
     copyright_footer()
 
 # ════════════════════════════════════════════════════════════════════
@@ -2805,7 +2824,7 @@ elif pagina == "🔗 Linhagem":
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "📦 Produtos":
     page_header("📦","Produtos de Dados","Ativos empacotados e prontos para uso por áreas de negócio.")
-    st.markdown("""<div style="background:#FBF7F099;border:1px solid #E3D5BC;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#6B5138;font-size:0.78rem;line-height:1.6;">Um Produto de Dados é um conjunto de ativos organizados para atender a uma necessidade específica do negócio, com finalidade, responsável e certificação definidos.</div></div>""",unsafe_allow_html=True)
+    st.markdown("""<div style="background:#FFFFFF99;border:1px solid #E5E5E5;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#5C5C5C;font-size:0.78rem;line-height:1.6;">Um Produto de Dados é um conjunto de ativos organizados para atender a uma necessidade específica do negócio, com finalidade, responsável e certificação definidos.</div></div>""",unsafe_allow_html=True)
     df_prod=load_produtos(); df_pat=load_produto_ativos()
     if df_prod.empty:
         if st.session_state.get("_db_err"):
@@ -2816,9 +2835,9 @@ elif pagina == "📦 Produtos":
         ativos_total=df_pat["table_name"].nunique() if not df_pat.empty else 0
         k1,k2,k3,k4=st.columns(4)
         with k1: st.markdown(kpi(len(df_prod),"Produtos","#C9A227"),unsafe_allow_html=True)
-        with k2: st.markdown(kpi(len(df_prod[df_prod["status"]=="ativo"]),"Ativos","#2E7D46"),unsafe_allow_html=True)
+        with k2: st.markdown(kpi(len(df_prod[df_prod["status"]=="ativo"]),"Ativos","#1E7F4F"),unsafe_allow_html=True)
         with k3: st.markdown(kpi(len(df_prod[df_prod["certificacao"]=="certificado"]),"Certificados","#C9A227"),unsafe_allow_html=True)
-        with k4: st.markdown(kpi(ativos_total,"Ativos Vinculados","#2F6FB0"),unsafe_allow_html=True)
+        with k4: st.markdown(kpi(ativos_total,"Ativos Vinculados","#1A1A1A"),unsafe_allow_html=True)
         section_divider("CATÁLOGO DE PRODUTOS")
         fp1,fp2=st.columns(2)
         with fp1: fp_dom=st.selectbox("Domínio",["Todos"]+sorted([str(d) for d in df_prod["dominio"].dropna().unique() if str(d).strip() and str(d) != "nan"]),key="fp_dom")
@@ -2828,16 +2847,16 @@ elif pagina == "📦 Produtos":
         if fp_st!="Todos":  df_pf=df_pf[df_pf["status"]==fp_st]
         if "prod_sel" not in st.session_state: st.session_state["prod_sel"]=None
         col_pl,col_pd=st.columns([1,2])
-        CAMADA_COR2={"bronze":"#8A5A2B","prata":"#6B6B70","ouro":"#8A6A12"}
-        PAPEL_COR={"Principal":"#8A6A12","Origem":"#2F6FB0","Consumo":"#2E7D46"}
+        CAMADA_COR2={"bronze":"#A8743F","prata":"#8A8A8A","ouro":"#000000"}
+        PAPEL_COR={"Principal":"#000000","Origem":"#1A1A1A","Consumo":"#1E7F4F"}
         with col_pl:
             for _,row in df_pf.iterrows():
-                cor_st={"ativo":"#2E7D46","em_dev":"#8A6A12","inativo":"#BBBBBB"}.get(row["status"],"#6B5138")
-                cor_cert={"certificado":"#8A6A12","em_analise":"#2F6FB0","pendente":"#6B5138"}.get(row["certificacao"],"#6B5138")
+                cor_st={"ativo":"#1E7F4F","em_dev":"#000000","inativo":"#8A8A8A"}.get(row["status"],"#5C5C5C")
+                cor_cert={"certificado":"#000000","em_analise":"#1A1A1A","pendente":"#5C5C5C"}.get(row["certificacao"],"#5C5C5C")
                 ic_cert={"certificado":"🥇","em_analise":"🥈","pendente":"🥉"}.get(row["certificacao"],"")
                 is_sel=st.session_state["prod_sel"]==row["produto_id"]
                 ativos_p=df_pat[df_pat["produto_id"]==row["produto_id"]] if not df_pat.empty else pd.DataFrame()
-                st.markdown(f'<div style="background:{"#C9A22714" if is_sel else "#FBF7F0"};border:1px solid {"#C9A227" if is_sel else "#E3D5BC"};border-radius:10px;padding:12px 14px;margin-bottom:4px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;"><span style="color:#3E2E1F;font-weight:700;font-size:0.85rem;">{row["nome"]}</span><span style="color:{cor_st};font-size:0.65rem;font-weight:700;">● {row["status"]}</span></div><div style="color:#6B5138;font-size:0.72rem;margin-bottom:6px;">{row["finalidade"][:65]}...</div><div style="display:flex;gap:6px;"><span style="background:#C9A22722;color:#8A6A12;border-radius:4px;padding:1px 6px;font-size:0.62rem;">{row["dominio"]}</span><span style="background:{cor_cert}22;color:{cor_cert};border-radius:4px;padding:1px 6px;font-size:0.62rem;">{ic_cert} {row["certificacao"]}</span><span style="background:#58A6FF22;color:#2F6FB0;border-radius:4px;padding:1px 6px;font-size:0.62rem;">{len(ativos_p)} ativos</span></div></div>',unsafe_allow_html=True)
+                st.markdown(f'<div style="background:{"#C9A22714" if is_sel else "#FFFFFF"};border:1px solid {"#C9A227" if is_sel else "#E5E5E5"};border-radius:10px;padding:12px 14px;margin-bottom:4px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;"><span style="color:#000000;font-weight:700;font-size:0.85rem;">{row["nome"]}</span><span style="color:{cor_st};font-size:0.65rem;font-weight:700;">● {row["status"]}</span></div><div style="color:#5C5C5C;font-size:0.72rem;margin-bottom:6px;">{row["finalidade"][:65]}...</div><div style="display:flex;gap:6px;"><span style="background:#C9A22722;color:#000000;border-radius:4px;padding:1px 6px;font-size:0.62rem;">{row["dominio"]}</span><span style="background:{cor_cert}22;color:{cor_cert};border-radius:4px;padding:1px 6px;font-size:0.62rem;">{ic_cert} {row["certificacao"]}</span><span style="background:#58A6FF22;color:#1A1A1A;border-radius:4px;padding:1px 6px;font-size:0.62rem;">{len(ativos_p)} ativos</span></div></div>',unsafe_allow_html=True)
                 if st.button(f'{"▼ Fechar" if is_sel else "▶ Ver detalhes"}',key=f"psel_{row['produto_id']}",use_container_width=True):
                     st.session_state["prod_sel"]=None if is_sel else row["produto_id"]; st.rerun()
         with col_pd:
@@ -2846,14 +2865,14 @@ elif pagina == "📦 Produtos":
                 row_p=df_pf[df_pf["produto_id"]==pid]
                 if not row_p.empty:
                     p=row_p.iloc[0]; ativos_p=df_pat[df_pat["produto_id"]==pid] if not df_pat.empty else pd.DataFrame()
-                    cor_st2={"ativo":"#2E7D46","em_dev":"#8A6A12","inativo":"#BBBBBB"}.get(p["status"],"#6B5138")
-                    cor_cert2={"certificado":"#8A6A12","em_analise":"#2F6FB0","pendente":"#6B5138"}.get(p["certificacao"],"#6B5138")
-                    st.markdown(f'<div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:12px;padding:20px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;"><div><div style="color:#3E2E1F;font-size:1.1rem;font-weight:800;">{p["nome"]}</div><div style="color:#6B5138;font-size:0.72rem;margin-top:2px;">{p["dominio"]} · Produto de Dados</div></div><span style="background:{cor_cert2}22;color:{cor_cert2};border-radius:20px;padding:3px 12px;font-size:0.72rem;font-weight:600;border:1px solid {cor_cert2}44;">{"🥇 Certificado" if p["certificacao"]=="certificado" else "🥈 Em Análise" if p["certificacao"]=="em_analise" else "🥉 Pendente"}</span></div><div style="background:#F1E7D6;border-radius:8px;padding:12px;margin-bottom:10px;"><div style="color:#6B5138;font-size:0.6rem;font-weight:700;text-transform:uppercase;margin-bottom:4px;">FINALIDADE</div><div style="color:#3E2E1F;font-size:0.82rem;line-height:1.5;">{p["finalidade"]}</div></div><div style="background:#F1E7D6;border-radius:8px;padding:12px;margin-bottom:10px;"><div style="color:#6B5138;font-size:0.6rem;font-weight:700;text-transform:uppercase;margin-bottom:4px;">DESCRIÇÃO</div><div style="color:#3E2E1F;font-size:0.82rem;line-height:1.5;">{p["descricao"]}</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;"><div style="background:#F1E7D6;border-radius:8px;padding:9px;"><div style="font-size:0.6rem;color:#6B5138;margin-bottom:2px;">RESPONSÁVEL</div><div style="color:#3E2E1F;font-size:0.78rem;">{p["responsavel"]}</div></div><div style="background:#F1E7D6;border-radius:8px;padding:9px;"><div style="font-size:0.6rem;color:#6B5138;margin-bottom:2px;">STATUS</div><div style="color:{cor_st2};font-size:0.78rem;font-weight:700;">{p["status"].replace("_"," ").title()}</div></div></div>',unsafe_allow_html=True)
+                    cor_st2={"ativo":"#1E7F4F","em_dev":"#000000","inativo":"#8A8A8A"}.get(p["status"],"#5C5C5C")
+                    cor_cert2={"certificado":"#000000","em_analise":"#1A1A1A","pendente":"#5C5C5C"}.get(p["certificacao"],"#5C5C5C")
+                    st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;padding:20px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;"><div><div style="color:#000000;font-size:1.1rem;font-weight:800;">{p["nome"]}</div><div style="color:#5C5C5C;font-size:0.72rem;margin-top:2px;">{p["dominio"]} · Produto de Dados</div></div><span style="background:{cor_cert2}22;color:{cor_cert2};border-radius:20px;padding:3px 12px;font-size:0.72rem;font-weight:600;border:1px solid {cor_cert2}44;">{"🥇 Certificado" if p["certificacao"]=="certificado" else "🥈 Em Análise" if p["certificacao"]=="em_analise" else "🥉 Pendente"}</span></div><div style="background:#F5F5F5;border-radius:8px;padding:12px;margin-bottom:10px;"><div style="color:#5C5C5C;font-size:0.6rem;font-weight:700;text-transform:uppercase;margin-bottom:4px;">FINALIDADE</div><div style="color:#000000;font-size:0.82rem;line-height:1.5;">{p["finalidade"]}</div></div><div style="background:#F5F5F5;border-radius:8px;padding:12px;margin-bottom:10px;"><div style="color:#5C5C5C;font-size:0.6rem;font-weight:700;text-transform:uppercase;margin-bottom:4px;">DESCRIÇÃO</div><div style="color:#000000;font-size:0.82rem;line-height:1.5;">{p["descricao"]}</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;"><div style="background:#F5F5F5;border-radius:8px;padding:9px;"><div style="font-size:0.6rem;color:#5C5C5C;margin-bottom:2px;">RESPONSÁVEL</div><div style="color:#000000;font-size:0.78rem;">{p["responsavel"]}</div></div><div style="background:#F5F5F5;border-radius:8px;padding:9px;"><div style="font-size:0.6rem;color:#5C5C5C;margin-bottom:2px;">STATUS</div><div style="color:{cor_st2};font-size:0.78rem;font-weight:700;">{p["status"].replace("_"," ").title()}</div></div></div>',unsafe_allow_html=True)
                     if not ativos_p.empty:
-                        st.markdown('<div style="background:#F1E7D6;border-radius:8px;padding:12px;"><div style="color:#6B5138;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">ATIVOS VINCULADOS</div>',unsafe_allow_html=True)
+                        st.markdown('<div style="background:#F5F5F5;border-radius:8px;padding:12px;"><div style="color:#5C5C5C;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">ATIVOS VINCULADOS</div>',unsafe_allow_html=True)
                         for _,at in ativos_p.iterrows():
-                            cor_cam2=CAMADA_COR2.get(at["schema_name"],"#6B5138"); cor_pap2=PAPEL_COR.get(at["papel"],"#6B5138")
-                            st.markdown(f'<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #E3D5BC;"><div><span style="color:#3E2E1F;font-size:0.75rem;">{at["table_name"]}</span><span style="background:{cor_cam2}22;color:{cor_cam2};border-radius:3px;padding:1px 5px;font-size:0.62rem;margin-left:5px;">{at["schema_name"]}</span></div><span style="background:{cor_pap2}22;color:{cor_pap2};border-radius:3px;padding:1px 7px;font-size:0.62rem;">{at["papel"]}</span></div>',unsafe_allow_html=True)
+                            cor_cam2=CAMADA_COR2.get(at["schema_name"],"#5C5C5C"); cor_pap2=PAPEL_COR.get(at["papel"],"#5C5C5C")
+                            st.markdown(f'<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #E5E5E5;"><div><span style="color:#000000;font-size:0.75rem;">{at["table_name"]}</span><span style="background:{cor_cam2}22;color:{cor_cam2};border-radius:3px;padding:1px 5px;font-size:0.62rem;margin-left:5px;">{at["schema_name"]}</span></div><span style="background:{cor_pap2}22;color:{cor_pap2};border-radius:3px;padding:1px 7px;font-size:0.62rem;">{at["papel"]}</span></div>',unsafe_allow_html=True)
                         st.markdown('</div></div>',unsafe_allow_html=True)
                     else:
                         st.markdown('</div>',unsafe_allow_html=True)
@@ -2880,9 +2899,9 @@ elif pagina == "🔍 Busca Global":
 
     if not _busca_q or not _busca_q.strip():
         st.markdown("""
-        <div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:10px;padding:28px;text-align:center;margin-top:24px;">
+        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:28px;text-align:center;margin-top:24px;">
             <div style="font-size:2rem;margin-bottom:8px;">🔍</div>
-            <div style="color:#3E2E1F;font-weight:700;font-size:1rem;margin-bottom:4px;">Digite algo para começar</div>
+            <div style="color:#000000;font-weight:700;font-size:1rem;margin-bottom:4px;">Digite algo para começar</div>
             <div style="color:#555;font-size:0.82rem;">Busca em ativos do catálogo, termos do glossário, regras de negócio, domínios e produtos.</div>
         </div>
         """, unsafe_allow_html=True)
@@ -2915,7 +2934,7 @@ elif pagina == "🔍 Busca Global":
                     "subtitulo": f'{row.get("schema_name","—")} · {row.get("dominio","—")}',
                     "detalhe": str(row.get("descricao",""))[:120] or "Sem descrição.",
                     "nav_pagina": "📋 Catálogo",
-                    "cor": "#2F6FB0",
+                    "cor": "#1A1A1A",
                 })
 
         # 2. Termos do glossário (business_glossary)
@@ -2931,7 +2950,7 @@ elif pagina == "🔍 Busca Global":
                     "subtitulo": f'Domínio: {row.get("dominio","—")} · Responsável: {row.get("responsavel","—")}',
                     "detalhe": str(row.get("definicao",""))[:120] or "Sem definição.",
                     "nav_pagina": "📖 Glossário",
-                    "cor": "#8A6A12",
+                    "cor": "#000000",
                 })
 
         # 3. Regras de negócio (business_rules)
@@ -2947,7 +2966,7 @@ elif pagina == "🔍 Busca Global":
                     "subtitulo": f'Domínio: {row.get("dominio","—")} · Cat.: {row.get("categoria","—")}',
                     "detalhe": str(row.get("descricao",""))[:120] or "Sem descrição.",
                     "nav_pagina": "📋 Catálogo",
-                    "cor": "#2E7D46",
+                    "cor": "#1E7F4F",
                 })
 
         # 4. Produtos de dados (produtos_dados)
@@ -2963,7 +2982,7 @@ elif pagina == "🔍 Busca Global":
                     "subtitulo": f'Domínio: {row.get("dominio","—")} · {row.get("status","—")}',
                     "detalhe": str(row.get("finalidade",""))[:120] or str(row.get("descricao",""))[:120] or "Sem descrição.",
                     "nav_pagina": "📦 Produtos",
-                    "cor": "#B45309",
+                    "cor": "#B26A00",
                 })
 
         # ── Exibe resultados ────────────────────────────────────────
@@ -2974,7 +2993,7 @@ elif pagina == "🔍 Busca Global":
         else:
             st.markdown(
                 f'<div style="color:#888;font-size:0.8rem;margin-bottom:14px;">'
-                f'<span style="color:#8A6A12;font-weight:700;">{_total}</span> resultado{"s" if _total!=1 else ""} '
+                f'<span style="color:#000000;font-weight:700;">{_total}</span> resultado{"s" if _total!=1 else ""} '
                 f'para <em>"{_q}"</em></div>',
                 unsafe_allow_html=True
             )
@@ -2989,17 +3008,17 @@ elif pagina == "🔍 Busca Global":
             for _idx_res, _res in enumerate(_resultados):
                 _nav_lbl = _res["nav_pagina"]
                 st.markdown(f"""
-                <div style="background:#FBF7F0;border:1px solid #E3D5BC;border-radius:10px;
+                <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;
                             padding:14px 18px;margin-bottom:8px;
                             border-left:3px solid {_res['cor']};">
                     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                         <span style="background:{_res['cor']}22;color:{_res['cor']};
                                      border-radius:4px;padding:2px 8px;font-size:0.67rem;
                                      font-weight:700;">{_res['tipo']}</span>
-                        <span style="color:#3E2E1F;font-weight:700;font-size:0.92rem;">{_res['titulo']}</span>
+                        <span style="color:#000000;font-weight:700;font-size:0.92rem;">{_res['titulo']}</span>
                     </div>
                     <div style="color:#888;font-size:0.72rem;margin-bottom:6px;">{_res['subtitulo']}</div>
-                    <div style="color:#6B5138;font-size:0.78rem;line-height:1.5;">{_res['detalhe']}</div>
+                    <div style="color:#5C5C5C;font-size:0.78rem;line-height:1.5;">{_res['detalhe']}</div>
                 </div>
                 """, unsafe_allow_html=True)
                 # Botão para navegar à página do resultado
