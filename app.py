@@ -97,10 +97,14 @@ section[data-testid="stSidebar"] .st-key-login button:hover{background:#1A1A1A !
     padding-left:1.5rem !important;padding-right:1.5rem !important;}
 
 /* ── Componentes gerais ── */
-.stButton>button{background:#000000 !important;color:#FFFFFF !important;border:1px solid #000000 !important;
-    border-radius:6px !important;font-weight:600 !important;font-size:0.82rem !important;}
-.stButton>button *{color:#FFFFFF !important;}
-.stButton>button:hover{background:#1A1A1A !important;border-color:#C9A227 !important;}
+.stButton>button{background:#FFFFFF !important;color:#000000 !important;border:1px solid #D4D4D4 !important;
+    border-radius:8px !important;font-weight:600 !important;font-size:0.82rem !important;}
+.stButton>button *{color:#000000 !important;}
+.stButton>button:hover{border-color:#000000 !important;background:#FAFAFA !important;}
+.stButton>button[kind="primary"],.stButton>button[data-testid="stBaseButton-primary"],
+.stFormSubmitButton>button{background:#000000 !important;border-color:#000000 !important;}
+.stButton>button[kind="primary"] *,.stButton>button[data-testid="stBaseButton-primary"] *,.stFormSubmitButton>button *{color:#FFFFFF !important;}
+.stButton>button[kind="primary"]:hover,.stButton>button[data-testid="stBaseButton-primary"]:hover{background:#1A1A1A !important;border-color:#C9A227 !important;}
 .stButton>button:focus-visible{outline:2px solid #C9A227 !important;outline-offset:2px !important;}
 .stTabs [data-baseweb="tab-list"]{background:transparent;border-radius:0;padding:0;gap:4px;border-bottom:1px solid #E5E5E5;}
 .stTabs [data-baseweb="tab"]{border-radius:0 !important;color:#5C5C5C !important;padding:8px 14px !important;font-size:0.82rem !important;font-weight:600 !important;background:transparent !important;}
@@ -270,6 +274,213 @@ div[data-testid="stButton"]:has(button[data-gov-nav]){
 """, unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════════════════
+# DESIGN SYSTEM — tokens, ícones e layout (identidade Governantes)
+# Cores institucionais: preto #000000 · branco #FFFFFF · dourado #C9A227
+# Cinzas neutros apenas para superfícies, linhas e texto secundário.
+# ════════════════════════════════════════════════════════════════════
+TK = {
+    "gold": "#C9A227", "black": "#000000", "white": "#FFFFFF",
+    "bg": "#FAFAFA", "surface": "#F5F5F5", "line": "#EAEAEA",
+    "ink": "#000000", "ink2": "#5C5C5C", "ink3": "#8A8A8A",
+    "ok": "#1E7F4F", "warn": "#B26A00", "err": "#C62828",
+}
+SIDEBAR_W = 260
+
+# Ícones de traço (24×24), consistentes em toda a interface
+_ICON_PATHS = {
+    "database": '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',
+    "layers": '<path d="M12 3 2 8l10 5 10-5-10-5z"/><path d="m2 13 10 5 10-5"/><path d="m2 17.5 10 5 10-5"/>',
+    "shield": '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+    "book": '<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',
+    "network": '<circle cx="12" cy="12" r="2.5"/><circle cx="4.5" cy="4.5" r="2"/><circle cx="19.5" cy="4.5" r="2"/><circle cx="4.5" cy="19.5" r="2"/><circle cx="19.5" cy="19.5" r="2"/><path d="m6 6 4.3 4.3M18 6l-4.3 4.3M6 18l4.3-4.3M18 18l-4.3-4.3"/>',
+    "chart": '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    "trend": '<path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+    "check": '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/>',
+    "inbox": '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/>',
+    "award": '<circle cx="12" cy="8" r="6"/><path d="M8.2 13.2 7 22l5-3 5 3-1.2-8.8"/>',
+    "bolt": '<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>',
+    "chevron": '<path d="m9 6 6 6-6 6"/>',
+    "arrow": '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    "edit": '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+    "clock": '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    "box": '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+    "search": '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    "users": '<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 4.5a4 4 0 0 1 0 7"/><path d="M22 21a7 7 0 0 0-4-6.3"/>',
+}
+
+
+def icon(nome, size=20, cor=TK["gold"], sw=1.8):
+    return (f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{cor}" '
+            f'stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+            f'{_ICON_PATHS[nome]}</svg>')
+
+
+LOGO_SVG = """<svg width="{s}" height="{s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Governantes">
+  <circle cx="20" cy="20" r="19" stroke="#C9A227" stroke-width="1.6" fill="{bg}"/>
+  <circle cx="20" cy="20" r="15.8" stroke="#C9A227" stroke-width="0.8" fill="none"/>
+  <text x="20" y="22.5" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="15" font-weight="bold" fill="#C9A227">G</text>
+  <circle cx="15.5" cy="27.5" r="1.6" fill="#C9A227"/><path d="M13.3 32.5 Q15.5 29.8 17.7 32.5" stroke="#C9A227" stroke-width="1.3" fill="#C9A227"/>
+  <circle cx="20" cy="27" r="1.9" fill="#C9A227"/><path d="M17.4 32.8 Q20 29.4 22.6 32.8" stroke="#C9A227" stroke-width="1.3" fill="#C9A227"/>
+  <circle cx="24.5" cy="27.5" r="1.6" fill="#C9A227"/><path d="M22.3 32.5 Q24.5 29.8 26.7 32.5" stroke="#C9A227" stroke-width="1.3" fill="#C9A227"/>
+</svg>"""
+
+
+def card_link(key, html, destino):
+    """Card HTML inteiro clicável: um st.button nativo cobre a área do card."""
+    with st.container(key=f"lnk_{key}"):
+        st.markdown(html, unsafe_allow_html=True)
+        if st.button(" ", key=f"lnkbtn_{key}", use_container_width=True):
+            st.session_state["pagina"] = destino
+            st.rerun()
+
+
+st.markdown(f"""
+<style>
+:root{{
+  --gv-gold:{TK['gold']};--gv-black:{TK['black']};--gv-white:{TK['white']};
+  --gv-bg:{TK['bg']};--gv-surface:{TK['surface']};--gv-line:{TK['line']};
+  --gv-ink:{TK['ink']};--gv-ink2:{TK['ink2']};--gv-ink3:{TK['ink3']};
+  --gv-radius:12px;--gv-shadow:0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05);
+  --gv-sidebar:{SIDEBAR_W}px;
+}}
+html,body,.stApp{{background:var(--gv-bg) !important;}}
+
+/* ── Menu lateral preto ── */
+section[data-testid="stSidebar"]{{
+  background:var(--gv-black) !important;border-right:none !important;
+  margin-top:0 !important;z-index:1000001 !important;
+  width:var(--gv-sidebar) !important;min-width:var(--gv-sidebar) !important;max-width:var(--gv-sidebar) !important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='220' viewBox='0 0 260 220'%3E%3Cg fill='none' stroke='%23C9A227' stroke-linecap='round'%3E%3Cpath d='M-10 200 C60 150 120 210 270 110' stroke-opacity='.55' stroke-width='1.2'/%3E%3Cpath d='M-10 212 C70 165 130 222 270 126' stroke-opacity='.3'/%3E%3Cpath d='M-10 222 C80 180 140 232 270 142' stroke-opacity='.18'/%3E%3C/g%3E%3C/svg%3E") !important;
+  background-repeat:no-repeat !important;background-position:left bottom !important;}}
+section[data-testid="stSidebar"] > div{{background:transparent !important;}}
+section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"]{{padding:0 14px 24px !important;}}
+section[data-testid="stSidebar"] > div::-webkit-scrollbar-track{{background:var(--gv-black);}}
+section[data-testid="stSidebar"] > div::-webkit-scrollbar-thumb{{background:#2E2E2E;}}
+section[data-testid="stSidebar"] [data-testid="stSidebarHeader"]{{height:8px !important;min-height:0 !important;padding:0 !important;}}
+section[data-testid="stSidebar"] *{{color:#FFFFFF !important;}}
+section[data-testid="stSidebar"] .gv-nav-label{{color:#8A8A8A !important;font-size:0.6rem;font-weight:700;letter-spacing:1.6px;
+  text-transform:uppercase;padding:14px 14px 6px;}}
+section[data-testid="stSidebar"] .stButton>button{{
+  background:transparent !important;border:none !important;border-radius:8px !important;
+  padding:9px 14px !important;min-height:40px !important;font-weight:500 !important;font-size:0.86rem !important;}}
+section[data-testid="stSidebar"] .stButton>button *{{color:#FFFFFF !important;}}
+section[data-testid="stSidebar"] .stButton>button p{{font-size:0.86rem !important;white-space:nowrap !important;overflow:hidden;text-overflow:ellipsis;}}
+[data-testid="stToolbarActions"],[data-testid="stMainMenu"],[data-testid="stAppDeployButton"]{{display:none !important;}}
+header[data-testid="stHeader"]{{pointer-events:none !important;}}
+header[data-testid="stHeader"] [data-testid="stExpandSidebarButton"],header[data-testid="stHeader"] [data-testid="collapsedControl"]{{pointer-events:auto !important;}}
+section[data-testid="stSidebar"] .stButton>button [data-testid="stIconMaterial"]{{font-size:1.2rem !important;margin-right:6px !important;}}
+section[data-testid="stSidebar"] .stButton>button:hover{{background:#1A1A1A !important;}}
+section[data-testid="stSidebar"] .stButton>button[kind="primary"],
+section[data-testid="stSidebar"] .stButton>button[data-testid="stBaseButton-primary"]{{
+  background:var(--gv-gold) !important;font-weight:600 !important;}}
+section[data-testid="stSidebar"] .stButton>button[kind="primary"] *,
+section[data-testid="stSidebar"] .stButton>button[data-testid="stBaseButton-primary"] *{{color:#000000 !important;}}
+section[data-testid="stSidebar"] .stSelectbox>div>div{{background:#141414 !important;border:1px solid #2E2E2E !important;}}
+section[data-testid="stSidebar"] .stSelectbox *{{color:#FFFFFF !important;}}
+section[data-testid="stSidebar"] .st-key-login button{{background:var(--gv-gold) !important;}}
+section[data-testid="stSidebar"] .st-key-login button *{{color:#000000 !important;}}
+section[data-testid="stSidebar"] .st-key-login button:hover{{background:#D8B23A !important;}}
+section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] *{{color:#FFFFFF !important;}}
+
+/* ── Cabeçalho branco ── */
+.gov-topbar{{left:0 !important;height:64px !important;background:#FFFFFF !important;
+  border-bottom:1px solid var(--gv-line) !important;box-shadow:none !important;padding:0 24px !important;}}
+.stApp:has(section[data-testid="stSidebar"][aria-expanded="true"]) .gov-topbar{{left:var(--gv-sidebar) !important;}}
+.gov-topbar .gv-sep{{width:1px;height:28px;background:var(--gv-line);}}
+.main .block-container,[data-testid="stMainBlockContainer"]{{padding-top:88px !important;
+  padding-left:2rem !important;padding-right:2rem !important;max-width:1480px !important;}}
+[data-testid="stExpandSidebarButton"],[data-testid="collapsedControl"]{{top:14px !important;left:14px !important;
+  background:#FFFFFF !important;border:1px solid var(--gv-line) !important;}}
+/* Busca, notificações e perfil: widgets nativos posicionados no cabeçalho */
+.st-key-tb_busca{{position:fixed !important;top:12px;right:300px;width:min(420px,34vw) !important;z-index:100000 !important;}}
+.st-key-tb_busca .stTextInput input,.st-key-tb_busca input{{height:40px !important;border-radius:10px !important;border:1px solid #DADADA !important;
+  background:#FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235C5C5C' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 12px center !important;
+  padding-left:40px !important;font-size:0.86rem !important;}}
+.st-key-tb_busca [data-testid="InputInstructions"]{{display:none !important;}}
+.st-key-tb_notif{{position:fixed !important;top:12px;right:236px;width:44px !important;z-index:100000 !important;}}
+.st-key-tb_notif button{{background:transparent !important;border:none !important;height:40px !important;width:44px !important;padding:0 !important;}}
+.st-key-tb_notif button *{{color:#000000 !important;font-size:1.35rem !important;}}
+.st-key-tb_notif button:hover{{background:var(--gv-surface) !important;}}
+.st-key-tb_notif .gv-dot{{position:absolute;top:6px;right:8px;min-width:9px;height:9px;border-radius:99px;background:var(--gv-gold);
+  border:2px solid #FFFFFF;pointer-events:none;z-index:2;}}
+.st-key-tb_perfil{{position:fixed !important;top:12px;right:24px;width:196px !important;z-index:100000 !important;}}
+.st-key-tb_perfil button{{background:transparent !important;border:none !important;height:40px !important;
+  justify-content:flex-start !important;padding:0 6px !important;}}
+.st-key-tb_perfil button *{{color:#000000 !important;font-weight:600 !important;}}
+.st-key-tb_perfil button:hover{{background:var(--gv-surface) !important;}}
+.st-key-tb_perfil .gv-avatar{{position:absolute;left:6px;top:4px;width:32px;height:32px;border-radius:50%;background:var(--gv-gold);
+  color:#000;font-weight:700;font-size:0.75rem;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2;}}
+.st-key-tb_perfil button p{{padding-left:40px !important;}}
+
+/* ── Componentes ── */
+.st-key-pnl_evol,.st-key-pnl_ativ,.st-key-pnl_qa,.st-key-pnl_status{{background:#FFFFFF;border:1px solid var(--gv-line);
+  border-radius:var(--gv-radius);box-shadow:var(--gv-shadow);padding:18px 20px 12px;gap:0 !important;}}
+.st-key-pnl_evol,.st-key-pnl_ativ{{min-height:300px;}}
+.gv-card{{background:#FFFFFF;border:1px solid var(--gv-line);border-radius:var(--gv-radius);box-shadow:var(--gv-shadow);}}
+.gv-panel{{padding:18px 20px;height:100%;}}
+.gv-panel-title{{display:flex;align-items:center;gap:10px;font-weight:650;font-size:0.98rem;color:#000;margin-bottom:14px;}}
+.gv-kpi{{padding:18px 20px 16px;}}
+.gv-kpi-val{{font-size:1.9rem;font-weight:700;letter-spacing:-0.02em;color:#000;line-height:1.1;margin-top:10px;font-variant-numeric:tabular-nums;}}
+.gv-kpi-lbl{{font-size:0.85rem;color:var(--gv-ink2);margin-top:4px;}}
+.gv-kpi-note{{font-size:0.72rem;color:var(--gv-ink3);margin-top:8px;}}
+.gv-bar{{display:grid;grid-template-columns:96px 1fr 46px;align-items:center;gap:12px;margin:10px 0;font-size:0.84rem;}}
+.gv-bar-track{{height:10px;background:#EFEFEF;border-radius:99px;overflow:hidden;}}
+.gv-bar-fill{{height:100%;background:var(--gv-gold);border-radius:99px;}}
+.gv-row{{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid #F0F0F0;font-size:0.86rem;color:#000;}}
+.gv-pill{{margin-left:auto;background:#C9A2271F;color:#000;font-weight:650;font-size:0.75rem;border-radius:8px;padding:2px 9px;min-width:28px;text-align:center;}}
+.gv-qa{{padding:14px 14px 12px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;transition:box-shadow .15s,border-color .15s;}}
+.gv-qa-t{{font-weight:650;font-size:0.9rem;color:#000;line-height:1.25;display:flex;justify-content:space-between;align-items:flex-end;gap:6px;}}
+.gv-qa-d{{font-size:0.72rem;color:var(--gv-ink2);margin-top:4px;line-height:1.35;}}
+/* Cards clicáveis: o botão nativo cobre o card */
+[class*="st-key-lnk_"]{{position:relative !important;gap:0 !important;}}
+[class*="st-key-lnk_"] [data-testid="stButton"],[class*="st-key-lnk_"] .stButton{{position:absolute !important;inset:0 !important;z-index:3 !important;}}
+[class*="st-key-lnk_"] .stButton>button{{width:100% !important;height:100% !important;opacity:0 !important;cursor:pointer !important;}}
+[class*="st-key-lnk_"]:hover .gv-card{{border-color:#D6D6D6;box-shadow:0 2px 4px rgba(0,0,0,0.05),0 10px 24px rgba(0,0,0,0.07);}}
+[class*="st-key-lnk_"] .stButton>button:focus-visible{{opacity:1 !important;background:transparent !important;outline:2px solid var(--gv-gold) !important;}}
+
+/* ── Boas-vindas ── */
+.gv-hero{{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:8px;align-items:start;margin-bottom:10px;}}
+.gv-hero h1.gv-h{{font-family:'Inter',sans-serif !important;font-size:clamp(1.6rem,2.6vw,2.35rem) !important;font-weight:750 !important;
+  letter-spacing:-0.025em !important;line-height:1.1 !important;margin:6px 0 8px !important;padding:0 !important;color:#000 !important;}}
+.gv-hero .gv-sub{{font-size:1rem;color:#1A1A1A;margin-bottom:26px;}}
+.gv-kpis{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;}}
+.gv-art{{position:relative;margin:-24px -8px -10px 0;}}
+.gv-art svg{{width:100%;height:100%;}}
+
+/* ── Área de IA ── */
+.gv-ai{{background:radial-gradient(120% 140% at 85% 50%,#2A2205 0%,#0B0B0B 46%,#000 100%);border-radius:var(--gv-radius);
+  padding:22px 24px;position:relative;overflow:hidden;min-height:184px;box-shadow:var(--gv-shadow);}}
+.gv-ai h3{{font-family:'Inter',sans-serif !important;color:#FFFFFF !important;font-size:1.25rem !important;font-weight:700 !important;
+  line-height:1.2 !important;margin:0 0 8px !important;padding:0 !important;max-width:62%;}}
+.gv-ai p{{color:#E6E6E6 !important;font-size:0.82rem;line-height:1.45;max-width:60%;margin:0 0 14px;}}
+.gv-ai .gv-ai-art{{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:42%;max-width:220px;}}
+.gv-ai .gv-ai-cta{{display:inline-flex;align-items:center;gap:8px;background:var(--gv-gold);color:#000;font-weight:650;
+  font-size:0.82rem;border-radius:8px;padding:9px 14px;}}
+.gv-ai .gv-ai-note{{display:inline-block;color:#BFBFBF !important;font-size:0.74rem;border:1px solid #333;border-radius:8px;padding:7px 12px;}}
+
+/* ── Responsividade ── */
+@media (max-width:1180px){{
+  .gv-hero{{grid-template-columns:1fr;}} .gv-art{{display:none;}}
+  .st-key-tb_busca{{right:270px;width:min(300px,30vw) !important;}}
+}}
+@media (max-width:1024px){{ .gv-kpis{{grid-template-columns:repeat(2,minmax(0,1fr));}} }}
+@media (max-width:768px){{
+  .gov-topbar,.stApp:has(section[data-testid="stSidebar"][aria-expanded="true"]) .gov-topbar{{left:0 !important;height:56px !important;}}
+  .main .block-container,[data-testid="stMainBlockContainer"]{{padding-top:72px !important;padding-left:0.9rem !important;padding-right:0.9rem !important;}}
+  .st-key-tb_busca{{top:8px;left:62px;right:116px;width:auto !important;}}
+  .st-key-tb_notif{{top:8px;right:62px;}}
+  .st-key-tb_perfil{{top:8px;right:10px;width:48px !important;}}
+  .st-key-tb_perfil button p{{display:none !important;}}
+  [data-testid="stExpandSidebarButton"],[data-testid="collapsedControl"]{{top:10px !important;left:10px !important;}}
+  .gv-kpis{{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}}
+  .gv-kpi{{padding:14px;}} .gv-kpi-val{{font-size:1.45rem;}}
+  .gv-ai h3,.gv-ai p{{max-width:100%;}} .gv-ai .gv-ai-art{{opacity:.25;}}
+  .gv-bar{{grid-template-columns:80px 1fr 42px;}}
+}}
+</style>
+""", unsafe_allow_html=True)
+
+# ════════════════════════════════════════════════════════════════════
 # CONEXÃO
 # ════════════════════════════════════════════════════════════════════
 @st.cache_resource
@@ -370,7 +581,6 @@ USUARIOS = {
     "fernando.dias@meridian.com": {"nome":"Fernando Dias",   "perfil":"aprovador"},
 }
 PERFIL_COR   = {"consultante":"#1A1A1A","curador":"#000000","aprovador":"#1E7F4F"}
-COR_PERFIL_NAV = "#000000"
 PERFIL_LABEL = {"consultante":"👁️ Consultante","curador":"✏️ Curador","aprovador":"✅ Aprovador"}
 
 # ════════════════════════════════════════════════════════════════════
@@ -476,46 +686,39 @@ def load_solicitacoes_qualidade():
 # ════════════════════════════════════════════════════════════════════
 # COMPONENTES REUTILIZÁVEIS
 # ════════════════════════════════════════════════════════════════════
+_EMOJI_ICON = {"📖": "book", "📋": "database", "🗂️": "database", "🏛️": "layers", "🛡️": "shield", "🏆": "shield",
+               "⚡": "inbox", "📬": "inbox", "✏️": "edit", "🕐": "clock", "📊": "chart", "🥇": "award",
+               "🔗": "network", "📦": "box", "🔍": "search"}
+
+
 def page_header(icone, titulo, subtitulo=""):
-    perfil = st.session_state.get("perfil_atual","consultante")
-    cor    = PERFIL_COR.get(perfil,"#1A1A1A")
-    nome   = st.session_state.get("nome_atual","")
-    label  = PERFIL_LABEL.get(perfil,"")
+    ic = _EMOJI_ICON.get(icone)
+    simbolo = icon(ic, 24) if ic else f'<span style="font-size:1.2rem;">{icone}</span>'
     st.markdown(f"""
-    <div style="background:linear-gradient(135deg,#FFFFFF,#F5F5F5);
-                border:1px solid #E5E5E5;border-radius:12px;
-                padding:14px 20px;margin-bottom:16px;
-                display:flex;align-items:center;justify-content:space-between;">
-        <div style="display:flex;align-items:center;gap:10px;">
-            <div style="background:#C9A22722;border-radius:8px;padding:8px;font-size:1.2rem;">{icone}</div>
-            <div>
-                <div style="color:#000000;font-size:1.05rem;font-weight:800;">{titulo}</div>
-                {f'<div style="color:#5C5C5C;font-size:0.75rem;">{subtitulo}</div>' if subtitulo else ''}
-            </div>
-        </div>
-        <div style="text-align:right;">
-            <div style="color:{cor};font-size:0.72rem;font-weight:600;">{label}</div>
-            <div style="color:#5C5C5C;font-size:0.68rem;">{nome}</div>
+    <div style="display:flex;align-items:center;gap:14px;margin:2px 0 18px;">
+        <div style="width:46px;height:46px;border-radius:12px;background:#FFFFFF;border:1px solid #EAEAEA;
+                    box-shadow:0 1px 2px rgba(0,0,0,0.04);display:flex;align-items:center;justify-content:center;flex-shrink:0;">{simbolo}</div>
+        <div style="min-width:0;">
+            <div style="color:#000000;font-size:1.45rem;font-weight:700;letter-spacing:-0.02em;line-height:1.2;">{titulo}</div>
+            {f'<div style="color:#5C5C5C;font-size:0.86rem;margin-top:2px;">{subtitulo}</div>' if subtitulo else ''}
         </div>
     </div>""", unsafe_allow_html=True)
 
 def kpi(valor, label, cor="#C9A227", icone="", tooltip=""):
     tip = f'title="{tooltip}"' if tooltip else ""
-    return f"""<div {tip} style="background:#FFFFFF;border:1px solid #E5E5E5;
-        border-radius:10px;padding:14px 16px;border-top:3px solid {cor};cursor:help;">
-        <div style="font-size:0.62rem;color:#5C5C5C;font-weight:700;
-                    text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
-            {icone} {label}</div>
-        <div style="font-size:1.7rem;font-weight:800;color:{cor};">{valor}</div>
+    ic = _EMOJI_ICON.get(str(icone).strip())
+    simbolo = icon(ic, 18, "#000000", 1.7) if ic else (f'<span>{icone}</span>' if icone else "")
+    return f"""<div {tip} class="gv-card" style="padding:16px 18px;cursor:help;height:100%;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:0.8rem;color:#5C5C5C;margin-bottom:8px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:{cor};flex-shrink:0;"></span>{simbolo}<span>{label}</span></div>
+        <div style="font-size:1.65rem;font-weight:700;letter-spacing:-0.02em;color:#000000;font-variant-numeric:tabular-nums;">{valor}</div>
     </div>"""
 
 def section_divider(titulo):
     st.markdown(f"""
-    <div style="display:flex;align-items:center;gap:10px;margin:18px 0 12px;">
-        <div style="height:1px;background:#E5E5E5;flex:1;"></div>
-        <span style="color:#5C5C5C;font-size:0.65rem;font-weight:700;
-                     text-transform:uppercase;letter-spacing:1.5px;">{titulo}</span>
-        <div style="height:1px;background:#E5E5E5;flex:1;"></div>
+    <div style="display:flex;align-items:center;gap:12px;margin:22px 0 12px;">
+        <span style="color:#000000;font-size:0.8rem;font-weight:650;text-transform:uppercase;letter-spacing:1.2px;white-space:nowrap;">{titulo}</span>
+        <div style="height:1px;background:#EAEAEA;flex:1;"></div>
     </div>""", unsafe_allow_html=True)
 
 def avatar(nome, cor="#C9A227", size=36):
@@ -545,34 +748,100 @@ def copyright_footer():
         </div>
     </div>""", unsafe_allow_html=True)
 
+# ── Ilustrações vetoriais (leves, sem imagens externas) ──────────────
+def _iso_cubo(x, y, w, h, topo, esq, dir_, traco="#E9C766", op=1):
+    t = f"{x},{y} {x+w},{y+w/2} {x},{y+w} {x-w},{y+w/2}"
+    l = f"{x-w},{y+w/2} {x},{y+w} {x},{y+w+h} {x-w},{y+w/2+h}"
+    r = f"{x},{y+w} {x+w},{y+w/2} {x+w},{y+w/2+h} {x},{y+w+h}"
+    return (f'<g opacity="{op}"><polygon points="{l}" fill="url(#{esq})" stroke="{traco}" stroke-width="0.8"/>'
+            f'<polygon points="{r}" fill="url(#{dir_})" stroke="{traco}" stroke-width="0.8"/>'
+            f'<polygon points="{t}" fill="url(#{topo})" stroke="#FFF3C4" stroke-width="0.9"/></g>')
+
+
+def _painel(x, y, w, h, conteudo, rot=-6):
+    return (f'<g transform="translate({x},{y}) skewY({rot})">'
+            f'<rect width="{w}" height="{h}" rx="9" fill="url(#gvGlass)" stroke="#E2C25A" stroke-opacity=".75"/>'
+            f'<g transform="translate({w/2-14},{h/2-14})" fill="none" stroke="#C9A227" stroke-width="2.2" '
+            f'stroke-linecap="round" stroke-linejoin="round">{conteudo}</g></g>')
+
+
+_ondas = "".join(
+    f'<path d="M-20 {268+i*7} C 90 {214+i*9}, 200 {320-i*4}, 420 {214+i*8}" fill="none" stroke="#C9A227" '
+    f'stroke-opacity="{0.55-i*0.06:.2f}" stroke-width="1.1" stroke-dasharray="1.2 4.5" stroke-linecap="round"/>'
+    for i in range(8))
+
+HERO_ART_SVG = f"""<svg viewBox="0 0 400 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ilustração de dados conectados">
+<defs>
+  <linearGradient id="gvTop" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF6D6"/><stop offset="1" stop-color="#F0CF66"/></linearGradient>
+  <linearGradient id="gvLeft" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4D77A" stop-opacity=".95"/><stop offset="1" stop-color="#C9A227" stop-opacity=".85"/></linearGradient>
+  <linearGradient id="gvRight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E7BD3F" stop-opacity=".9"/><stop offset="1" stop-color="#9C7A12" stop-opacity=".9"/></linearGradient>
+  <linearGradient id="gvSlabT" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#EDEDED"/></linearGradient>
+  <linearGradient id="gvSlabL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E6E6E6"/><stop offset="1" stop-color="#CFCFCF"/></linearGradient>
+  <linearGradient id="gvSlabR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D6D6D6"/><stop offset="1" stop-color="#BDBDBD"/></linearGradient>
+  <linearGradient id="gvGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".95"/><stop offset="1" stop-color="#FBF3DA" stop-opacity=".75"/></linearGradient>
+  <radialGradient id="gvHalo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#C9A227" stop-opacity=".35"/><stop offset="1" stop-color="#C9A227" stop-opacity="0"/></radialGradient>
+  <filter id="gvBlur"><feGaussianBlur stdDeviation="2.2"/></filter>
+</defs>
+{_ondas}
+<ellipse cx="205" cy="190" rx="150" ry="120" fill="url(#gvHalo)"/>
+{_iso_cubo(205, 214, 104, 16, "gvSlabT", "gvSlabL", "gvSlabR", traco="#D9D9D9")}
+{_iso_cubo(205, 182, 72, 12, "gvSlabT", "gvSlabL", "gvSlabR", traco="#D4D4D4")}
+<g filter="url(#gvBlur)" opacity=".55">{_iso_cubo(205, 70, 52, 120, "gvTop", "gvLeft", "gvRight")}</g>
+{_iso_cubo(205, 70, 52, 120, "gvTop", "gvLeft", "gvRight")}
+<path d="M153 150 L205 176 L257 150 M153 112 L205 138 L257 112" stroke="#FFF3C4" stroke-opacity=".7" fill="none"/>
+<g transform="translate(205,86)" fill="none" stroke="#7A5E0A" stroke-width="2.4">
+  <ellipse cx="0" cy="0" rx="16" ry="6"/><path d="M-16 0v18c0 3.3 7.2 6 16 6s16-2.7 16-6V0"/><path d="M-16 9c0 3.3 7.2 6 16 6s16-2.7 16-6"/>
+</g>
+{_painel(48, 48, 62, 56, '<path d="M4 26V16M12 26V9M20 26V13M28 26V4"/>')}
+{_painel(60, 150, 54, 52, '<path d="M14 27s9-4.5 9-11.3V7.8L14 4.5 5 7.8v7.9C5 22.5 14 27 14 27z"/><path d="m10 15 3 3 5-6"/>')}
+{_painel(300, 34, 60, 54, '<circle cx="14" cy="14" r="3"/><circle cx="4" cy="4" r="2.4"/><circle cx="24" cy="4" r="2.4"/><circle cx="4" cy="24" r="2.4"/><circle cx="24" cy="24" r="2.4"/><path d="m6 6 6 6M22 6l-6 6M6 22l6-6M22 22l-6-6"/>', rot=6)}
+{_painel(304, 140, 58, 52, '<path d="M8 22h13a6 6 0 0 0 .8-12A8 8 0 0 0 6.6 12.3 5 5 0 0 0 8 22z"/>', rot=6)}
+<g fill="#C9A227">{''.join(f'<circle cx="{cx}" cy="{cy}" r="{r}" opacity="{o}"/>' for cx, cy, r, o in
+    [(150,40,1.6,.7),(268,28,1.2,.6),(120,128,1.3,.5),(286,118,1.8,.7),(340,108,1.1,.5),(98,214,1.2,.5),(250,62,1,.6)])}</g>
+</svg>"""
+
+AI_ART_SVG = """<svg viewBox="0 0 200 170" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<defs><filter id="gvAiGlow"><feGaussianBlur stdDeviation="3"/></filter>
+<radialGradient id="gvAiHalo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#C9A227" stop-opacity=".45"/><stop offset="1" stop-color="#C9A227" stop-opacity="0"/></radialGradient></defs>
+<circle cx="100" cy="85" r="78" fill="url(#gvAiHalo)"/>
+<g stroke="#C9A227" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".9">
+  <path d="M70 70H40l-12-12M70 85H22M70 100H40l-12 12M130 70h30l12-12M130 85h48M130 100h30l12 12"/>
+  <path d="M85 55V30l-10-10M100 55V16M115 55V30l10-10M85 115v25l-10 10M100 115v39M115 115v25l10 10"/>
+</g>
+<g fill="#C9A227">
+  <circle cx="28" cy="58" r="3"/><circle cx="22" cy="85" r="3"/><circle cx="28" cy="112" r="3"/><circle cx="172" cy="58" r="3"/><circle cx="178" cy="85" r="3"/>
+  <circle cx="172" cy="112" r="3"/><circle cx="75" cy="20" r="3"/><circle cx="100" cy="16" r="3"/><circle cx="125" cy="20" r="3"/><circle cx="75" cy="150" r="3"/>
+  <circle cx="100" cy="154" r="3"/><circle cx="125" cy="150" r="3"/>
+</g>
+<rect x="70" y="55" width="60" height="60" rx="10" fill="#C9A227" opacity=".55" filter="url(#gvAiGlow)"/>
+<rect x="70" y="55" width="60" height="60" rx="10" fill="#0B0B0B" stroke="#E2C25A" stroke-width="2.4"/>
+<text x="100" y="95" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="26" font-weight="800" fill="#F0CF66">IA</text>
+</svg>"""
+
+
 # ════════════════════════════════════════════════════════════════════
-# SIDEBAR — Navegação principal redesenhada
+# SIDEBAR — Menu lateral preto
 # ════════════════════════════════════════════════════════════════════
+_LOGO_SIDEBAR = f"""
+<div style="padding:18px 8px 18px;text-align:center;">
+    <div style="display:flex;justify-content:center;">{LOGO_SVG.format(s=58, bg="#000000")}</div>
+    <div style="font-family:Lora,serif;font-size:19px;font-weight:600;color:#FFFFFF;letter-spacing:2px;white-space:nowrap;
+                text-transform:uppercase;margin-top:6px;line-height:1.1;">Governantes</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;">
+        <span style="height:1px;width:12px;background:#C9A227;flex-shrink:0;"></span>
+        <span style="font-family:Lora,serif;font-size:8.5px;color:#C9A227 !important;letter-spacing:0.6px;text-transform:uppercase;white-space:nowrap;">Governança de Dados &amp; IA</span>
+        <span style="height:1px;width:12px;background:#C9A227;flex-shrink:0;"></span>
+    </div>
+</div>"""
+
 with st.sidebar:
     if "usuario" not in st.session_state:
         st.session_state["usuario"] = None
 
+    st.markdown(_LOGO_SIDEBAR, unsafe_allow_html=True)
+
     if not st.session_state["usuario"]:
-        st.markdown("""
-        <div style="padding:28px 16px 16px;">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
-                <svg width="34" height="34" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-                  <circle cx="20" cy="20" r="19" stroke="#C9A227" stroke-width="1.8" fill="#FFFFFF"/>
-                  <circle cx="20" cy="20" r="15.5" stroke="#C9A227" stroke-width="0.9" fill="none"/>
-                  <text x="20" y="22" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="13" font-weight="bold" fill="#C9A227">G</text>
-                  <circle cx="14" cy="30" r="1.8" fill="#C9A227"/>
-                  <path d="M11.5 36 Q14 33 16.5 36" stroke="#C9A227" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-                  <circle cx="20" cy="29.5" r="1.8" fill="#C9A227"/>
-                  <path d="M17.5 35.5 Q20 32.5 22.5 35.5" stroke="#C9A227" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-                  <circle cx="26" cy="30" r="1.8" fill="#C9A227"/>
-                  <path d="M23.5 36 Q26 33 28.5 36" stroke="#C9A227" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-                </svg>
-                <div>
-                    <div style="font-family:Lora,serif;font-size:13px;font-weight:700;color:#000000;letter-spacing:2px;text-transform:uppercase;">Governantes<sup style="font-size:7px;color:#C9A227;">®</sup></div>
-                    <div style="font-size:8.5px;color:#C9A227;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;">Governança de Dados</div>
-                </div>
-            </div>
-        </div>""", unsafe_allow_html=True)
+        st.markdown('<div class="gv-nav-label">Acesso à plataforma</div>', unsafe_allow_html=True)
         email = st.selectbox("Usuário", list(USUARIOS.keys()),
             format_func=lambda x: f"{USUARIOS[x]['nome']} · {USUARIOS[x]['perfil']}",
             label_visibility="collapsed")
@@ -595,136 +864,92 @@ with st.sidebar:
     if "pagina" not in st.session_state:
         st.session_state["pagina"] = "🏠 Início"
 
-    # ── Espaçamento inicial
-    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
-
-    # ── Navegação flat
+    # (ícone material, rótulo, destino) — destinos inalterados
     NAV_ITEMS = [
-        ("🏠", "Início",                "🏠 Início"),
-        ("🔍", "Busca Global",          "🔍 Busca Global"),
-        ("📋", "Catálogo de Dados",     "📋 Catálogo"),
-        ("📖", "Glossário de Negócio",  "📖 Glossário"),
-        ("🏆", "Qualidade de Dados",    "🏆 Qualidade"),
-        ("🔗", "Linhagem de Dados",     "🔗 Linhagem"),
-        ("📬", "Solicitações",          "⚡ Meu Espaço"),
-        ("📊", "Gestão e Indicadores",  "📊 Indicadores"),
+        (":material/home:",            "Início",                "🏠 Início"),
+        (":material/database:",        "Catálogo de Dados",     "📋 Catálogo"),
+        (":material/verified_user:",   "Qualidade de Dados",    "🏆 Qualidade"),
+        (":material/menu_book:",       "Glossário de Negócio",  "📖 Glossário"),
+        (":material/hub:",             "Linhagem de Dados",     "🔗 Linhagem"),
+        (":material/search:",          "Busca Global",          "🔍 Busca Global"),
+        (":material/assignment:",      "Solicitações",          "⚡ Meu Espaço"),
+        (":material/trending_up:",     "Gestão e Indicadores",  "📊 Indicadores"),
     ]
     NAV_OP = [
-        ("🏛️", "Domínios",     "🏛️ Domínios"),
-        ("📦", "Produtos",     "📦 Produtos"),
-        ("🛡️", "Scorecard",   "🛡️ Scorecard"),
-        ("🥇", "Certificação", "🥇 Certificação"),
-        ("✏️", "Curadoria",   "✏️ Curadoria"),
-        ("🕐", "Auditoria",   "🕐 Auditoria"),
+        (":material/layers:",          "Domínios",     "🏛️ Domínios"),
+        (":material/deployed_code:",   "Produtos",     "📦 Produtos"),
+        (":material/fact_check:",      "Scorecard",    "🛡️ Scorecard"),
+        (":material/workspace_premium:", "Certificação", "🥇 Certificação"),
+        (":material/edit_note:",       "Curadoria",    "✏️ Curadoria"),
+        (":material/history:",         "Auditoria",    "🕐 Auditoria"),
     ]
 
-    nav_all = NAV_ITEMS + (NAV_OP if is_curador else [])
-
-    for icon, label, dest in nav_all:
-        is_active = st.session_state["pagina"] == dest
-        if is_active:
-            st.markdown(f"""
-            <div style="background:#F5F5F5;
-                        border-left:3px solid #C9A227;border-radius:0 6px 6px 0;
-                        padding:8px 14px;display:flex;align-items:center;gap:10px;
-                        margin:1px 8px 1px 0;font-size:0.81rem;font-weight:700;color:#000000 !important;">
-                <span style="font-size:0.9rem;">{icon}</span><span>{label}</span>
-            </div>""", unsafe_allow_html=True)
-        else:
-            if st.button(f"{icon}  {label}", key=f"nav_{dest}_{label}", use_container_width=True):
+    def _nav(itens):
+        for ic_nav, label, dest in itens:
+            ativo = st.session_state["pagina"] == dest
+            if st.button(label, key=f"nav_{dest}_{label}", icon=ic_nav, use_container_width=True,
+                         type="primary" if ativo else "secondary"):
                 st.session_state["pagina"] = dest
                 for k in ["gid_sel","cat_sel","dom_sel","sc_pilar"]:
                     st.session_state.pop(k, None)
                 st.rerun()
 
-    # ── Perfil (rodapé)
-    iniciais_u = "".join([n[0].upper() for n in u["nome"].split()[:2]])
-    st.markdown(f"""
-    <div style="position:absolute;bottom:0;left:0;right:0;
-                border-top:1px solid #E5E5E5;padding:14px 14px 16px;
-                background:#FFFFFF;">
-        <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:1.5px;
-                    color:#6E6E6E;margin-bottom:10px;font-weight:700;">Perfil Atual</div>
-        <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:32px;height:32px;border-radius:50%;background:{COR_PERFIL_NAV}22;
-                        border:1.5px solid {COR_PERFIL_NAV}55;display:flex;align-items:center;
-                        justify-content:center;color:{COR_PERFIL_NAV};font-weight:800;
-                        font-size:12px;flex-shrink:0;">{iniciais_u}</div>
-            <div style="overflow:hidden;">
-                <div style="color:#000000;font-size:0.78rem;font-weight:700;
-                            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{u['nome']}</div>
-                <div style="color:{COR_PERFIL_NAV};font-size:0.67rem;">{PERFIL_LABEL[perfil]}</div>
-            </div>
-        </div>
-    </div>""", unsafe_allow_html=True)
-    st.markdown("<div style='height:106px;'></div>", unsafe_allow_html=True)
-    if st.button("↩ Trocar perfil", key="logout", use_container_width=True):
-        st.session_state["usuario"] = None
-        st.rerun()
+    _nav(NAV_ITEMS)
+    if is_curador:
+        st.markdown('<div class="gv-nav-label">Governança</div>', unsafe_allow_html=True)
+        _nav(NAV_OP)
+    st.markdown("<div style='height:150px;'></div>", unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════════════════
-# TOPBAR — Cabeçalho institucional fixo
+# CABEÇALHO — busca global, notificações e menu de perfil
 # ════════════════════════════════════════════════════════════════════
 _nome_tb  = st.session_state.get("nome_atual", "")
 _perf_tb  = st.session_state.get("perfil_atual", "consultante")
 _perf_lbl = PERFIL_LABEL.get(_perf_tb, "")
 _iniciais = "".join([n[0].upper() for n in _nome_tb.split()[:2]]) if _nome_tb else "U"
-_cor_tb   = COR_PERFIL_NAV
 
-st.markdown(f"""
+st.markdown("""
 <div class="gov-topbar">
-    <!-- Logo -->
-    <div class="topbar-logo" style="display:flex;align-items:center;gap:10px;min-width:190px;">
-        <!-- Governantes® circular logo -->
-        <svg width="34" height="34" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-          <circle cx="20" cy="20" r="19" stroke="#C9A227" stroke-width="1.8" fill="#FFFFFF"/>
-          <circle cx="20" cy="20" r="15.5" stroke="#C9A227" stroke-width="0.9" fill="none"/>
-          <text x="20" y="22" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="13" font-weight="bold" fill="#C9A227">G</text>
-          <circle cx="14" cy="30" r="1.8" fill="#C9A227"/>
-          <path d="M11.5 36 Q14 33 16.5 36" stroke="#C9A227" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-          <circle cx="20" cy="29.5" r="1.8" fill="#C9A227"/>
-          <path d="M17.5 35.5 Q20 32.5 22.5 35.5" stroke="#C9A227" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-          <circle cx="26" cy="30" r="1.8" fill="#C9A227"/>
-          <path d="M23.5 36 Q26 33 28.5 36" stroke="#C9A227" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-        </svg>
-        <div>
-            <div style="font-family:Lora,serif;font-size:12.5px;font-weight:700;color:#000000;letter-spacing:2px;text-transform:uppercase;line-height:1.2;">Governantes<sup style="font-size:7px;color:#C9A227;">®</sup></div>
-            <div style="font-size:8px;color:#C9A227;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;line-height:1.2;">Governança de Dados & IA</div>
-        </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:18px;">
+        <span style="width:44px;"></span><span class="gv-sep"></span><span style="width:180px;"></span>
     </div>
-    <!-- Jornadas -->
-    <div class="topbar-jornadas" style="display:flex;align-items:center;gap:6px;margin:0 12px;">
-        <span onclick="__govNav('descobrir')" style="color:#5C5C5C;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid #E5E5E5;cursor:pointer;white-space:nowrap;" title="Catálogo e descoberta de ativos">🔍 Descobrir</span>
-        <span onclick="__govNav('entender')" style="color:#5C5C5C;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid #E5E5E5;cursor:pointer;white-space:nowrap;" title="Glossário e definições">📖 Entender</span>
-        <span onclick="__govNav('confiar')" style="color:#5C5C5C;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid #E5E5E5;cursor:pointer;white-space:nowrap;" title="Qualidade e scorecard">🛡️ Confiar</span>
-        <span onclick="__govNav('agir')" style="color:#5C5C5C;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid #E5E5E5;cursor:pointer;white-space:nowrap;" title="Curadoria e solicitações">⚡ Agir</span>
-        <span onclick="__govNav('decidir')" style="color:#5C5C5C;font-size:0.68rem;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid #E5E5E5;cursor:pointer;white-space:nowrap;" title="Indicadores e gestão">📊 Decidir</span>
-    </div>
-    <!-- Busca -->
-    <div class="topbar-busca" style="flex:1;max-width:380px;">
-        <div onclick="__govNav('busca')" style="background:#F5F5F5;border:1px solid #E5E5E5;border-radius:6px;
-                    padding:6px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;">
-            <span style="color:#6E6E6E;font-size:12px;">🔍</span>
-            <span style="color:#6E6E6E;font-size:0.78rem;">Buscar dados, termos, regras...</span>
-        </div>
-    </div>
-    <!-- Usuário -->
-    <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0;">
-        <span style="color:#6E6E6E;font-size:1rem;" title="Sem notificações pendentes">🔔</span>
-        <div style="text-align:right;display:none;">
-            <div style="color:#000000;font-size:0.75rem;font-weight:700;line-height:1.2;">{_nome_tb}</div>
-            <div style="color:{_cor_tb};font-size:0.65rem;line-height:1.2;">{_perf_lbl}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;">
-            <div style="color:#000000;font-size:0.73rem;font-weight:700;line-height:1.2;">{_nome_tb}</div>
-            <div style="color:{_cor_tb};font-size:0.63rem;line-height:1.2;">{_perf_lbl}</div>
-        </div>
-        <div style="width:30px;height:30px;border-radius:50%;background:{_cor_tb}22;
-                    border:1.5px solid {_cor_tb}55;display:flex;align-items:center;
-                    justify-content:center;color:{_cor_tb};font-weight:800;font-size:11px;flex-shrink:0;">{_iniciais}</div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+</div>""", unsafe_allow_html=True)
+
+
+def _tb_buscar():
+    q = st.session_state.get("tb_busca_q", "").strip()
+    if q:
+        st.session_state["busca_global_query"] = q
+        st.session_state["pagina"] = "🔍 Busca Global"
+        st.session_state["tb_busca_q"] = ""
+
+
+with st.container(key="tb_busca"):
+    st.text_input("Buscar", key="tb_busca_q", placeholder="Buscar dados, domínios, glossário...",
+                  label_visibility="collapsed", on_change=_tb_buscar)
+
+_STATUS_FECHADO = {"concluido","aprovado","cancelado","concluída","aprovada","encerrado"}
+_pend_tb = 0
+for _df_tb in (load_solicitacoes_acesso(), load_solicitacoes_qualidade()):
+    if not _df_tb.empty and "status" in _df_tb.columns:
+        _pend_tb += int((~_df_tb["status"].astype(str).str.lower().isin(_STATUS_FECHADO)).sum())
+
+with st.container(key="tb_notif"):
+    if _pend_tb:
+        st.markdown('<span class="gv-dot"></span>', unsafe_allow_html=True)
+    if st.button("", key="tb_notif_btn", icon=":material/notifications:",
+                 help=f"{_pend_tb} solicitações em aberto" if _pend_tb else "Sem solicitações em aberto"):
+        st.session_state["pagina"] = "⚡ Meu Espaço"
+        st.rerun()
+
+with st.container(key="tb_perfil"):
+    st.markdown(f'<span class="gv-avatar">{_iniciais}</span>', unsafe_allow_html=True)
+    with st.popover(_nome_tb or "Perfil", use_container_width=True):
+        st.markdown(f"**{_nome_tb}**  \n{_perf_lbl}")
+        if st.button("Trocar perfil", key="logout", icon=":material/swap_horiz:", use_container_width=True):
+            st.session_state["usuario"] = None
+            st.rerun()
+
 
 # ── Função JS __govNav: clica nos botões Streamlit ocultos sem reload ──
 st.markdown("""
@@ -872,418 +1097,245 @@ if pagina == "🏠 Início":
             sol_abertas += len(df_sol_qu[~df_sol_qu["status"].str.lower().isin(STATUS_CLOSED)])
 
     # ══════════════════════════════════════════════════════════════════
-    # A. BANNER
+    # A. BOAS-VINDAS + INDICADORES EXECUTIVOS (dados reais)
     # ══════════════════════════════════════════════════════════════════
-    st.markdown("""
-    <div style="background:
-                radial-gradient(circle at 78% 30%,#C9A2271F 0 2px,transparent 3px) 0 0/28px 28px,
-                linear-gradient(90deg,#FFFFFF 38%,rgba(255,255,255,0.6) 70%,rgba(255,255,255,0) 100%),
-                linear-gradient(#EDEDED 1px,transparent 1px) 0 0/28px 28px,
-                linear-gradient(90deg,#EDEDED 1px,transparent 1px) 0 0/28px 28px,
-                #FFFFFF;
-                border:1px solid #E5E5E5;border-radius:10px;padding:36px 36px 32px;margin-bottom:16px;
-                position:relative;min-height:160px;overflow:hidden;
-                display:flex;align-items:center;justify-content:space-between;gap:32px;"
-             class="banner-inner">
-        <div style="flex:1;min-width:0;">
-            <div style="color:#5C5C5C;font-size:0.62rem;letter-spacing:3px;
-                        text-transform:uppercase;margin-bottom:10px;font-weight:700;
-                        border-left:2px solid #C9A227;padding-left:8px;">
-                PLATAFORMA DE GOVERNANÇA DE DADOS
-            </div>
-            <div style="color:#000000;font-size:clamp(1.1rem,2.2vw,1.55rem);font-weight:700;line-height:1.25;
-                        margin-bottom:10px;font-family:'Inter',sans-serif;letter-spacing:-0.02em;">
-                Dados bem governados impulsionam grandes decisões
-            </div>
-            <div style="color:#5C5C5C;font-size:0.84rem;line-height:1.6;">
-                Encontre, entenda, confie e aja sobre os dados da sua organização.
-            </div>
-        </div>
-        <div class="banner-missao" style="flex-shrink:0;background:#FFFFFF;border:1px solid #E5E5E5;border-top:2px solid #C9A227;
-                    border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,0.04);padding:18px 20px;width:190px;
-                    backdrop-filter:blur(10px);">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <span style="color:#000000;font-size:0.8rem;font-weight:700;">Nossa missão</span>
-            </div>
-            <div style="color:#1A1A1A;font-size:0.71rem;line-height:1.6;">
-                Transformar dados em confiança para impulsionar decisões que geram valor real para a organização.
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    df_snap_h = load_snap()
+    total_dominios = (df_meta["dominio"].dropna().astype(str).str.strip().replace("", pd.NA).dropna().nunique()
+                      if not df_meta.empty and "dominio" in df_meta.columns else ("—" if _db_fail else 0))
 
-    # ══════════════════════════════════════════════════════════════════
-    # B. ATALHOS — 5 cards horizontais
-    # ══════════════════════════════════════════════════════════════════
-    ATALHOS = [
-        ("🗂️","Catálogo de Dados",    "catalogo",   "Encontre e explore ativos de dados"),
-        ("📖","Glossário de Negócio", "glossario",  "Veja termos, conceitos e regras"),
-        ("🛡️","Qualidade de Dados",   "qualidade",  "Monitore a saúde e aponte problemas"),
-        ("🔗","Linhagem de Dados",    "linhagem",   "Veja a origem e o fluxo dos dados"),
-        ("📬","Solicitações",         "espacomeu",  "Peça acessos e melhorias de qualidade"),
+    def _fmt(v):
+        return f"{v:,}".replace(",", ".") if isinstance(v, int) else str(v)
+
+    _kpis_home = [
+        ("database", _fmt(total_ativos),   "Ativos de Dados",    "Tabelas ativas com metadados"),
+        ("layers",   _fmt(total_dominios), "Domínios",           "Domínios com ativos catalogados"),
+        ("shield",   qual_str,             "Qualidade dos Dados", "Média do score final avaliado"),
+        ("book",     _fmt(total_termos),   "Termos de Negócio",  "Conceitos no glossário"),
     ]
-    _cards_html = "".join([
-        f"""<div onclick="__govNav('{nav_key}')"
-             style="background:#FFFFFF;border:1px solid #E5E5E5;
-                    border-bottom:3px solid #C9A227;border-radius:10px;
-                    padding:18px 14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);
-                    cursor:pointer;transition:all 0.2s;"
-             onmouseover="this.style.background='#F5F5F5'"
-             onmouseout="this.style.background='#FFFFFF'">
-            <div style="font-size:1.4rem;margin-bottom:8px;">{ic}</div>
-            <div style="color:#000000;font-weight:700;font-size:0.8rem;
-                        margin-bottom:5px;line-height:1.3;">{tit}</div>
-            <div style="color:#5C5C5C;font-size:0.68rem;line-height:1.4;">{desc}</div>
-        </div>"""
-        for ic, tit, nav_key, desc in ATALHOS
-    ])
+    _kpi_html = "".join(f"""
+        <div class="gv-card gv-kpi" title="{nota}">
+            {icon(ic, 30)}
+            <div class="gv-kpi-val">{val}</div>
+            <div class="gv-kpi-lbl">{lbl}</div>
+        </div>""" for ic, val, lbl, nota in _kpis_home)
+
     st.markdown(f"""
-    <div class="atalhos-grid"
-         style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
-        {_cards_html}
+    <div class="gv-hero">
+        <div>
+            <h1 class="gv-h">Bem-vindo à plataforma <span style="color:#C9A227;">Governantes</span></h1>
+            <div class="gv-sub">Governança de Dados e IA para transformar dados em valor, com confiança, controle e resultados.</div>
+            <div class="gv-kpis">{_kpi_html}</div>
+        </div>
+        <div class="gv-art">{HERO_ART_SVG}</div>
     </div>""", unsafe_allow_html=True)
 
-    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
-
     # ══════════════════════════════════════════════════════════════════
-    # C. PANORAMA EXECUTIVO
+    # B. PAINÉIS — qualidade por domínio · evolução · minhas atividades
     # ══════════════════════════════════════════════════════════════════
-    st.markdown("""
-    <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
-                color:#000000;border-bottom:1px solid #E5E5E5;padding-bottom:8px;
-                margin-bottom:12px;">Panorama Geral</div>
-    """, unsafe_allow_html=True)
+    pn1, pn2, pn3 = st.columns([1, 1.05, 0.95], gap="medium")
 
-    pan_left, pan_mid, pan_right = st.columns([2.2, 2.8, 2.0], gap="small")
-
-    # ── KPI tiles ────────────────────────────────────────────────────
-    with pan_left:
-        st.markdown("""
-        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
-                    padding:16px 18px;height:100%;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-            <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1px;color:#000000;margin-bottom:14px;">Indicadores</div>
-        """, unsafe_allow_html=True)
-
-        _db_ok = not bool(st.session_state.get("_db_err"))
-        _upd   = datetime.now().strftime("%H:%M") if _db_ok else "indisponível"
-        kpi_data = [
-            (total_ativos,  "Ativos de Dados",        "#C9A227", "🗂️",
-             "tabelas_metadata", "Contagem de tabelas ativas com metadados cadastrados.",
-             "Fórmula: COUNT(table_name) WHERE status='ativo'", "Período: atual"),
-            (total_termos,  "Termos de Negócio",      "#C9A227", "📖",
-             "gd_glossario", "Total de conceitos de negócio no glossário.",
-             "Fórmula: COUNT(glossary_id) todos os status", "Período: atual"),
-            (qual_str,      "Qualidade Média",         "#1E7F4F", "🛡️",
-             "gd_quality_dimensions", "Média do score_final de todas as dimensões de qualidade avaliadas.",
-             "Fórmula: AVG(score_final) por domínio · População: ativos avaliados", "Período: última avaliação"),
-            (sol_abertas,   "Solicitações em Aberto",  "#B26A00", "📬",
-             "solicitacoes_acesso + solicitacoes_qualidade",
-             "Contagem de solicitações sem status de fechamento.",
-             "Fórmula: COUNT WHERE status NOT IN (concluido, aprovado, cancelado)", "Período: atual"),
-        ]
-        for val, lbl, cor_k, ic_k, fonte, definicao, formula, periodo in kpi_data:
-            _cor_icon = cor_k if cor_k != "#0A0A0A" else "#C9A227"
-            st.markdown(f"""
-            <div style="display:flex;align-items:center;gap:10px;padding:9px 0;
-                        border-bottom:1px solid #E5E5E5;" title="{definicao}&#10;{formula}&#10;Fonte: {fonte}&#10;{periodo}">
-                <div style="width:34px;height:34px;border-radius:8px;background:{_cor_icon}22;
-                            display:flex;align-items:center;justify-content:center;
-                            font-size:1rem;flex-shrink:0;">{ic_k}</div>
-                <div style="flex:1;min-width:0;">
-                    <div style="color:#5C5C5C;font-size:0.65rem;">{lbl}</div>
-                    <div style="color:{cor_k if cor_k != "#0A0A0A" else "#000000"};font-size:1.35rem;font-weight:800;line-height:1.2;">{val}</div>
-                    <div style="color:#6E6E6E;font-size:0.56rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{formula[:60]}</div>
-                </div>
-            </div>""", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    # ── Qualidade por Domínio ────────────────────────────────────────
-    with pan_mid:
-        st.markdown("""
-        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
-                    padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-            <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1px;color:#000000;margin-bottom:12px;">Qualidade por Domínio</div>
-        """, unsafe_allow_html=True)
-
+    with pn1:
         if not df_qual.empty and "dominio" in df_qual.columns and "score_final" in df_qual.columns:
-            dom_qual = df_qual.groupby("dominio").agg(
-                score_final=("score_final","mean"),
-                total=("score_final","count")
-            ).reset_index()
-            dom_qual = dom_qual.sort_values("score_final", ascending=False).head(7)
-            for idx, row in dom_qual.iterrows():
-                sc    = round(float(row["score_final"]), 1)
-                n     = int(row["total"])
-                cor_bar="#1E7F4F" if sc >= 80 else "#C9A227" if sc >= 60 else "#C62828"
-                st.markdown(f"""
-                <div style="margin-bottom:9px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-                        <div style="color:#E5E5E5;font-size:0.73rem;font-weight:600;
-                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%;">{row['dominio']}</div>
-                        <div style="display:flex;align-items:center;gap:6px;">
-                            <div style="color:#5C5C5C;font-size:0.6rem;">{n} reg.</div>
-                            <div style="color:{cor_bar};font-size:0.73rem;font-weight:800;">{sc}%</div>
-                        </div>
-                    </div>
-                    <div style="background:#E5E5E5;border-radius:99px;height:5px;overflow:hidden;">
-                        <div style="width:{sc}%;height:100%;background:{cor_bar};border-radius:99px;"></div>
-                    </div>
-                </div>""", unsafe_allow_html=True)
-        elif st.session_state.get("_db_err"):
-            st.markdown('<div style="color:#C62828;font-size:0.78rem;padding:20px 0;text-align:center;">⚠️ Erro de conexão com Databricks</div>', unsafe_allow_html=True)
+            dom_qual = (df_qual.groupby("dominio").agg(score_final=("score_final", "mean"), total=("score_final", "count"))
+                        .reset_index().sort_values("score_final", ascending=False).head(6))
+            corpo = "".join(f"""
+                <div class="gv-bar" title="{int(r['total'])} registros avaliados">
+                    <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#000;">{r['dominio']}</span>
+                    <div class="gv-bar-track"><div class="gv-bar-fill" style="width:{min(float(r['score_final']),100):.0f}%;"></div></div>
+                    <span style="text-align:right;font-weight:600;color:#000;">{float(r['score_final']):.0f}%</span>
+                </div>""" for _, r in dom_qual.iterrows())
+        elif _db_fail:
+            corpo = '<div style="color:#5C5C5C;font-size:0.82rem;padding:28px 0;text-align:center;">Dados indisponíveis no momento</div>'
         else:
-            st.markdown('<div style="color:#5C5C5C;font-size:0.78rem;padding:20px 0;text-align:center;">Nenhum dado de qualidade encontrado</div>', unsafe_allow_html=True)
+            corpo = '<div style="color:#5C5C5C;font-size:0.82rem;padding:28px 0;text-align:center;">Nenhum dado de qualidade encontrado</div>'
+        st.markdown(f"""<div class="gv-card gv-panel">
+            <div class="gv-panel-title">{icon('chart', 22)} Qualidade de Dados por Domínio</div>{corpo}</div>""",
+            unsafe_allow_html=True)
 
-        st.markdown("</div>", unsafe_allow_html=True)
+    with pn2:
+        with st.container(key="pnl_evol"):
+            st.markdown(f'<div class="gv-panel-title" style="margin:0;">{icon("trend", 22)} Evolução da Qualidade de Dados</div>',
+                        unsafe_allow_html=True)
+            _ev = (df_snap_h[df_snap_h["dominio"] == "Todos"]
+                   if not df_snap_h.empty and {"dominio", "score_qualidade", "data_snapshot"} <= set(df_snap_h.columns)
+                   else pd.DataFrame())
+            if not _ev.empty:
+                _ev = _ev.assign(_d=pd.to_datetime(_ev["data_snapshot"])).sort_values("_d").tail(6)
+                _mes = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"]
+                _x = [f"{_mes[d.month-1]}/{str(d.year)[2:]}" if _ev["_d"].dt.month.nunique() < len(_ev) else _mes[d.month-1]
+                      for d in _ev["_d"]]
+                _y = _ev["score_qualidade"].astype(float).tolist()
+                fig_ev = go.Figure(go.Scatter(
+                    x=_x, y=_y, mode="lines+markers", line=dict(color="#C9A227", width=2.5, shape="spline", smoothing=0.6),
+                    marker=dict(size=8, color="#FFFFFF", line=dict(color="#C9A227", width=2)),
+                    fill="tozeroy", fillcolor="rgba(201,162,39,0.10)",
+                    hovertemplate="%{x}: %{y:.1f}%<extra></extra>"))
+                fig_ev.add_annotation(x=_x[-1], y=_y[-1], text=f"<b>{_y[-1]:.0f}%</b>", showarrow=False, yshift=20,
+                                      font=dict(color="#000000", size=12), bgcolor="#C9A227", borderpad=4)
+                _lo = max(0, min(_y) - 6)
+                fig_ev.update_layout(height=232, margin=dict(t=18, b=6, l=4, r=10), paper_bgcolor="rgba(0,0,0,0)",
+                                     plot_bgcolor="rgba(0,0,0,0)", showlegend=False,
+                                     font=dict(family="Inter, sans-serif", color="#5C5C5C", size=11),
+                                     xaxis=dict(showgrid=False, linecolor="#EAEAEA", fixedrange=True),
+                                     yaxis=dict(range=[_lo, 100.5], ticksuffix="%", gridcolor="#F0F0F0", zeroline=False, fixedrange=True))
+                st.plotly_chart(fig_ev, use_container_width=True, config={"displayModeBar": False})
+            else:
+                st.markdown('<div style="color:#5C5C5C;font-size:0.82rem;padding:60px 0;text-align:center;">'
+                            + ("Dados indisponíveis no momento" if _db_fail else "Nenhum snapshot de qualidade registrado")
+                            + '</div>', unsafe_allow_html=True)
 
-    # ── Rosca Solicitações ───────────────────────────────────────────
-    with pan_right:
-        st.markdown("""
-        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
-                    padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-            <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1px;color:#000000;margin-bottom:10px;">Status das Solicitações</div>
-        """, unsafe_allow_html=True)
+    with pn3:
+        def _cnt(df, col, valores, negar=False):
+            if df.empty or col not in df.columns:
+                return "—" if _db_fail else 0
+            m = df[col].astype(str).str.lower().isin(valores)
+            return int((~m if negar else m).sum())
 
-        frames = []
-        for df_s in [df_sol_ac, df_sol_qu]:
-            if not df_s.empty and "status" in df_s.columns:
-                frames.append(df_s[["status"]])
-        if frames:
-            df_all_sol = pd.concat(frames, ignore_index=True)
-            st._df_status = df_all_sol  # avoid unused warning
-            status_counts = df_all_sol["status"].value_counts().reset_index()
-            status_counts.columns = ["status","total"]
-            STATUS_COLORS = {
-                "pendente":"#B26A00","em_analise":"#1A1A1A","aprovado":"#1E7F4F",
-                "concluido":"#1E7F4F","cancelado":"#5C5C5C","em_revisao":"#3D3D3D",
-                "reprovado":"#C62828","concluída":"#1E7F4F","aprovada":"#1E7F4F",
-            }
-            cores_rosca = [STATUS_COLORS.get(s,"#D4D4D4") for s in status_counts["status"]]
-            total_sol = status_counts["total"].sum()
+        _atividades = [
+            ("inbox",  "Solicitações pendentes",   sol_abertas, "⚡ Meu Espaço"),
+            ("book",   "Aprovações de glossário",  _cnt(df_gloss, "status", {"em_revisao"}), "📖 Glossário"),
+            ("shield", "Tratativas de qualidade",  _cnt(df_sol_qu, "status", STATUS_CLOSED, negar=True), "⚡ Meu Espaço"),
+        ]
+        if is_curador:
+            _atividades.append(("award", "Certificações em andamento",
+                                _cnt(df_cert, "status_cert", {"pendente", "em_analise"}), "🥇 Certificação"))
+        with st.container(key="pnl_ativ"):
+            st.markdown(f'<div class="gv-panel-title" style="margin-bottom:4px;">{icon("check", 22)} Minhas Atividades</div>',
+                        unsafe_allow_html=True)
+            for i_a, (ic_a, txt_a, n_a, dest_a) in enumerate(_atividades):
+                card_link(f"ativ_{i_a}", f"""
+                    <div class="gv-row">{icon(ic_a, 18, '#000000', 1.6)}<span>{txt_a}</span>
+                    <span class="gv-pill">{n_a}</span>{icon('chevron', 16, '#8A8A8A')}</div>""", dest_a)
 
-            fig_donut = go.Figure(go.Pie(
-                labels=status_counts["status"],
-                values=status_counts["total"],
-                hole=0.62,
-                marker=dict(colors=cores_rosca, line=dict(color="#000000", width=2)),
-                textinfo="none",
-                hovertemplate="%{label}: %{value}<extra></extra>",
-            ))
-            fig_donut.add_annotation(
-                text=f"<b>{total_sol}</b>",
-                x=0.5, y=0.55, showarrow=False, font=dict(size=22, color="#000000"))
-            fig_donut.add_annotation(
-                text="total", x=0.5, y=0.4, showarrow=False,
-                font=dict(size=10, color="#5C5C5C"))
-            fig_donut.update_layout(
-                showlegend=False, margin=dict(t=0,b=0,l=0,r=0),
-                height=150, paper_bgcolor="rgba(0,0,0,0)",
-                plot_bgcolor="rgba(0,0,0,0)")
-            st.plotly_chart(fig_donut, use_container_width=True, config={"displayModeBar":False})
-
-            # Legenda
-            for _, row in status_counts.iterrows():
-                cor_l = STATUS_COLORS.get(row["status"],"#D4D4D4")
-                st.markdown(f"""
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-                    <div style="width:8px;height:8px;border-radius:50%;background:{cor_l};flex-shrink:0;"></div>
-                    <div style="color:#5C5C5C;font-size:0.67rem;flex:1;">{row['status']}</div>
-                    <div style="color:#E5E5E5;font-size:0.73rem;font-weight:700;">{row['total']}</div>
-                </div>""", unsafe_allow_html=True)
-        elif st.session_state.get("_db_err"):
-            st.markdown('<div style="color:#C62828;font-size:0.78rem;padding:20px 0;text-align:center;">⚠️ Erro de conexão com Databricks</div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div style="color:#5C5C5C;font-size:0.78rem;padding:20px 0;text-align:center;">Nenhuma solicitação registrada</div>', unsafe_allow_html=True)
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
 
     # ══════════════════════════════════════════════════════════════════
-    # D. ÁREA OPERACIONAL — 3 colunas
+    # C. ACESSO RÁPIDO + ÁREA DE IA
     # ══════════════════════════════════════════════════════════════════
-    st.markdown("""
-    <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
-                color:#000000;border-bottom:1px solid #E5E5E5;padding-bottom:8px;
-                margin-bottom:12px;">Área Operacional</div>
-    """, unsafe_allow_html=True)
+    qa_col, ai_col = st.columns([2.05, 1], gap="medium")
+    with qa_col:
+        with st.container(key="pnl_qa"):
+            st.markdown(f'<div class="gv-panel-title">{icon("bolt", 22)} Acesso rápido</div>', unsafe_allow_html=True)
+            _qa = [
+                ("database", "Catálogo de Dados",       "Inventário de ativos e metadados", "📋 Catálogo"),
+                ("book",     "Glossário de Negócio",    "Conceitos, regras e responsáveis", "📖 Glossário"),
+                ("network",  "Linhagem de Dados",       "Origem e fluxo entre camadas",     "🔗 Linhagem"),
+                ("shield",   "Regras de Qualidade",     "Dimensões e scores de qualidade",  "🏆 Qualidade"),
+                ("chart",    "Relatórios e Dashboards", "Indicadores de governança",        "📊 Indicadores"),
+            ]
+            qa_cols = st.columns(5, gap="small")
+            for i_q, (ic_q, t_q, d_q, dest_q) in enumerate(_qa):
+                with qa_cols[i_q]:
+                    card_link(f"qa_{i_q}", f"""
+                        <div class="gv-card gv-qa">{icon(ic_q, 30)}
+                            <div><div class="gv-qa-t"><span>{t_q}</span>{icon('chevron', 16, '#000000')}</div>
+                            <div class="gv-qa-d">{d_q}</div></div>
+                        </div>""", dest_q)
 
-    op1, op2, op3 = st.columns(3, gap="small")
+    with ai_col:
+        _ai_html = f"""
+        <div class="gv-ai">
+            <h3><span style="color:#C9A227;">IA</span> na Governança de Dados</h3>
+            <p>Sugestões assistidas de descrição e domínio para os ativos do catálogo, com a origem registrada na trilha de auditoria.</p>
+            {'<span class="gv-ai-cta">Explorar recursos de IA ' + icon('arrow', 16, '#000000', 2) + '</span>' if is_curador
+             else '<span class="gv-ai-note">Disponível para curadores e aprovadores</span>'}
+            <div class="gv-ai-art">{AI_ART_SVG}</div>
+        </div>"""
+        if is_curador:
+            card_link("ia", _ai_html, "✏️ Curadoria")
+        else:
+            st.markdown(_ai_html, unsafe_allow_html=True)
 
-    # ── Ativos de destaque ────────────────────────────────────────────
+    st.markdown("<div style='height:22px;'></div>", unsafe_allow_html=True)
+
+    # ══════════════════════════════════════════════════════════════════
+    # D. VISÃO OPERACIONAL — status, ativos, pendências, atividades
+    # ══════════════════════════════════════════════════════════════════
+    st.markdown('<div class="gv-panel-title" style="margin:4px 0 10px;">Visão operacional</div>', unsafe_allow_html=True)
+    op0, op1, op2, op3 = st.columns(4, gap="medium")
+
+    with op0:
+        with st.container(key="pnl_status"):
+            st.markdown('<div style="font-weight:650;font-size:0.86rem;margin-bottom:6px;">Status das solicitações</div>', unsafe_allow_html=True)
+            frames = [d[["status"]] for d in (df_sol_ac, df_sol_qu) if not d.empty and "status" in d.columns]
+            if frames:
+                status_counts = pd.concat(frames, ignore_index=True)["status"].value_counts().reset_index()
+                status_counts.columns = ["status", "total"]
+                _paleta = ["#C9A227", "#000000", "#5C5C5C", "#8A8A8A", "#BDBDBD", "#E0E0E0"]
+                cores_rosca = [_paleta[i % len(_paleta)] for i in range(len(status_counts))]
+                fig_donut = go.Figure(go.Pie(labels=status_counts["status"], values=status_counts["total"], hole=0.66,
+                                             marker=dict(colors=cores_rosca, line=dict(color="#FFFFFF", width=2)),
+                                             textinfo="none", hovertemplate="%{label}: %{value}<extra></extra>", sort=False))
+                fig_donut.add_annotation(text=f"<b>{status_counts['total'].sum()}</b>", x=0.5, y=0.54, showarrow=False,
+                                         font=dict(size=22, color="#000000"))
+                fig_donut.add_annotation(text="total", x=0.5, y=0.38, showarrow=False, font=dict(size=10, color="#5C5C5C"))
+                fig_donut.update_layout(showlegend=False, margin=dict(t=0, b=0, l=0, r=0), height=150,
+                                        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                st.plotly_chart(fig_donut, use_container_width=True, config={"displayModeBar": False})
+                st.markdown("".join(f"""
+                    <div style="display:flex;align-items:center;gap:8px;margin:3px 0;font-size:0.74rem;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:{c};flex-shrink:0;"></span>
+                        <span style="color:#5C5C5C;flex:1;">{r['status']}</span><b>{r['total']}</b></div>"""
+                    for c, (_, r) in zip(cores_rosca, status_counts.iterrows())), unsafe_allow_html=True)
+            else:
+                st.markdown('<div style="color:#5C5C5C;font-size:0.8rem;padding:24px 0;text-align:center;">'
+                            + ("Dados indisponíveis no momento" if _db_fail else "Nenhuma solicitação registrada")
+                            + '</div>', unsafe_allow_html=True)
+
+    def _lista(titulo, linhas, vazio):
+        corpo = "".join(linhas) if linhas else f'<div style="color:#5C5C5C;font-size:0.8rem;padding:24px 0;text-align:center;">{vazio}</div>'
+        return f'<div class="gv-card gv-panel"><div style="font-weight:650;font-size:0.86rem;margin-bottom:4px;">{titulo}</div>{corpo}</div>'
+
     with op1:
-        st.markdown("""
-        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
-                    padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
-                            letter-spacing:1.5px;color:#000000;">Ativos em Destaque</div>
-                <span style="font-size:0.6rem;color:#5C5C5C;font-style:italic;">por qualidade</span>
-            </div>
-        """, unsafe_allow_html=True)
-
+        linhas = []
         if not df_meta.empty:
-            # Enriquecer com qualidade se disponível
             ativos_dest = df_meta.copy()
             if not df_cert.empty and "dominio" in df_cert.columns and "score_qualidade" in df_cert.columns:
                 dom_score = df_cert.groupby("dominio")["score_qualidade"].mean()
                 ativos_dest["_score"] = ativos_dest["dominio"].map(dom_score).fillna(0)
                 ativos_dest = ativos_dest.sort_values("_score", ascending=False)
-            exibir_ativos = ativos_dest[["table_name","dominio"]].head(5)
-            for _, row in exibir_ativos.iterrows():
-                st.markdown(f"""
-                <div style="display:flex;align-items:center;gap:8px;padding:7px 0;
-                            border-bottom:1px solid #E5E5E5;">
-                    <span style="font-size:0.9rem;">🗂️</span>
-                    <div style="flex:1;min-width:0;">
-                        <div style="color:#E5E5E5;font-size:0.72rem;font-weight:600;
-                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{row['table_name']}</div>
-                        <div style="color:#5C5C5C;font-size:0.63rem;">{row['dominio']}</div>
-                    </div>
-                </div>""", unsafe_allow_html=True)
-        else:
-            st.markdown('<div style="color:#5C5C5C;font-size:0.75rem;padding:10px 0;">Sem dados disponíveis</div>', unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+            for _, row in ativos_dest[["table_name", "dominio"]].head(5).iterrows():
+                linhas.append(f"""<div class="gv-row" style="padding:8px 0;">{icon('database', 16, '#000000', 1.6)}
+                    <div style="min-width:0;"><div style="font-weight:600;font-size:0.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{row['table_name']}</div>
+                    <div style="color:#5C5C5C;font-size:0.7rem;">{row['dominio']}</div></div></div>""")
+        st.markdown(_lista("Ativos em destaque", linhas, "Sem dados disponíveis"), unsafe_allow_html=True)
 
-    # ── Pendências dos meus dados ─────────────────────────────────────
     with op2:
-        st.markdown("""
-        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
-                    padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1.5px;color:#000000;margin-bottom:10px;">Pendências Abertas</div>
-        """, unsafe_allow_html=True)
+        linhas = []
+        for df_p, tipo_p, campo_p in ((df_sol_ac, "Acesso", "tabela"), (df_sol_qu, "Qualidade", "descricao")):
+            if not df_p.empty and "status" in df_p.columns:
+                for _, row in df_p[~df_p["status"].astype(str).str.lower().isin(STATUS_CLOSED)].head(3).iterrows():
+                    desc_p = str(row.get(campo_p, ""))[:40] if campo_p in row else "—"
+                    linhas.append(f"""<div class="gv-row" style="padding:8px 0;align-items:flex-start;">
+                        {icon('inbox' if tipo_p == 'Acesso' else 'shield', 16, '#000000', 1.6)}
+                        <div style="min-width:0;flex:1;"><div style="font-weight:600;font-size:0.8rem;">{tipo_p}</div>
+                        <div style="color:#5C5C5C;font-size:0.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{desc_p}</div></div>
+                        <span class="gv-pill" style="font-size:0.66rem;">{row.get('status', '—')}</span></div>""")
+        st.markdown(_lista("Pendências abertas", linhas[:5],
+                           "Dados indisponíveis no momento" if _db_fail else "Nenhuma pendência em aberto"),
+                    unsafe_allow_html=True)
 
-        pendencias = []
-        if not df_sol_ac.empty and "status" in df_sol_ac.columns:
-            pend_ac = df_sol_ac[~df_sol_ac["status"].str.lower().isin(STATUS_CLOSED)]
-            for _, row in pend_ac.head(3).iterrows():
-                tipo = "Acesso"
-                desc = str(row.get("tabela",""))[:40] if "tabela" in row else "—"
-                st_p = row.get("status","—")
-                pendencias.append((tipo, desc, st_p))
-        if not df_sol_qu.empty and "status" in df_sol_qu.columns:
-            pend_qu = df_sol_qu[~df_sol_qu["status"].str.lower().isin(STATUS_CLOSED)]
-            for _, row in pend_qu.head(3).iterrows():
-                tipo = "Qualidade"
-                desc = str(row.get("descricao",""))[:40] if "descricao" in row else "—"
-                st_p = row.get("status","—")
-                pendencias.append((tipo, desc, st_p))
-
-        STATUS_COR_PILL = {"pendente":"#B26A00","em_analise":"#1A1A1A","em_revisao":"#3D3D3D"}
-        if pendencias:
-            for tipo_p, desc_p, status_p in pendencias[:5]:
-                cor_p = STATUS_COR_PILL.get(status_p.lower(),"#5C5C5C")
-                tipo_ic = "📬" if tipo_p=="Acesso" else "🛡️"
-                st.markdown(f"""
-                <div style="padding:7px 0;border-bottom:1px solid #E5E5E5;">
-                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
-                        <span style="font-size:0.85rem;">{tipo_ic}</span>
-                        <span style="color:#E5E5E5;font-size:0.71rem;font-weight:600;">{tipo_p}</span>
-                        <span style="background:{cor_p}18;color:{cor_p};border-radius:20px;
-                                     padding:1px 7px;font-size:0.6rem;font-weight:700;margin-left:auto;">{status_p}</span>
-                    </div>
-                    <div style="color:#5C5C5C;font-size:0.65rem;padding-left:22px;">{desc_p}</div>
-                </div>""", unsafe_allow_html=True)
-        elif _db_fail:
-            st.markdown('<div style="color:#C62828;font-size:0.73rem;padding:16px 0;text-align:center;">⚠️ Dados indisponíveis — BD offline</div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div style="color:#5C5C5C;font-size:0.75rem;padding:16px 0;text-align:center;">✓ Nenhuma pendência em aberto</div>', unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    # ── Últimas atividades ────────────────────────────────────────────
     with op3:
-        st.markdown("""
-        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
-                    padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-            <div style="font-size:0.62rem;font-weight:700;text-transform:uppercase;
-                        letter-spacing:1.5px;color:#000000;margin-bottom:10px;">Últimas Atividades</div>
-        """, unsafe_allow_html=True)
-
+        linhas = []
         if not df_tl.empty:
-            tl_show = df_tl.head(6)
-            for _, row in tl_show.iterrows():
-                tipo_a = str(row.get("tipo_solicitacao", row.get("tipo","—")))[:30]
-                status_a = str(row.get("status","—"))
-                responsavel = str(row.get("responsavel", row.get("solicitante","—")))[:20]
+            for _, row in df_tl.head(5).iterrows():
+                tipo_a = str(row.get("tipo_solicitacao", row.get("tipo", "—")))[:30]
+                status_a = str(row.get("status", "—")).lower()
+                resp_a = str(row.get("responsavel", row.get("solicitante", "—")))[:20]
                 data_a = ""
-                for dc in ["iniciado_em","criado_em","data","updated_at"]:
+                for dc in ["iniciado_em", "criado_em", "data", "updated_at"]:
                     if dc in row and pd.notna(row[dc]):
                         try:
                             data_a = pd.to_datetime(row[dc]).strftime("%d/%m %H:%M")
-                        except:
+                        except Exception:
                             data_a = str(row[dc])[:10]
                         break
-                cor_a="#1E7F4F" if "conclu" in status_a.lower() or "aprova" in status_a.lower() \
-                        else "#B26A00" if "penden" in status_a.lower() else "#5C5C5C"
-                st.markdown(f"""
-                <div style="padding:7px 0;border-bottom:1px solid #E5E5E5;display:flex;align-items:flex-start;gap:8px;">
-                    <div style="width:7px;height:7px;border-radius:50%;background:{cor_a};
-                                margin-top:4px;flex-shrink:0;"></div>
-                    <div style="flex:1;min-width:0;">
-                        <div style="color:#E5E5E5;font-size:0.71rem;font-weight:600;
-                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{tipo_a}</div>
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
-                            <span style="color:#5C5C5C;font-size:0.62rem;">{responsavel}</span>
-                            <span style="color:#5C5C5C;font-size:0.6rem;">{data_a}</span>
-                        </div>
-                    </div>
-                </div>""", unsafe_allow_html=True)
-        else:
-            st.markdown('<div style="color:#5C5C5C;font-size:0.75rem;padding:16px 0;text-align:center;">Sem atividades registradas</div>', unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
-
-    # ══════════════════════════════════════════════════════════════════
-    # E. JORNADAS — 5 cards de navegação
-    # ══════════════════════════════════════════════════════════════════
-    st.markdown("""
-    <div style="font-size:0.6rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;
-                color:#5C5C5C;margin-bottom:10px;">Jornadas de Exploração</div>
-    """, unsafe_allow_html=True)
-
-    JORNADAS = [
-        ("📋","Busca e Catálogo de Dados",   "📋 Catálogo",  "#000000",
-         "Explore o inventário de ativos, filtros e metadados da organização."),
-        ("🗂️","Detalhe do Ativo de Dados",   "📋 Catálogo",  "#3D3D3D",
-         "Acesse informações técnicas, responsáveis e qualidade de cada ativo."),
-        ("🏆","Qualidade de Dados",           "🏆 Qualidade", "#1E7F4F",
-         "Veja as dimensões de qualidade, domínios e indicadores registrados."),
-        ("🔗","Linhagem e Atividades",        "🔗 Linhagem",  "#B26A00",
-         "Rastreie a origem, o fluxo e as transformações dos dados."),
-        ("📬","Solicitações e Tarefas",       "⚡ Meu Espaço","#C62828",
-         "Gerencie acessos, relatos de qualidade e suas tarefas pendentes."),
-    ]
-
-    # Wrapper mobile-responsivo para jornadas (CSS grid via classe)
-    st.markdown('<div class="jornadas-outer">', unsafe_allow_html=True)
-    j_cols = st.columns(5, gap="small")
-    for i, (ic_j, tit_j, dest_j, cor_j, desc_j) in enumerate(JORNADAS):
-        with j_cols[i]:
-            st.markdown(f"""
-            <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;
-                        overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
-                <div style="background:{cor_j};padding:14px 14px 12px;min-height:70px;">
-                    <div style="font-size:1.6rem;margin-bottom:5px;">{ic_j}</div>
-                    <div style="color:rgba(255,255,255,0.95);font-size:0.75rem;
-                                font-weight:700;line-height:1.3;">{tit_j}</div>
-                </div>
-                <div style="padding:10px 14px;">
-                    <div style="color:#5C5C5C;font-size:0.68rem;line-height:1.5;
-                                min-height:44px;">{desc_j}</div>
-                </div>
-            </div>""", unsafe_allow_html=True)
-            st.markdown('<div class="atalho-btn">', unsafe_allow_html=True)
-            if st.button("→ Explorar", key=f"jrn_{i}", use_container_width=True):
-                st.session_state["pagina"] = dest_j
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)  # fecha jornadas-outer
+                cor_a = "#1E7F4F" if ("conclu" in status_a or "aprova" in status_a) else "#B26A00" if "penden" in status_a else "#8A8A8A"
+                linhas.append(f"""<div class="gv-row" style="padding:8px 0;align-items:flex-start;">
+                    <span style="width:8px;height:8px;border-radius:50%;background:{cor_a};margin-top:6px;flex-shrink:0;"></span>
+                    <div style="min-width:0;flex:1;"><div style="font-weight:600;font-size:0.8rem;">{tipo_a}</div>
+                    <div style="display:flex;justify-content:space-between;color:#5C5C5C;font-size:0.7rem;"><span>{resp_a}</span><span>{data_a}</span></div></div></div>""")
+        st.markdown(_lista("Últimas atividades", linhas, "Sem atividades registradas"), unsafe_allow_html=True)
 
     copyright_footer()
 
@@ -1534,7 +1586,7 @@ elif pagina == "📖 Glossário":
                         x0,y0=t_pos[l["glossary_id"]]; x1,y1=a_pos[l["table_name"]]
                         ex+=[x0,x1,None]; ey+=[y0,y1,None]
                 fig_g = go.Figure()
-                fig_g.add_trace(go.Scatter(x=ex,y=ey,mode="lines",line=dict(color="#000000",width=1.5),hoverinfo="none"))
+                fig_g.add_trace(go.Scatter(x=ex,y=ey,mode="lines",line=dict(color="#CFCFCF",width=1.2),hoverinfo="none"))
                 fig_g.add_trace(go.Scatter(x=nx,y=ny,mode="markers+text",marker=dict(color=nc,size=ns,line=dict(color="#FFFFFF",width=2)),text=nt,textposition="middle right",textfont=dict(color="#000000",size=11),hoverinfo="text"))
                 fig_g.update_layout(paper_bgcolor="#FFFFFF",plot_bgcolor="#FFFFFF",showlegend=False,height=420,margin=dict(t=10,b=10,l=10,r=10),xaxis=dict(showgrid=False,zeroline=False,showticklabels=False),yaxis=dict(showgrid=False,zeroline=False,showticklabels=False))
                 st.plotly_chart(fig_g,use_container_width=True)
@@ -1631,7 +1683,7 @@ elif pagina == "📋 Catálogo":
             for row_df in rows_c:
                 cols_c = st.columns(3)
                 for i,(_,item) in enumerate(row_df.iterrows()):
-                    cor_c="#1E7F4F" if item["score_completude"]==100 else "#C9A227" if item["score_completude"]>=60 else "#C62828"
+                    cor_c="#1E7F4F" if item["score_completude"]==100 else "#B26A00" if item["score_completude"]>=60 else "#C62828"
                     desc   = item["descricao"][:80]+"..." if item["descricao"] and len(item["descricao"])>80 else item["descricao"] or "Sem descrição cadastrada."
                     chave  = f"{item['schema_name']}.{item['table_name']}"
                     is_sel = st.session_state["cat_sel"] == chave
@@ -1663,7 +1715,7 @@ elif pagina == "📋 Catálogo":
                 row_c = df_cat[(df_cat["schema_name"]==sc)&(df_cat["table_name"]==tb)]
                 if not row_c.empty:
                     item  = row_c.iloc[0]
-                    cor_c2= "#1E7F4F" if item["score_completude"]==100 else "#C9A227" if item["score_completude"]>=60 else "#C62828"
+                    cor_c2= "#1E7F4F" if item["score_completude"]==100 else "#B26A00" if item["score_completude"]>=60 else "#C62828"
                     df_links_ativo = load_links()
                     termos_ativo = df_links_ativo[df_links_ativo["table_name"]==tb] if not df_links_ativo.empty else pd.DataFrame()
                     df_g_full = load_glossario()
@@ -1903,7 +1955,7 @@ elif pagina == "🛡️ Scorecard":
         else:
             cert = 0
         ger  = (doc+own+rel+qual+cert)/5
-        cor_g="#1E7F4F" if ger>=80 else "#C9A227" if ger>=60 else "#C62828"
+        cor_g="#1E7F4F" if ger>=80 else "#B26A00" if ger>=60 else "#C62828"
 
         st.markdown(f"""
         <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:16px;
@@ -1950,7 +2002,7 @@ elif pagina == "🛡️ Scorecard":
 
         cols_p = st.columns(5)
         for col,(nome,info) in zip(cols_p,PILARES_INFO.items()):
-            cor_p="#1E7F4F" if info["val"]>=80 else "#C9A227" if info["val"]>=60 else "#C62828"
+            cor_p="#1E7F4F" if info["val"]>=80 else "#B26A00" if info["val"]>=60 else "#C62828"
             is_sel = st.session_state["sc_pilar"] == nome
             with col:
                 st.markdown(f"""
@@ -1980,7 +2032,7 @@ elif pagina == "🛡️ Scorecard":
         st.session_state["sc_pilar"] = pilar_sel
         if pilar_sel and pilar_sel in PILARES_INFO:
             info  = PILARES_INFO[pilar_sel]
-            cor_p2 = "#1E7F4F" if info["val"]>=80 else "#C9A227" if info["val"]>=60 else "#C62828"
+            cor_p2 = "#1E7F4F" if info["val"]>=80 else "#B26A00" if info["val"]>=60 else "#C62828"
             st.markdown(f"""
             <div style="background:#FFFFFF;border:1px solid {cor_p2}44;border-radius:12px;padding:18px;margin:8px 0 16px;">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
@@ -2040,7 +2092,7 @@ elif pagina == "🛡️ Scorecard":
             estado_vazio("📊","Nenhum dado disponível","Atribua domínios aos ativos na Curadoria para ver o ranking.")
         else:
             for i,(_,row) in enumerate(dom_sc.iterrows()):
-                cor_o="#1E7F4F" if row["score_completude"]>=80 else "#C9A227" if row["score_completude"]>=60 else "#C62828"
+                cor_o="#1E7F4F" if row["score_completude"]>=80 else "#B26A00" if row["score_completude"]>=60 else "#C62828"
                 medalha = ["🥇","🥈","🥉"][i] if i<3 else f"#{i+1}"
                 st.markdown(f"""
                 <div style="display:flex;justify-content:space-between;align-items:center;
@@ -2104,7 +2156,7 @@ elif pagina == "⚡ Meu Espaço":
                 tl_sol=df_tl2[df_tl2["solicitacao_id"]==sid] if not df_tl2.empty else pd.DataFrame()
                 etapas=ETAPAS_TIPO.get(sol["tipo"],["abertura","owner","governanca"])
                 cs_sol={"pendente":"#000000","aprovado":"#1E7F4F","rejeitado":"#C62828"}.get(sol["status"],"#8A8A8A")
-                st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;padding:14px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><div style="color:#E5E5E5;font-weight:700;font-size:0.85rem;">{sol["titulo"]}</div><span style="background:{cs_sol}22;color:{cs_sol};border-radius:20px;padding:2px 10px;font-size:0.7rem;font-weight:600;">● {sol["status"]}</span></div>',unsafe_allow_html=True)
+                st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:12px;padding:14px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><div style="color:#000000;font-weight:700;font-size:0.85rem;">{sol["titulo"]}</div><span style="background:{cs_sol}22;color:{cs_sol};border-radius:20px;padding:2px 10px;font-size:0.7rem;font-weight:600;">● {sol["status"]}</span></div>',unsafe_allow_html=True)
                 eh=""
                 for i,etapa in enumerate(etapas):
                     tl_e=tl_sol[tl_sol["etapa"]==etapa].iloc[0] if not tl_sol.empty and etapa in tl_sol["etapa"].values else None
@@ -2197,7 +2249,7 @@ elif pagina == "⚡ Meu Espaço":
             with k3: st.markdown(kpi(df_meta["dominio"].nunique(),"Domínios Acompanhados","#3D3D3D"), unsafe_allow_html=True)
             with k4:
                 doc_media = df_meta["score_completude"].mean()
-                cor_d="#1E7F4F" if doc_media>=80 else "#C9A227" if doc_media>=60 else "#C62828"
+                cor_d="#1E7F4F" if doc_media>=80 else "#B26A00" if doc_media>=60 else "#C62828"
                 st.markdown(kpi(f"{doc_media:.0f}%","Score Médio de Documentação",cor_d,tooltip="Média do score de documentação de todos os ativos."), unsafe_allow_html=True)
 
         # Sugestões pendentes — visível para curador/aprovador
@@ -2253,7 +2305,7 @@ elif pagina == "⚡ Meu Espaço":
                 tl_sol=df_tl3[df_tl3["solicitacao_id"]==sid]
                 etapas=ETAPAS_TIPO3.get(tipo,["abertura","owner","governanca"])
                 tem_atraso=any(tl_sol["status_etapa"]=="atrasado") if not tl_sol.empty else False
-                st.markdown(f'<div style="background:#FFFFFF;border:1px solid {"#B91C1C44" if tem_atraso else "#E5E5E5"};border-radius:12px;padding:14px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><div><div style="color:#E5E5E5;font-weight:700;font-size:0.85rem;">{titulo}</div><div style="color:#5C5C5C;font-size:0.7rem;">{dom} · {tipo}</div></div>{"<span style=background:#B91C1C22;color:#C62828;border-radius:20px;padding:2px 10px;font-size:0.7rem;font-weight:600;>⏰ ATRASADO</span>" if tem_atraso else ""}</div>',unsafe_allow_html=True)
+                st.markdown(f'<div style="background:#FFFFFF;border:1px solid {"#B91C1C44" if tem_atraso else "#E5E5E5"};border-radius:12px;padding:14px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><div><div style="color:#000000;font-weight:700;font-size:0.85rem;">{titulo}</div><div style="color:#5C5C5C;font-size:0.7rem;">{dom} · {tipo}</div></div>{"<span style=background:#B91C1C22;color:#C62828;border-radius:20px;padding:2px 10px;font-size:0.7rem;font-weight:600;>⏰ ATRASADO</span>" if tem_atraso else ""}</div>',unsafe_allow_html=True)
                 eh=""
                 for i,etapa in enumerate(etapas):
                     tl_e=tl_sol[tl_sol["etapa"]==etapa].iloc[0] if etapa in tl_sol["etapa"].values else None
@@ -2316,7 +2368,7 @@ elif pagina == "✏️ Curadoria":
 
                     pp1,pp2,pp3,pp4,pp5 = st.columns(5)
                     for pcol,pn,pv in [(pp1,"DOCUMENTAÇÃO",doc_p),(pp2,"RESPONSÁVEL",own_p),(pp3,"RELACION.",0),(pp4,"QUALIDADE",qual_p),(pp5,"CERTIFICAÇÃO",cert_p)]:
-                        cor_pp="#1E7F4F" if pv>=80 else "#C9A227" if pv>0 else "#C62828"
+                        cor_pp="#1E7F4F" if pv>=80 else "#B26A00" if pv>0 else "#C62828"
                         with pcol:
                             st.markdown(f'<div style="background:#F5F5F5;border:1px solid #E5E5E5;border-radius:8px;padding:9px;text-align:center;margin-bottom:10px;"><div style="font-size:0.55rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:0.8px;">{pn}</div><div style="font-size:1.1rem;font-weight:800;color:{cor_pp};">{f"{pv}%" if pv>0 else "—"}</div></div>', unsafe_allow_html=True)
 
@@ -2572,20 +2624,20 @@ elif pagina == "📊 Indicadores":
                 ("Documentação","score_doc","#1A1A1A"),("Ownership","score_ownership","#C9A227"),
                 ("Qualidade","score_qualidade","#1E7F4F"),("Score Geral","score_geral","#3D3D3D")]):
                 val=ultimo[campo]; d=delta(ultimo,anterior,campo)
-                cor_v="#1E7F4F" if val>=80 else "#C9A227" if val>=60 else "#C62828"
+                cor_v="#1E7F4F" if val>=80 else "#B26A00" if val>=60 else "#C62828"
                 with col:
                     st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:14px 16px;border-top:3px solid {cor_k};"><div style="font-size:0.62rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">{lbl}</div><div style="display:flex;align-items:baseline;gap:4px;"><span style="font-size:1.7rem;font-weight:800;color:{cor_v};">{val:.1f}%</span>{d}</div></div>',unsafe_allow_html=True)
         section_divider("EVOLUÇÃO DOS INDICADORES")
         if not df_sn.empty:
             fig = go.Figure()
-            for campo,cor_l,nome_l in [("score_doc","#1A1A1A","Documentação"),("score_ownership","#C9A227","Ownership"),("score_qualidade","#1E7F4F","Qualidade"),("score_geral","#3D3D3D","Score Geral")]:
+            for campo,cor_l,nome_l in [("score_doc","#000000","Documentação"),("score_ownership","#8A8A8A","Ownership"),("score_qualidade","#C9A227","Qualidade"),("score_geral","#BDBDBD","Score Geral")]:
                 fig.add_trace(go.Scatter(x=pd.to_datetime(df_sn["data_snapshot"]),y=df_sn[campo],name=nome_l,line=dict(color=cor_l,width=2.5),mode="lines+markers",marker=dict(size=6)))
             fig.update_layout(paper_bgcolor="#FFFFFF",plot_bgcolor="#FFFFFF",font=dict(color="#5C5C5C",size=11),legend=dict(orientation="h",yanchor="bottom",y=1.02,bgcolor="rgba(0,0,0,0)"),height=320,margin=dict(t=40,b=20,l=40,r=20),xaxis=dict(showgrid=False,color="#5C5C5C"),yaxis=dict(showgrid=True,gridcolor="#E5E5E5",range=[0,105],ticksuffix="%"))
             st.plotly_chart(fig,use_container_width=True)
         section_divider("DISTRIBUIÇÃO POR DOMÍNIO")
         if not df_meta.empty:
             dom_agg=df_meta.groupby("dominio").agg(score_medio=("score_completude","mean")).reset_index().sort_values("score_medio",ascending=True)
-            fig2=go.Figure(go.Bar(x=dom_agg["score_medio"],y=dom_agg["dominio"],orientation="h",marker=dict(color=dom_agg["score_medio"],colorscale=[[0,"#C62828"],[0.6,"#C9A227"],[1,"#1E7F4F"]],cmin=0,cmax=100),text=[f"{v:.0f}%" for v in dom_agg["score_medio"]],textposition="outside",textfont=dict(color="#000000",size=11)))
+            fig2=go.Figure(go.Bar(x=dom_agg["score_medio"],y=dom_agg["dominio"],orientation="h",marker=dict(color=dom_agg["score_medio"],colorscale=[[0,"#E8DDB5"],[1,"#C9A227"]],cmin=0,cmax=100),text=[f"{v:.0f}%" for v in dom_agg["score_medio"]],textposition="outside",textfont=dict(color="#000000",size=11)))
             fig2.update_layout(paper_bgcolor="#FFFFFF",plot_bgcolor="#FFFFFF",font=dict(color="#5C5C5C",size=11),height=260,margin=dict(t=10,b=10,l=10,r=60),xaxis=dict(showgrid=True,gridcolor="#E5E5E5",range=[0,115],ticksuffix="%"),yaxis=dict(showgrid=False,color="#000000"))
             st.plotly_chart(fig2,use_container_width=True)
         section_divider("RESUMO DE CERTIFICAÇÃO")
@@ -2626,7 +2678,7 @@ elif pagina == "📊 Indicadores":
         for _,row in ult_sla.iterrows() if not ult_sla.empty else []:
             cs_g="#1E7F4F" if row["taxa_sla_pct"]>=90 else "#B26A00" if row["taxa_sla_pct"]>=70 else "#C62828"
             gb=row.get("gargalo_etapa","—"); gr=str(row.get("gargalo_resp","—")).split("@")[0]
-            st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:10px 14px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#E5E5E5;font-weight:700;font-size:0.82rem;">{row["dominio"]}</span><span style="color:#5C5C5C;font-size:0.7rem;margin-left:8px;">{row["tipo_sol"]}</span></div><div style="display:flex;gap:16px;font-size:0.7rem;"><span>Abertas: <b style="color:#000000;">{row["total_abertas"]}</b></span><span>Atrasadas: <b style="color:#C62828;">{row["total_atrasadas"]}</b></span><span>Gargalo: <b style="color:#C62828;">{gb} ({gr})</b></span><span style="background:{cs_g}22;color:{cs_g};border-radius:20px;padding:2px 8px;font-weight:700;">SLA {row["taxa_sla_pct"]:.0f}%</span></div></div>',unsafe_allow_html=True)
+            st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:10px 14px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;"><div><span style="color:#000000;font-weight:700;font-size:0.82rem;">{row["dominio"]}</span><span style="color:#5C5C5C;font-size:0.7rem;margin-left:8px;">{row["tipo_sol"]}</span></div><div style="display:flex;gap:16px;font-size:0.7rem;"><span>Abertas: <b style="color:#000000;">{row["total_abertas"]}</b></span><span>Atrasadas: <b style="color:#C62828;">{row["total_atrasadas"]}</b></span><span>Gargalo: <b style="color:#C62828;">{gb} ({gr})</b></span><span style="background:{cs_g}22;color:{cs_g};border-radius:20px;padding:2px 8px;font-weight:700;">SLA {row["taxa_sla_pct"]:.0f}%</span></div></div>',unsafe_allow_html=True)
     copyright_footer()
 
 # ════════════════════════════════════════════════════════════════════
@@ -2643,12 +2695,12 @@ elif pagina == "🏆 Qualidade":
         else:
             estado_vazio("🏆","Nenhum dado de qualidade","Execute a avaliação de qualidade na Curadoria.")
     else:
-        media_geral=df_qual["score_final"].mean(); cor_mg="#1E7F4F" if media_geral>=80 else "#C9A227" if media_geral>=60 else "#C62828"
+        media_geral=df_qual["score_final"].mean(); cor_mg="#1E7F4F" if media_geral>=80 else "#B26A00" if media_geral>=60 else "#C62828"
         st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:16px;padding:20px;text-align:center;margin-bottom:20px;"><div style="font-size:0.7rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">{len(df_qual)} ativos avaliados</div><div style="font-size:3.5rem;font-weight:800;color:{cor_mg};line-height:1;">{media_geral:.1f}%</div><div style="color:#5C5C5C;font-size:0.75rem;margin-top:6px;">Alta (≥80%): {len(df_qual[df_qual["nivel"]=="Alta"])} · Média (40–79%): {len(df_qual[df_qual["nivel"]=="Media"])} · Baixa (&lt;40%): {len(df_qual[df_qual["nivel"]=="Baixa"])}</div></div>',unsafe_allow_html=True)
         section_divider("MÉDIA POR DIMENSÃO")
         cols_dim=st.columns(5)
         for col,(campo,info) in zip(cols_dim,DIMENSOES.items()):
-            media_dim=df_qual[campo].mean(); cor_d="#1E7F4F" if media_dim>=80 else "#C9A227" if media_dim>=60 else "#C62828"
+            media_dim=df_qual[campo].mean(); cor_d="#1E7F4F" if media_dim>=80 else "#B26A00" if media_dim>=60 else "#C62828"
             with col: st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:14px;text-align:center;" title="{info["conceito"]}"><div style="font-size:1.2rem;margin-bottom:4px;">{info["icone"]}</div><div style="font-size:1.6rem;font-weight:800;color:{cor_d};">{media_dim:.1f}%</div><div style="color:#5C5C5C;font-size:0.68rem;margin-bottom:8px;">{info["nome"]}</div><div style="background:#E5E5E5;border-radius:4px;height:3px;"><div style="background:{cor_d};border-radius:4px;height:3px;width:{min(media_dim,100):.0f}%;"></div></div><div style="color:#5C5C5C;font-size:0.6rem;margin-top:6px;line-height:1.3;">{info["conceito"]}</div></div>',unsafe_allow_html=True)
         section_divider("AVALIAÇÃO POR ATIVO")
         f1q,f2q,f3q=st.columns(3)
@@ -2661,7 +2713,7 @@ elif pagina == "🏆 Qualidade":
         if fq_niv!="Todos": df_qf=df_qf[df_qf["nivel"]==fq_niv]
         df_qf=df_qf.sort_values("score_final",ascending=False)
         for _,row in df_qf.iterrows():
-            cor_q="#1E7F4F" if row["score_final"]>=80 else "#C9A227" if row["score_final"]>=40 else "#C62828"
+            cor_q="#1E7F4F" if row["score_final"]>=80 else "#B26A00" if row["score_final"]>=40 else "#C62828"
             nivel_badge={"Alta":"#1E7F4F","Media":"#000000","Baixa":"#C62828"}.get(row["nivel"],"#5C5C5C")
             dims_html="".join([f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#5C5C5C;margin-bottom:2px;">{info["icone"]} {info["nome"][:4]}.</div><div style="font-size:0.75rem;font-weight:700;color:{"#1E7F4F" if row[campo]>=80 else "#C9A227" if row[campo]>=40 else "#C62828"};">{row[campo]:.0f}%</div></div>' for campo,info in DIMENSOES.items()])
             st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:12px 16px;margin-bottom:6px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div><span style="color:#000000;font-weight:700;font-size:0.85rem;">{row["table_name"]}</span><span style="background:#58A6FF22;color:#1A1A1A;border-radius:3px;padding:1px 6px;font-size:0.62rem;margin-left:6px;">{row["schema_name"]}</span><span style="background:{nivel_badge}22;color:{nivel_badge};border-radius:3px;padding:1px 6px;font-size:0.62rem;margin-left:4px;">{row["nivel"]}</span></div><span style="color:{cor_q};font-size:1.1rem;font-weight:800;">{row["score_final"]:.1f}%</span></div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">{dims_html}</div></div>',unsafe_allow_html=True)
@@ -2801,7 +2853,7 @@ elif pagina == "🔗 Linhagem":
             ko=f"{row['origem_schema']}.{row['origem_tabela']}"; kd=f"{row['destino_schema']}.{row['destino_tabela']}"
             if ko in pos_nos and kd in pos_nos:
                 x0,y0=pos_nos[ko]; x1,y1=pos_nos[kd]
-                fig_lin.add_trace(go.Scatter(x=[x0,x1],y=[y0,y1],mode="lines",line=dict(color="#000000",width=1.5),hovertext=row["descricao"],hoverinfo="text",showlegend=False))
+                fig_lin.add_trace(go.Scatter(x=[x0,x1],y=[y0,y1],mode="lines",line=dict(color="#CFCFCF",width=1.2),hovertext=row["descricao"],hoverinfo="text",showlegend=False))
         for chave,(x,y) in pos_nos.items():
             cam,tabela=chave.split(".",1); cor_n=CAMADA_COR.get(cam,"#5C5C5C")
             fig_lin.add_trace(go.Scatter(x=[x],y=[y],mode="markers+text",marker=dict(color=cor_n,size=16,line=dict(color="#FFFFFF",width=2)),text=[tabela],textposition="middle right",textfont=dict(color="#000000",size=10),hoverinfo="text",hovertext=chave,showlegend=False))
