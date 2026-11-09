@@ -11,7 +11,8 @@ Em caso de falha, pytest.exit encerra a sessão antes de qualquer gravação.
 Os registros criados são insumos de teste (prefixo TESTE-), não evidência sobre
 dados de negócio, e são descartados com o DROP do schema de teste.
 
-Variáveis: DATABRICKS_HOST, DATABRICKS_HTTP_PATH, DATABRICKS_TOKEN,
+Variáveis: DATABRICKS_HOST, DATABRICKS_HTTP_PATH e a credencial do principal de homologação —
+DATABRICKS_CLIENT_ID + DATABRICKS_CLIENT_SECRET (segredo OAuth do service principal) ou DATABRICKS_TOKEN,
 VD_SCHEMA_TESTE (padrão meridian_governanca_teste), VD_SCHEMA_PRODUCAO (padrão meridian_governanca).
 Execução: PYTHONPATH=. pytest tests/test_vd_banco.py -v -p no:randomly --junitxml=homologacao.xml
 Os testes são sequenciais (o ciclo avança de etapa em etapa).
@@ -32,7 +33,9 @@ TESTE = os.environ.get("VD_SCHEMA_TESTE", "meridian_governanca_teste")
 PRODUCAO = os.environ.get("VD_SCHEMA_PRODUCAO", "meridian_governanca")
 EVIDENCIAS = Path(os.environ.get("VD_EVIDENCIAS", "evidencias_homologacao.json"))
 
-pytestmark = pytest.mark.skipif(not os.environ.get("DATABRICKS_TOKEN"), reason="sem credenciais do Databricks")
+pytestmark = pytest.mark.skipif(
+    not (os.environ.get("DATABRICKS_TOKEN") or os.environ.get("DATABRICKS_CLIENT_SECRET")),
+    reason="sem credenciais do Databricks")
 registro: dict = {}
 
 
@@ -135,11 +138,21 @@ def rodar_arquivo(c, nome, teste=TESTE):
 # ════════════════════════════════════════════════════════════════════
 # Conexão
 # ════════════════════════════════════════════════════════════════════
+def conectar(sql):
+    """Service principal (OAuth M2M) quando houver segredo; token pessoal apenas como alternativa."""
+    host, caminho = os.environ["DATABRICKS_HOST"], os.environ["DATABRICKS_HTTP_PATH"]
+    if os.environ.get("DATABRICKS_CLIENT_SECRET"):
+        from databricks.sdk.core import Config, oauth_service_principal
+        cfg = Config(host=f"https://{host}", client_id=os.environ["DATABRICKS_CLIENT_ID"],
+                     client_secret=os.environ["DATABRICKS_CLIENT_SECRET"])
+        return sql.connect(server_hostname=host, http_path=caminho, credentials_provider=lambda: oauth_service_principal(cfg))
+    return sql.connect(server_hostname=host, http_path=caminho, access_token=os.environ["DATABRICKS_TOKEN"])
+
+
 @pytest.fixture(scope="session")
 def cur():
     from databricks import sql
-    con = sql.connect(server_hostname=os.environ["DATABRICKS_HOST"], http_path=os.environ["DATABRICKS_HTTP_PATH"],
-                      access_token=os.environ["DATABRICKS_TOKEN"])
+    con = conectar(sql)
     c = con.cursor()
     try:
         registro["ambiente"] = verificar_travas(c)

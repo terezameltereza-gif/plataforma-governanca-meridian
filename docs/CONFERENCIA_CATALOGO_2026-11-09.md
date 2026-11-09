@@ -1,6 +1,6 @@
 # Conferência do catálogo — 09/11/2026
 
-Conferência visual no Catalog Explorer do workspace Free Edition `dbc-af718492-0a17`, catálogo `workspace`, schema `meridian_governanca`. Nenhum SQL foi executado e nada foi alterado.
+Conferência visual no Catalog Explorer do workspace Free Edition principal, catálogo `workspace`, schema `meridian_governanca`. Nenhum SQL foi executado e nada foi alterado.
 
 ## Estado do schema
 

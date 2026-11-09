@@ -94,11 +94,33 @@ No editor SQL, em uma sessão nova, executar `sql/valor_dos_dados/00_parametros_
 
 Critério para continuar: nenhuma asserção `raise_error` disparada. Itens marcados como ATENÇÃO devem ser registrados e avaliados antes da etapa 5.
 
+## 3.5 Preparação executada em 09/11/2026
+
+Executada pela administradora (sessão no navegador, com autorização registrada na conversa):
+
+| Item | Situação |
+|---|---|
+| Service principal `governantes-homologacao` | Criado. Application ID registrado no workspace (não publicado aqui). Sem acesso de administrador e sem acesso ao workspace; apenas Databricks SQL e Consumer. |
+| Schema `workspace.meridian_governanca_teste` | Criado, com as 8 visões somente leitura sobre as tabelas de produção. |
+| Permissões em produção | `USE SCHEMA` e `SELECT` em `meridian_governanca` (confirmado por `SHOW GRANTS`). `USE CATALOG` no catálogo. |
+| Permissões no teste | `ALL PRIVILEGES` em `meridian_governanca_teste`. |
+| Warehouse | `Serverless Starter Warehouse` (canal Current, v2026.43). O grupo de usuários do workspace já tinha "Can use"; nada foi alterado. |
+| Credencial | **Não gerada.** É gerada pela administradora em Settings › Identity and access › Service principals › governantes-homologacao › Secrets › Generate secret, e não deve ser compartilhada. |
+
 ## 5. Testes de integração (principal de teste, schema de teste)
+
+Variáveis (os valores reais não ficam no repositório, que é público):
+
+```bash
+export DATABRICKS_HOST=<host do workspace>
+export DATABRICKS_HTTP_PATH=<http path do Serverless Starter Warehouse>
+export DATABRICKS_CLIENT_ID=<application id do governantes-homologacao>
+export DATABRICKS_CLIENT_SECRET=<segredo gerado na aba Secrets>
+```
+
 
 ```bash
 pip install -r requirements.txt pytest
-export DATABRICKS_HOST=...  DATABRICKS_HTTP_PATH=...  DATABRICKS_TOKEN=<token do principal de teste>
 export VD_SCHEMA_TESTE=meridian_governanca_teste  VD_SCHEMA_PRODUCAO=meridian_governanca
 
 # 5.1 Evidência offline, no mesmo código que será executado
