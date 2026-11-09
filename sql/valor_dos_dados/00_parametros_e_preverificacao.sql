@@ -81,7 +81,8 @@ FROM (SELECT * FROM VALUES
         ('produtos_dados','descricao','Regra DG-08 (produto sem documentação)'),
         ('produtos_dados','finalidade','Regra DG-08 (alternativa a descricao)'),
         ('produtos_dados','owner','Regra DG-08 (produto sem responsável)'),
-        ('produtos_dados','data_owner','Regra DG-08 (alternativa a owner)')
+        ('produtos_dados','data_owner','Regra DG-08 (alternativa a owner)'),
+        ('produtos_dados','responsavel','Regra DG-08 (coluna de responsável encontrada no catálogo em 09/11)')
       AS t(tabela, coluna, uso)) e
 LEFT JOIN information_schema.columns c
   ON c.table_catalog = current_catalog() AND c.table_schema = current_schema()

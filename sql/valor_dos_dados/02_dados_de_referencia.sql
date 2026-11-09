@@ -24,7 +24,7 @@ SELECT * FROM VALUES
  ('DG-05','R1','Ativo sem avaliação de qualidade','Não há registro de avaliação de qualidade para o ativo na plataforma.','nao_identificado','gd_quality_dimensions','Nenhuma linha para schema_name + table_name','ativo',NULL,true),
  ('DG-06','R1','Qualidade abaixo do limite do objetivo','O score final de qualidade está abaixo do limite definido no objetivo.','nao_conforme','gd_quality_dimensions.score_final','score_final < vd_objetivos.limite_qualidade_pct (só avaliada se o limite estiver definido)','ativo',NULL,true),
  ('DG-07','R1','Linhagem não registrada','O ativo não aparece como destino em nenhuma relação de linhagem.','nao_identificado','linhagem_ativos.destino_schema/destino_tabela','Nenhuma linha como destino; não avaliada para ativos com papel fonte','ativo',NULL,true),
- ('DG-08','R1','Produto sem documentação','Produto de dados sem descrição/finalidade ou sem responsável.','nao_cadastrado','produtos_dados','Colunas confirmadas em 00, passo 3; desabilitada se nenhuma existir','produto','produtos_dados.(descricao|finalidade) e (owner|data_owner)',true),
+ ('DG-08','R1','Produto sem documentação','Produto de dados sem descrição/finalidade ou sem responsável.','nao_cadastrado','produtos_dados','Colunas confirmadas em 00, passo 3; desabilitada se nenhuma existir','produto','produtos_dados.(descricao|finalidade) e (owner|data_owner|responsavel)',true),
  ('DG-09','R1','Vínculo para objeto inexistente','O vínculo aponta para um objeto que não existe no catálogo atual.','nao_identificado','vd_vinculos x tabelas de origem','Referência não encontrada pela chave do tipo','vinculo',NULL,true)
 AS t(regra_codigo, versao_regras, nome, descricao, natureza_padrao, fonte, criterio, aplica_a, dependencia, vigente);
 
@@ -45,7 +45,7 @@ tem AS (
     COUNT_IF(table_name = 'tabelas_metadata'    AND column_name = 'classificacao') > 0 AS classificacao,
     COUNT_IF(table_name = 'glossary_asset_link' AND column_name = 'schema_name')   > 0 AS link_schema,
     COUNT_IF(table_name = 'produtos_dados'      AND column_name IN ('descricao','finalidade')) > 0 AS prod_doc,
-    COUNT_IF(table_name = 'produtos_dados'      AND column_name IN ('owner','data_owner'))     > 0 AS prod_resp
+    COUNT_IF(table_name = 'produtos_dados'      AND column_name IN ('owner','data_owner','responsavel'))     > 0 AS prod_resp
   FROM col
 ),
 qual AS (
