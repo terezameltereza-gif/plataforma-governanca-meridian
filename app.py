@@ -12,6 +12,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 import uuid
+import vd_telas
 
 st.set_page_config(
     page_title="Plataforma de Governança — Banco Meridian",
@@ -942,6 +943,10 @@ with st.sidebar:
     if "pagina" not in st.session_state:
         st.session_state["pagina"] = "🏠 Início"
 
+    # Valor dos Dados: só aparece com VD_HABILITADO nos secrets e a estrutura instalada
+    VD_ATIVO, VD_MOTIVO = vd_telas.estado_instalacao(qry, bool(st.secrets.get("VD_HABILITADO", False)))
+    vd_telas.NOMES = {k: v["nome"] for k, v in USUARIOS.items()}
+
     # (ícone material, rótulo, destino) — destinos inalterados
     NAV_ITEMS = [
         (":material/home:",            "Início",                "🏠 Início"),
@@ -953,6 +958,8 @@ with st.sidebar:
         (":material/assignment:",      "Solicitações",          "⚡ Meu Espaço"),
         (":material/trending_up:",     "Gestão e Indicadores",  "📊 Indicadores"),
     ]
+    if VD_ATIVO:
+        NAV_ITEMS.insert(5, (":material/insights:", "Valor dos Dados", vd_telas.DESTINO))
     NAV_OP = [
         (":material/layers:",          "Domínios",     "🏛️ Domínios"),
         (":material/deployed_code:",   "Produtos",     "📦 Produtos"),
@@ -2414,11 +2421,21 @@ elif pagina == "⚡ Meu Espaço":
         else:
             estado_vazio("📖","Nenhum conceito vinculado","Não há conceitos vinculados ao seu usuário como Gestor (Steward).")
 
+    if VD_ATIVO:
+        vd_telas.secao_meu_espaco(qry, usuario, perfil)
+
     copyright_footer()
 
 # ════════════════════════════════════════════════════════════════════
 # ✏️ CURADORIA — Apenas para curador/aprovador
 # ════════════════════════════════════════════════════════════════════
+elif pagina == vd_telas.DESTINO:
+    if not VD_ATIVO:
+        st.session_state["pagina"] = "🏠 Início"
+        st.rerun()
+    vd_telas.pagina(qry, usuario, perfil, VD_ATIVO, VD_MOTIVO)
+    copyright_footer()
+
 elif pagina == "✏️ Curadoria":
     if not is_curador:
         estado_vazio("🔒","Acesso restrito","Esta área é destinada a Curadores e Aprovadores. Entre em contato com a equipe de Governança se precisar de acesso.")
