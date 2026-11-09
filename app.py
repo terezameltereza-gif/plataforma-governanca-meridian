@@ -458,12 +458,47 @@ section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] *{{colo
   font-size:0.82rem;border-radius:8px;padding:9px 14px;}}
 .gv-ai .gv-ai-note{{display:inline-block;color:#BFBFBF !important;font-size:0.74rem;border:1px solid #333;border-radius:8px;padding:7px 12px;}}
 
+/* ── Página pública (antes do login) ── */
+.gv-pub{{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,0.95fr);gap:24px;align-items:center;padding:8px 0 4px;}}
+.gv-pub-marca{{display:flex;align-items:center;gap:10px;font-size:0.72rem;font-weight:650;letter-spacing:0.22em;color:#000;text-transform:uppercase;}}
+.gv-pub-marca span{{height:1px;width:28px;background:var(--gv-gold);}}
+.gv-pub-cat{{font-size:0.74rem;font-weight:600;letter-spacing:0.16em;color:#8C6F12;text-transform:uppercase;margin:14px 0 10px;}}
+.gv-pub h1.gv-pub-h{{font-family:'Inter',sans-serif !important;font-size:clamp(1.9rem,3.4vw,3.05rem) !important;font-weight:760 !important;
+  letter-spacing:-0.03em !important;line-height:1.05 !important;margin:0 0 18px !important;padding:0 !important;color:#000 !important;text-transform:uppercase;}}
+.gv-pub h1.gv-pub-h em{{font-style:normal;color:var(--gv-gold);}}
+.gv-pub-txt{{font-size:1.02rem;line-height:1.6;color:#1A1A1A;max-width:560px;margin:0 0 10px;}}
+.gv-pub-comp{{font-size:0.9rem;line-height:1.6;color:var(--gv-ink2);max-width:560px;margin:0;}}
+.gv-pub-art svg{{width:100%;height:auto;max-height:420px;}}
+.gv-pilares{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:30px 0 10px;}}
+.gv-pilar{{background:#FFFFFF;border:1px solid var(--gv-line);border-radius:var(--gv-radius);padding:20px 20px 18px;position:relative;
+  box-shadow:0 1px 2px rgba(0,0,0,0.04);transition:border-color .2s ease,transform .2s ease;}}
+.gv-pilar:hover{{border-color:#D9C27A;transform:translateY(-2px);}}
+.gv-pilar::before{{content:"";position:absolute;left:20px;top:0;width:28px;height:2px;background:var(--gv-gold);}}
+.gv-pilar-n{{font-size:0.78rem;font-weight:650;color:#8C6F12;letter-spacing:0.08em;font-variant-numeric:tabular-nums;}}
+.gv-pilar h3{{font-family:'Inter',sans-serif !important;font-size:1rem !important;font-weight:720 !important;letter-spacing:0.08em !important;
+  text-transform:uppercase;margin:8px 0 8px !important;padding:0 !important;color:#000 !important;}}
+.gv-pilar p{{font-size:0.86rem;line-height:1.5;color:var(--gv-ink2);margin:0;}}
+.gv-pub-rodape{{font-size:0.74rem;color:var(--gv-ink3);margin-top:18px;}}
+.st-key-pub_entrar{{margin-top:22px;}}
+.st-key-pub_acesso .gv-nav-label{{color:var(--gv-ink2) !important;font-size:0.72rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;
+  margin:0 0 10px !important;padding:0 !important;line-height:1.3;}}
+.st-key-pub_entrar button{{background:#000 !important;border:1px solid #000 !important;border-radius:10px !important;padding:12px 26px !important;
+  min-height:50px !important;transition:background .2s ease;}}
+.st-key-pub_entrar button *{{color:#FFFFFF !important;font-weight:650 !important;letter-spacing:0.08em !important;}}
+.st-key-pub_entrar button:hover{{background:#1A1A1A !important;}}
+.st-key-pub_entrar button:hover span[data-testid="stIconMaterial"]{{color:var(--gv-gold) !important;}}
+.st-key-pub_acesso{{background:#FFFFFF;border:1px solid var(--gv-line);border-radius:var(--gv-radius);padding:18px 20px;max-width:440px;
+  box-shadow:0 1px 2px rgba(0,0,0,0.04),0 8px 24px rgba(0,0,0,0.05);}}
+.st-key-pub_acesso .st-key-login_pub button{{background:var(--gv-gold) !important;border:none !important;}}
+.st-key-pub_acesso .st-key-login_pub button *{{color:#000 !important;font-weight:650 !important;}}
+
 /* ── Responsividade ── */
 @media (max-width:1180px){{
   .gv-hero{{grid-template-columns:1fr;}} .gv-art{{display:none;}}
   .st-key-tb_busca{{right:270px;width:min(300px,30vw) !important;}}
 }}
-@media (max-width:1024px){{ .gv-kpis{{grid-template-columns:repeat(2,minmax(0,1fr));}} }}
+@media (max-width:1024px){{ .gv-kpis,.gv-pilares{{grid-template-columns:repeat(2,minmax(0,1fr));}} }}
+@media (max-width:900px){{ .gv-pub{{grid-template-columns:1fr;}} .gv-pub-art{{max-width:380px;margin:0 auto;}} }}
 @media (max-width:768px){{
   .gov-topbar,.stApp:has(section[data-testid="stSidebar"][aria-expanded="true"]) .gov-topbar{{left:0 !important;height:56px !important;}}
   .main .block-container,[data-testid="stMainBlockContainer"]{{padding-top:72px !important;padding-left:0.9rem !important;padding-right:0.9rem !important;}}
@@ -476,6 +511,7 @@ section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] *{{colo
   .gv-kpi{{padding:14px;}} .gv-kpi-val{{font-size:1.45rem;}}
   .gv-ai h3,.gv-ai p{{max-width:100%;}} .gv-ai .gv-ai-art{{opacity:.25;}}
   .gv-bar{{grid-template-columns:80px 1fr 42px;}}
+  .gv-pilares{{grid-template-columns:1fr;gap:10px;}} .gv-pub-art{{max-width:230px;}}
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -834,24 +870,66 @@ _LOGO_SIDEBAR = f"""
     </div>
 </div>"""
 
+def form_acesso(sufixo=""):
+    """Fluxo de acesso existente (seleção do usuário de demonstração). Usado no menu lateral e na página pública."""
+    st.markdown('<div class="gv-nav-label">Acesso à plataforma</div>', unsafe_allow_html=True)
+    email = st.selectbox("Usuário", list(USUARIOS.keys()),
+        format_func=lambda x: f"{USUARIOS[x]['nome']} · {USUARIOS[x]['perfil']}",
+        label_visibility="collapsed", key=f"sel_usuario{sufixo}")
+    if st.button("Entrar →", key=f"login{sufixo}", use_container_width=True):
+        st.session_state["usuario"]      = email
+        st.session_state["perfil_atual"] = USUARIOS[email]["perfil"]
+        st.session_state["nome_atual"]   = USUARIOS[email]["nome"]
+        st.session_state["pagina"]       = "🏠 Início"
+        st.rerun()
+
+
+PILARES = [
+    ("01", "Entender", "Conhecer os dados, seu contexto, significado, origem e utilização."),
+    ("02", "Confiar", "Estabelecer qualidade, responsabilidade, segurança e controle."),
+    ("03", "Transformar", "Identificar problemas, priorizar ações e melhorar processos."),
+    ("04", "Gerar valor", "Medir utilização, eficiência, redução de riscos e resultados."),
+]
+
+
+def pagina_publica():
+    """Primeira experiência do visitante. Conteúdo institucional estático: nenhum dado interno é consultado."""
+    pilares = "".join(f'<article class="gv-pilar"><div class="gv-pilar-n">{n}</div><h3>{t}</h3><p>{d}</p></article>'
+                      for n, t, d in PILARES)
+    st.markdown('<style>[data-testid="stMainBlockContainer"],.main .block-container{padding-top:56px !important;}</style>',
+                unsafe_allow_html=True)
+    st.markdown(f"""
+<section class="gv-pub" aria-labelledby="gv-pub-titulo">
+  <div>
+    <div class="gv-pub-marca">Governantes<span></span></div>
+    <div class="gv-pub-cat">Data Intelligence &amp; Governance Platform</div>
+    <h1 class="gv-pub-h" id="gv-pub-titulo">Da gestão dos dados à <em>geração de valor</em> para o negócio.</h1>
+    <p class="gv-pub-txt">Uma plataforma que conecta estratégia, dados, governança e operação para transformar dados em ativos confiáveis, utilizados e capazes de gerar resultados mensuráveis.</p>
+    <p class="gv-pub-comp">A Governantes ajuda as organizações a entender seus dados, estabelecer confiança, identificar oportunidades, resolver problemas e transformar a gestão dos dados em resultados para o negócio.</p>
+  </div>
+  <div class="gv-pub-art" aria-hidden="true">{HERO_ART_SVG}</div>
+</section>""", unsafe_allow_html=True)
+    if st.button("ENTRAR NA PLATAFORMA", key="pub_entrar", icon=":material/arrow_forward:"):
+        st.session_state["mostrar_acesso"] = True
+    if st.session_state.get("mostrar_acesso"):
+        with st.container(key="pub_acesso"):
+            form_acesso("_pub")
+    st.markdown(f'<section class="gv-pilares" aria-label="Pilares">{pilares}</section>'
+                f'<div class="gv-pub-rodape">© Governantes. Conteúdo institucional.</div>', unsafe_allow_html=True)
+
+
+if "usuario" not in st.session_state:
+    st.session_state["usuario"] = None
+
+if not st.session_state["usuario"]:
+    with st.sidebar:
+        st.markdown(_LOGO_SIDEBAR, unsafe_allow_html=True)
+        form_acesso()
+    pagina_publica()
+    st.stop()
+
 with st.sidebar:
-    if "usuario" not in st.session_state:
-        st.session_state["usuario"] = None
-
     st.markdown(_LOGO_SIDEBAR, unsafe_allow_html=True)
-
-    if not st.session_state["usuario"]:
-        st.markdown('<div class="gv-nav-label">Acesso à plataforma</div>', unsafe_allow_html=True)
-        email = st.selectbox("Usuário", list(USUARIOS.keys()),
-            format_func=lambda x: f"{USUARIOS[x]['nome']} · {USUARIOS[x]['perfil']}",
-            label_visibility="collapsed")
-        if st.button("Entrar →", key="login", use_container_width=True):
-            st.session_state["usuario"]      = email
-            st.session_state["perfil_atual"] = USUARIOS[email]["perfil"]
-            st.session_state["nome_atual"]   = USUARIOS[email]["nome"]
-            st.session_state["pagina"]       = "🏠 Início"
-            st.rerun()
-        st.stop()
 
     u      = USUARIOS[st.session_state["usuario"]]
     perfil = u["perfil"]
