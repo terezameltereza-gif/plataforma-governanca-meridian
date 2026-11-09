@@ -604,7 +604,8 @@ ALTER TABLE vd_evidencias  ADD  CONSTRAINT ck_dominio CHECK (
 ALTER TABLE vd_historico   DROP CONSTRAINT IF EXISTS ck_dominio;
 ALTER TABLE vd_historico   ADD  CONSTRAINT ck_dominio CHECK (
   entidade_tipo IN ('objetivo','processo','indicador','vinculo','execucao','achado','intervencao','medicao','beneficio','conversao','evidencia')
-  AND acao IN ('criacao','edicao','transicao','validacao','evidencia','cancelamento','reincidencia','resolucao')
+  AND acao IN ('criacao','edicao','transicao','validacao','evidencia','cancelamento','reincidencia','resolucao','comentario')
+  AND (acao <> 'comentario' OR (length(trim(coalesce(comentario, ''))) BETWEEN 1 AND 2000 AND status_anterior IS NULL AND status_novo IS NULL))
   AND perfil IN ('consultante','curador','aprovador','processo') AND versao_entidade >= 1);
 ALTER TABLE vd_modelo_priorizacao DROP CONSTRAINT IF EXISTS ck_dominio;
 ALTER TABLE vd_modelo_priorizacao ADD  CONSTRAINT ck_dominio CHECK (criterio IN ('prioridade_objetivo','posicao_ativo','tipo_achado','abrangencia','esforco') AND peso >= 1 AND pontos BETWEEN -3 AND 3 AND situacao IN ('aprovado','pendente'));

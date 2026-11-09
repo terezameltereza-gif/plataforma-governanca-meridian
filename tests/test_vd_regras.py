@@ -544,6 +544,49 @@ class TestConfirmacao:
             R._consultar_contagem(CursorFalso([1]), "INSERT INTO x VALUES (1)", {})
 
 
+class TestComentario:
+    ENT = {"intervencao_id": "T1", "versao": 4, "responsavel": "joao@x"}
+
+    @pytest.mark.parametrize("perfil,usuario", [("curador", "maria@x"), ("aprovador", "ana@x"), ("consultante", "joao@x")])
+    def test_quem_pode_comentar(self, perfil, usuario):
+        cur = CursorFalso([-1, 1])
+        r = R.registrar_comentario(cur, "intervencao", self.ENT, "  Aguardando a Controladoria.  ", perfil, usuario,
+                                   historico_id="H9", id_solicitacao="S1")
+        assert r.confirmada and r.versao_nova == 4                  # comentário não altera a versão
+        assert cur.executados == ["INSERT", "SELECT"]
+
+    @pytest.mark.parametrize("texto,perfil,usuario,trecho", [
+        ("   ", "curador", "maria@x", "vazio"),
+        ("x" * 2001, "curador", "maria@x", "2000"),
+        ("ok", "consultante", "outro@x", "responsável"),
+    ])
+    def test_recusas_antes_de_gravar(self, texto, perfil, usuario, trecho):
+        cur = CursorFalso([])
+        with pytest.raises(R.ErroIntegridade, match=trecho):
+            R.registrar_comentario(cur, "intervencao", self.ENT, texto, perfil, usuario, historico_id="H", id_solicitacao="S")
+        assert cur.executados == []
+
+    def test_consultante_nao_comenta_fora_de_intervencao(self):
+        with pytest.raises(R.ErroIntegridade, match="responsável"):
+            R.registrar_comentario(CursorFalso([]), "achado", {"achado_id": "A1", "versao": 1}, "ok", "consultante",
+                                   "joao@x", historico_id="H", id_solicitacao="S")
+
+    def test_reenvio_da_mesma_solicitacao_e_aceito_sem_duplicar(self):
+        r = R.registrar_comentario(CursorFalso([0, 1]), "intervencao", self.ENT, "texto", "curador", "maria@x",
+                                   historico_id="H10", id_solicitacao="S1")
+        assert r.confirmada
+
+    def test_chave_usa_a_solicitacao(self):
+        assert R.chave("intervencao", "T1", "comentario", "S1") != R.chave("intervencao", "T1", "comentario", "S2")
+
+    def test_dominio_sql_aceita_comentario_com_texto(self):
+        sql = (Path(__file__).resolve().parents[1] / "sql" / "valor_dos_dados" / "01_estruturas.sql").read_text(encoding="utf-8")
+        assert "'resolucao','comentario')" in sql
+        assert "acao <> 'comentario' OR (length(trim(coalesce(comentario, ''))) BETWEEN 1 AND 2000" in sql
+        assert R.ENTIDADES_COMENTAVEIS <= {"objetivo", "processo", "indicador", "vinculo", "execucao", "achado",
+                                           "intervencao", "medicao", "beneficio", "conversao", "evidencia"}
+
+
 class TestPersistenciaOcorrencias:
     def _ocorrencias(self):
         hab = {**{c: (True, "ok") for c in R.REGRAS_R1}, "DG-04": (False, "classificacao ausente")}

@@ -756,6 +756,44 @@ def transicionar(cursor, interv: Mapping, para: str, perfil: str, usuario: str, 
 
 
 # ════════════════════════════════════════════════════════════════════
+# Comentários (registro no histórico, sem alterar a entidade)
+# ════════════════════════════════════════════════════════════════════
+ENTIDADES_COMENTAVEIS = {"objetivo", "processo", "indicador", "vinculo", "achado", "intervencao", "medicao", "beneficio"}
+LIMITE_COMENTARIO = 2000
+
+
+def validar_comentario(entidade_tipo: str, entidade: Mapping, texto: Optional[str], perfil: str,
+                       usuario: str) -> list[str]:
+    v = []
+    t = (texto or "").strip()
+    if not t:
+        v.append("Comentário vazio.")
+    elif len(t) > LIMITE_COMENTARIO:
+        v.append(f"Comentário acima de {LIMITE_COMENTARIO} caracteres.")
+    if entidade_tipo not in ENTIDADES_COMENTAVEIS:
+        v.append(f"Tipo de registro não aceita comentário: {entidade_tipo}.")
+    responsavel = entidade_tipo == "intervencao" and usuario and usuario == entidade.get("responsavel")
+    if perfil not in ("curador", "aprovador") and not responsavel:
+        v.append("Comentário permitido a curadores, aprovadores e ao responsável pela intervenção.")
+    return v
+
+
+def registrar_comentario(cursor, entidade_tipo: str, entidade: Mapping, texto: str, perfil: str, usuario: str, *,
+                         historico_id: str, id_solicitacao: str) -> ResultadoOperacao:
+    """Grava o comentário no histórico (appendOnly). id_solicitacao é gerado quando o formulário é aberto:
+    reenviar a mesma solicitação não duplica o registro."""
+    _exigir(validar_comentario(entidade_tipo, entidade, texto, perfil, usuario))
+    entidade_id, versao = entidade[f"{entidade_tipo}_id"], int(entidade["versao"])
+    params = {"historico_id": historico_id, "chave_natural": chave(entidade_tipo, entidade_id, "comentario", id_solicitacao),
+              "entidade_tipo": entidade_tipo, "entidade_id": entidade_id, "acao": "comentario", "versao_entidade": versao,
+              "status_anterior": None, "status_novo": None, "campos_alterados": None, "comentario": texto.strip(),
+              "evidencia_id": None, "usuario": usuario, "perfil": perfil}
+    executar_gravacao(cursor, "Comentário", SQL_INSERIR_HISTORICO, params, "historico",
+                      {"chave_natural": params["chave_natural"]}, aceita_ja_existente=True)
+    return ResultadoOperacao(True, versao, "Comentário: confirmado")
+
+
+# ════════════════════════════════════════════════════════════════════
 # Gravação das ocorrências e conclusão da execução (I04)
 # ════════════════════════════════════════════════════════════════════
 SQL_INSERIR_OCORRENCIA = """
