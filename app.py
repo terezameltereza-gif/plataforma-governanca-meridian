@@ -420,7 +420,7 @@ section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] *{{colo
 .gv-panel{{padding:18px 20px;height:100%;}}
 .gv-panel-title{{display:flex;align-items:center;gap:10px;font-weight:650;font-size:0.98rem;color:#000;margin-bottom:14px;}}
 .gv-kpi{{padding:18px 20px 16px;}}
-.gv-kpi-val{{font-size:1.9rem;font-weight:700;letter-spacing:-0.02em;color:#000;line-height:1.1;margin-top:10px;font-variant-numeric:tabular-nums;}}
+.gv-kpi-val{{font-size:1.9rem;font-weight:700;letter-spacing:-0.02em;color:#000;line-height:1.1;margin-top:10px;font-variant-numeric:tabular-nums;overflow-wrap:normal;word-break:keep-all;hyphens:none;}}
 .gv-kpi-lbl{{font-size:0.85rem;color:var(--gv-ink2);margin-top:4px;}}
 .gv-kpi-note{{font-size:0.72rem;color:var(--gv-ink3);margin-top:8px;}}
 .gv-bar{{display:grid;grid-template-columns:96px 1fr 46px;align-items:center;gap:12px;margin:10px 0;font-size:0.84rem;}}
@@ -1162,7 +1162,7 @@ if pagina == "🏠 Início":
     total_ativos = len(df_meta)  if not df_meta.empty else ("—" if _db_fail else 0)
     total_termos = len(df_gloss) if not df_gloss.empty else ("—" if _db_fail else 0)
     qual_media   = round(df_qual["score_final"].mean(), 1) if not df_qual.empty and "score_final" in df_qual.columns else None
-    qual_str     = f"{qual_media}%" if qual_media is not None else ("Indisponível" if _db_fail else "—")
+    qual_str     = f"{qual_media}%" if qual_media is not None else "—"
 
     STATUS_CLOSED = {"concluido","aprovado","cancelado","concluída","aprovada","encerrado"}
     if _db_fail and df_sol_ac.empty and df_sol_qu.empty:
@@ -1195,6 +1195,7 @@ if pagina == "🏠 Início":
             {icon(ic, 30)}
             <div class="gv-kpi-val">{val}</div>
             <div class="gv-kpi-lbl">{lbl}</div>
+            {'<div class="gv-kpi-note">Indisponível no momento</div>' if _db_fail and val == "—" else ""}
         </div>""" for ic, val, lbl, nota in _kpis_home)
 
     st.markdown(f"""
