@@ -28,3 +28,10 @@ A regra DG-08 (produto sem responsável) seria desabilitada, porque procurava ap
 ## Impacto na homologação
 
 O workspace tem um único principal, que é dono do catálogo, do schema e das tabelas. A trava 3 do roteiro recusa esse principal, como previsto. É preciso confirmar se a Free Edition permite criar um segundo usuário ou service principal sem privilégios de gravação. Se não permitir, a homologação não pode ser executada neste workspace nas condições aprovadas.
+
+## Identidades do workspace (conferência visual, sem alterações)
+
+- Service principals: nenhum cadastrado. O botão "Add service principal" está disponível na Free Edition.
+- Grupos: `admins`, `users` e um clone de `users` criado pela Databricks, cada um com 1 membro.
+- Permissões do catálogo `workspace`: o grupo de usuários do workspace tem apenas `USE CATALOG`. Um principal novo herdaria somente esse privilégio, sem nenhum direito de gravação em `meridian_governanca`.
+- Ainda não verificado: se a Free Edition permite gerar credencial (segredo OAuth ou token) para o service principal, que é necessária para executar os testes.
