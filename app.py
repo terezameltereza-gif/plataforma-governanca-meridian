@@ -12,6 +12,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 import uuid
+import html
 
 st.set_page_config(
     page_title="Plataforma de Governança — Banco Meridian",
@@ -616,6 +617,25 @@ USUARIOS = {
     "ana.lima@meridian.com":      {"nome":"Ana Lima",        "perfil":"aprovador"},
     "fernando.dias@meridian.com": {"nome":"Fernando Dias",   "perfil":"aprovador"},
 }
+PERFIS_VALIDOS = ("consultante", "curador", "aprovador")
+
+
+def _secao_secrets(nome):
+    try:
+        return st.secrets[nome] if nome in st.secrets else None
+    except Exception:          # sem arquivo de secrets (ambiente local)
+        return None
+
+
+# Login individual com conta Google (st.login). Ativo quando a seção [auth] existe nos secrets:
+# só entram os e-mails listados em [acesso.usuarios], cada um com nome e perfil.
+# Sem [auth], a plataforma continua com os usuários de demonstração acima.
+LOGIN_REAL = _secao_secrets("auth") is not None
+if LOGIN_REAL:
+    _acesso = _secao_secrets("acesso") or {}
+    USUARIOS = {str(email).strip().lower(): {"nome": str(d.get("nome") or email), "perfil": d.get("perfil")}
+                for email, d in (_acesso.get("usuarios") or {}).items() if d.get("perfil") in PERFIS_VALIDOS}
+
 PERFIL_COR   = {"consultante":"#1A1A1A","curador":"#000000","aprovador":"#1E7F4F"}
 PERFIL_LABEL = {"consultante":"👁️ Consultante","curador":"✏️ Curador","aprovador":"✅ Aprovador"}
 
@@ -871,8 +891,12 @@ _LOGO_SIDEBAR = f"""
 </div>"""
 
 def form_acesso(sufixo=""):
-    """Fluxo de acesso existente (seleção do usuário de demonstração). Usado no menu lateral e na página pública."""
+    """Acesso à plataforma: login Google quando configurado; senão, seleção do usuário de demonstração."""
     st.markdown('<div class="gv-nav-label">Acesso à plataforma</div>', unsafe_allow_html=True)
+    if LOGIN_REAL:
+        if st.button("Entrar com Google", key=f"login{sufixo}", icon=":material/login:", use_container_width=True):
+            st.login()
+        return
     email = st.selectbox("Usuário", list(USUARIOS.keys()),
         format_func=lambda x: f"{USUARIOS[x]['nome']} · {USUARIOS[x]['perfil']}",
         label_visibility="collapsed", key=f"sel_usuario{sufixo}")
@@ -910,6 +934,8 @@ def pagina_publica():
   <div class="gv-pub-art" aria-hidden="true">{HERO_ART_SVG}</div>
 </section>""", unsafe_allow_html=True)
     if st.button("ENTRAR NA PLATAFORMA", key="pub_entrar", icon=":material/arrow_forward:"):
+        if LOGIN_REAL:
+            st.login()
         st.session_state["mostrar_acesso"] = True
     if st.session_state.get("mostrar_acesso"):
         with st.container(key="pub_acesso"):
@@ -918,8 +944,40 @@ def pagina_publica():
                 f'<div class="gv-pub-rodape">© Governantes. Conteúdo institucional.</div>', unsafe_allow_html=True)
 
 
+def acesso_negado(email):
+    st.markdown('<style>[data-testid="stMainBlockContainer"],.main .block-container{padding-top:56px !important;}</style>',
+                unsafe_allow_html=True)
+    st.markdown(f"""
+<section class="gv-pub" aria-labelledby="gv-negado">
+  <div>
+    <div class="gv-pub-marca">Governantes<span></span></div>
+    <h1 class="gv-pub-h" id="gv-negado" style="font-size:2rem !important">Acesso não autorizado</h1>
+    <p class="gv-pub-txt">A conta <b>{html.escape(email or "sem e-mail")}</b> não está habilitada nesta plataforma.
+    Solicite o acesso à administração da Governantes.</p>
+  </div>
+</section>""", unsafe_allow_html=True)
+    if st.button("Sair e usar outra conta", key="negado_sair", icon=":material/logout:"):
+        st.logout()
+        st.stop()
+
+
 if "usuario" not in st.session_state:
     st.session_state["usuario"] = None
+
+if LOGIN_REAL:
+    if st.user.is_logged_in:
+        _email = str(st.user.get("email") or "").strip().lower()
+        if _email not in USUARIOS or st.user.get("email_verified") is False:
+            st.session_state["usuario"] = None
+            with st.sidebar:
+                st.markdown(_LOGO_SIDEBAR, unsafe_allow_html=True)
+            acesso_negado(_email)
+            st.stop()
+        if st.session_state["usuario"] != _email:
+            st.session_state["usuario"] = _email
+            st.session_state["pagina"]  = "🏠 Início"
+    else:
+        st.session_state["usuario"] = None
 
 if not st.session_state["usuario"]:
     with st.sidebar:
@@ -1024,7 +1082,12 @@ with st.container(key="tb_perfil"):
     st.markdown(f'<span class="gv-avatar">{_iniciais}</span>', unsafe_allow_html=True)
     with st.popover(_nome_tb or "Perfil", use_container_width=True):
         st.markdown(f"**{_nome_tb}**  \n{_perf_lbl}")
-        if st.button("Trocar perfil", key="logout", icon=":material/swap_horiz:", use_container_width=True):
+        if LOGIN_REAL:
+            if st.button("Sair", key="logout", icon=":material/logout:", use_container_width=True):
+                st.session_state["usuario"] = None
+                st.logout()
+                st.stop()
+        elif st.button("Trocar perfil", key="logout", icon=":material/swap_horiz:", use_container_width=True):
             st.session_state["usuario"] = None
             st.rerun()
 
