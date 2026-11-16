@@ -6,7 +6,6 @@ Reprodução proibida sem autorização expressa.
 """
 import streamlit as st
 import pandas as pd
-import threading, time
 from databricks import sql
 import plotly.express as px
 import plotly.graph_objects as go
@@ -533,38 +532,23 @@ def get_conn():
     )
     return conn
 
-# ─── KEEP-ALIVE ──────────────────────────────────────────────────────────────
-# Roda uma vez por processo do servidor (cache_resource) e mantém o
-# SQL Warehouse ativo enviando um SELECT 1 a cada 4 minutos.
-@st.cache_resource
-def _start_keepalive():
-    def _ping():
-        while True:
-            time.sleep(240)   # 4 minutos — antes do timeout de idle (10 min)
-            try:
-                conn = get_conn()
-                cur  = conn.cursor()
-                cur.execute("SELECT 1")
-                cur.close()
-            except Exception:
-                # Sessão expirou — limpa o cache para reconectar
-                try: get_conn.clear()
-                except: pass
-    t = threading.Thread(target=_ping, daemon=True)
-    t.start()
-    return True
-
-_start_keepalive()
-# ─────────────────────────────────────────────────────────────────────────────
+# Sem keep-alive: o warehouse para sozinho após o tempo ocioso configurado e volta na
+# primeira consulta. Mantê-lo ligado com consultas periódicas consumia a cota diária
+# da Free Edition mesmo sem ninguém usando a plataforma.
 
 def _is_session_err(msg: str) -> bool:
     return "SessionHandle" in msg or ("Session" in msg and "closed" in msg)
 
-def _is_limit_err(msg: str) -> bool:
-    return "free daily limit" in msg or "BAD_REQUEST" in msg or "daily limit" in msg.lower()
+_SINAIS_DE_COTA = ("free daily limit", "daily limit", "resource_exhausted", "quota")
 
-@st.cache_data(ttl=300)
-def qry(sql_str):
+
+def _is_limit_err(msg: str) -> bool:
+    m = msg.lower()
+    return any(sinal in m for sinal in _SINAIS_DE_COTA)
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def _qry_cache(sql_str):
     cur = None
     try:
         conn = get_conn()
@@ -574,18 +558,30 @@ def qry(sql_str):
         rows = cur.fetchall()
         return pd.DataFrame(rows, columns=cols), None
     except Exception as e:
-        err = str(e)
-        if _is_session_err(err):
-            try: get_conn.clear(); qry.clear()
-            except: pass
-        if _is_limit_err(err):
-            st.session_state["_db_limit"] = True
-        st.session_state["_db_err"] = err
-        return pd.DataFrame(), err
+        return pd.DataFrame(), str(e)
     finally:
         if cur is not None:
             try: cur.close()
             except: pass
+
+
+def qry(sql_str):
+    """Consulta com cache de 5 min. Uma consulta bem-sucedida limpa o aviso de indisponibilidade,
+    que antes ficava preso na sessão mesmo depois de o banco voltar."""
+    df, err = _qry_cache(sql_str)
+    if err:
+        if _is_session_err(err):
+            try: get_conn.clear(); _qry_cache.clear()
+            except: pass
+        st.session_state["_db_err"] = err
+        st.session_state["_db_limit"] = _is_limit_err(err)
+    else:
+        st.session_state["_db_err"] = None
+        st.session_state["_db_limit"] = False
+    return df, err
+
+
+qry.clear = _qry_cache.clear
 
 def exe(sql_str):
     cur = None
