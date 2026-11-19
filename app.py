@@ -13,6 +13,7 @@ import plotly.graph_objects as go
 from datetime import datetime
 import uuid
 import html
+import regras_governanca as RG
 
 st.set_page_config(
     page_title="Plataforma de Governança — Banco Meridian",
@@ -292,6 +293,7 @@ _ICON_PATHS = {
     "database": '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',
     "layers": '<path d="M12 3 2 8l10 5 10-5-10-5z"/><path d="m2 13 10 5 10-5"/><path d="m2 17.5 10 5 10-5"/>',
     "shield": '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+    "star": '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/>',
     "book": '<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',
     "network": '<circle cx="12" cy="12" r="2.5"/><circle cx="4.5" cy="4.5" r="2"/><circle cx="19.5" cy="4.5" r="2"/><circle cx="4.5" cy="19.5" r="2"/><circle cx="19.5" cy="19.5" r="2"/><path d="m6 6 4.3 4.3M18 6l-4.3 4.3M6 18l4.3-4.3M18 18l-4.3-4.3"/>',
     "chart": '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
@@ -748,6 +750,11 @@ def load_produto_ativos():
     return df if df is not None else pd.DataFrame()
 
 @st.cache_data(ttl=300)
+def avaliar_ativos():
+    """Regras de governança e estrelas de cada ativo, calculadas sobre os dados já carregados (sem gravar)."""
+    df_lin, _ = load_linhagem()
+    return RG.avaliar(load_meta(), load_links(), df_lin, load_quality_dimensions(), load_cert())
+
 def load_linhagem():
     df, err = qry("SELECT * FROM meridian_governanca.linhagem_ativos ORDER BY origem_schema, origem_tabela")
     return (df if df is not None else pd.DataFrame()), err
@@ -760,7 +767,7 @@ def load_solicitacoes_qualidade():
 # ════════════════════════════════════════════════════════════════════
 # COMPONENTES REUTILIZÁVEIS
 # ════════════════════════════════════════════════════════════════════
-_EMOJI_ICON = {"📖": "book", "📋": "database", "🗂️": "database", "🏛️": "layers", "🛡️": "shield", "🏆": "shield",
+_EMOJI_ICON = {"⭐": "star", "📖": "book", "📋": "database", "🗂️": "database", "🏛️": "layers", "🛡️": "shield", "🏆": "shield",
                "⚡": "inbox", "📬": "inbox", "✏️": "edit", "🕐": "clock", "📊": "chart", "🥇": "award",
                "🔗": "network", "📦": "box", "🔍": "search"}
 
@@ -1023,6 +1030,7 @@ with st.sidebar:
         (":material/home:",            "Início",                "🏠 Início"),
         (":material/database:",        "Catálogo de Dados",     "📋 Catálogo"),
         (":material/verified_user:",   "Qualidade de Dados",    "🏆 Qualidade"),
+        (":material/star:",            "Maturidade dos Ativos", "⭐ Maturidade"),
         (":material/menu_book:",       "Glossário de Negócio",  "📖 Glossário"),
         (":material/hub:",             "Linhagem de Dados",     "🔗 Linhagem"),
         (":material/search:",          "Busca Global",          "🔍 Busca Global"),
@@ -1265,10 +1273,14 @@ if pagina == "🏠 Início":
     def _fmt(v):
         return f"{v:,}".replace(",", ".") if isinstance(v, int) else str(v)
 
+    _avals_home = avaliar_ativos()
+    confiaveis_str = (f"{sum(a.estrelas >= 3 for a in _avals_home)} de {len(_avals_home)}" if _avals_home
+                      else ("—" if _db_fail else "0"))
+
     _kpis_home = [
         ("database", _fmt(total_ativos),   "Ativos de Dados",    "Tabelas ativas com metadados"),
         ("layers",   _fmt(total_dominios), "Domínios",           "Domínios com ativos catalogados"),
-        ("shield",   qual_str,             "Qualidade dos Dados", "Média do score final avaliado"),
+        ("star",     confiaveis_str,       "Ativos Confiáveis (3★+)", "Ativos que passam nas regras de identificação, documentação e qualidade crítica"),
         ("book",     _fmt(total_termos),   "Termos de Negócio",  "Conceitos no glossário"),
     ]
     _kpi_html = "".join(f"""
@@ -2495,6 +2507,17 @@ elif pagina == "⚡ Meu Espaço":
         else:
             estado_vazio("📖","Nenhum conceito vinculado","Não há conceitos vinculados ao seu usuário como Gestor (Steward).")
 
+    _minhas_pend = RG.pendencias(avaliar_ativos())
+    if not _minhas_pend.empty:
+        _eu = {str(usuario).strip().lower(), str(u.get("nome", "")).strip().lower()}
+        _minhas_pend = _minhas_pend[_minhas_pend["responsavel"].str.strip().str.lower().isin(_eu)]
+        if not _minhas_pend.empty:
+            section_divider(f"PENDÊNCIAS DE GOVERNANÇA · {len(_minhas_pend)}")
+            st.caption("Regras reprovadas em ativos sob sua responsabilidade. A pendência fecha quando a regra volta a ser aprovada.")
+            st.dataframe(_minhas_pend[["ativo", "regra", "nome", "observado", "acao", "severidade"]].rename(columns={
+                "ativo": "Ativo", "regra": "Regra", "nome": "Descrição", "observado": "Observado", "acao": "Ação",
+                "severidade": "Severidade"}), hide_index=True, use_container_width=True)
+
     copyright_footer()
 
 # ════════════════════════════════════════════════════════════════════
@@ -2843,6 +2866,63 @@ elif pagina == "📊 Indicadores":
 # ════════════════════════════════════════════════════════════════════
 # 🏆 QUALIDADE — Score por Dimensão
 # ════════════════════════════════════════════════════════════════════
+elif pagina == "⭐ Maturidade":
+    page_header("⭐", "Maturidade dos Ativos",
+                "Cada estrela é conquistada passando em regras objetivas, e perdida quando uma delas reprova.")
+    avals = avaliar_ativos()
+    if not avals:
+        if st.session_state.get("_db_err"):
+            estado_vazio("⚠️", "Dados indisponíveis", "Não foi possível ler o catálogo agora. Nenhuma informação foi alterada.")
+        else:
+            estado_vazio("⭐", "Nenhum ativo catalogado", "As estrelas aparecem quando houver ativos no catálogo.")
+    else:
+        dominios = sorted({a.dominio for a in avals if a.dominio})
+        f_dom = st.selectbox("Domínio", ["Todos"] + dominios, key="mat_dom")
+        sel = [a for a in avals if f_dom == "Todos" or a.dominio == f_dom]
+        pend = RG.pendencias(sel)
+        conf = sum(a.estrelas >= 3 for a in sel)
+        k1, k2, k3, k4 = st.columns(4)
+        with k1: st.markdown(kpi(f"{conf} de {len(sel)}", "Ativos confiáveis (3★+)", tooltip="Passam em identificação, documentação e qualidade crítica."), unsafe_allow_html=True)
+        with k2: st.markdown(kpi(sum(a.estrelas == 0 for a in sel), "Ativos sem estrela", tooltip="Sem Data Owner ou sem domínio."), unsafe_allow_html=True)
+        with k3: st.markdown(kpi(len(pend), "Regras reprovadas", tooltip="Cada reprovação é uma pendência com responsável."), unsafe_allow_html=True)
+        with k4: st.markdown(kpi(int((pend["severidade"] == "critica").sum()) if not pend.empty else 0, "Reprovações críticas", tooltip="Chave duplicada, campo crítico vazio ou carga atrasada."), unsafe_allow_html=True)
+
+        section_divider("DISTRIBUIÇÃO POR ESTRELAS")
+        total = len(sel)
+        barras = "".join(
+            f'<div style="display:grid;grid-template-columns:120px 1fr 160px;gap:12px;align-items:center;margin:6px 0;">'
+            f'<span style="font-size:0.85rem;color:#000;"><span style="color:#C9A227;letter-spacing:1px;">{RG.estrelas_txt(n)}</span></span>'
+            f'<div style="background:#F2F2F2;border-radius:6px;height:10px;"><div style="background:#C9A227;border-radius:6px;height:10px;width:{(100 * q / total):.0f}%;"></div></div>'
+            f'<span style="font-size:0.82rem;color:#000;text-align:right;white-space:nowrap;">{q} · {RG.NOME_NIVEL[n]}</span></div>'
+            for n in range(5, -1, -1) for q in [sum(a.estrelas == n for a in sel)])
+        st.markdown(f'<div class="gv-card" style="padding:16px 20px;">{barras}</div>', unsafe_allow_html=True)
+
+        section_divider("ATIVOS E PRÓXIMO PASSO")
+        st.dataframe(pd.DataFrame([{
+            "Ativo": a.ativo, "Domínio": a.dominio or "—", "Estrelas": RG.estrelas_txt(a.estrelas),
+            "Nível": RG.NOME_NIVEL[a.estrelas],
+            "Para a próxima estrela": "; ".join(f"{c} {RG.REGRAS[c].nome}" for c in a.faltam_proxima()) or "—",
+            "Responsável": "; ".join(sorted({a.responsavel(c) for c in a.faltam_proxima()})) or "—",
+        } for a in sorted(sel, key=lambda x: (x.estrelas, x.ativo))]), hide_index=True, use_container_width=True)
+
+        section_divider("PENDÊNCIAS POR RESPONSÁVEL")
+        if pend.empty:
+            st.success("Nenhuma regra reprovada no filtro selecionado.")
+        else:
+            st.dataframe(pend.rename(columns={"ativo": "Ativo", "dominio": "Domínio", "regra": "Regra", "nome": "Descrição",
+                                              "observado": "Observado", "acao": "Ação", "responsavel": "Responsável",
+                                              "severidade": "Severidade", "estrelas": "Estrelas"}),
+                         hide_index=True, use_container_width=True)
+
+        with st.expander("Critérios de cada estrela e regras aplicadas"):
+            st.markdown("\n".join(
+                f"**{RG.estrelas_txt(n)} {nome}** — " + "; ".join(f"{c} {RG.REGRAS[c].nome} ({RG.REGRAS[c].criterio})" for c in codigos)
+                for n, nome, codigos in RG.NIVEIS))
+            st.caption("Os níveis são cumulativos. As regras de qualidade usam as medições registradas na avaliação de "
+                       "qualidade de cada ativo. A regra R7 (reconciliação de totais) depende de um total de controle "
+                       "definido com a área de negócio; até lá, nenhum ativo chega a 5 estrelas.")
+    copyright_footer()
+
 elif pagina == "🏆 Qualidade":
     page_header("🏆","Score de Qualidade de Dados","Avaliação multidimensional — Completude · Unicidade · Validade · Atualidade · Consistência.")
     st.markdown("""<div style="background:#FFFFFF99;border:1px solid #E5E5E5;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#5C5C5C;font-size:0.78rem;line-height:1.6;">A qualidade dos dados é avaliada em <strong style="color:#000000;">5 dimensões independentes</strong>. O Score Final é a média simples das 5 dimensões.</div></div>""",unsafe_allow_html=True)
