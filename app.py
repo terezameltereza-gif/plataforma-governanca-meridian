@@ -6,6 +6,7 @@ Reprodução proibida sem autorização expressa.
 """
 import streamlit as st
 import pandas as pd
+import time
 from databricks import sql
 import plotly.express as px
 import plotly.graph_objects as go
@@ -527,8 +528,8 @@ def get_conn():
         access_token         = st.secrets["DATABRICKS_TOKEN"],
         catalog              = "workspace",
         schema               = "meridian_governanca",
-        socket_timeout_seconds = 12,   # falha rápida — não trava mobile
-        _connection_timeout  = 15,
+        socket_timeout_seconds = 30,   # comporta a partida do warehouse serverless
+        _connection_timeout  = 30,
     )
     return conn
 
@@ -547,22 +548,43 @@ def _is_limit_err(msg: str) -> bool:
     return any(sinal in m for sinal in _SINAIS_DE_COTA)
 
 
-@st.cache_data(ttl=300, show_spinner=False)
-def _qry_cache(sql_str):
+# Sem keep-alive, a primeira consulta encontra o warehouse desligado. Enquanto ele liga,
+# o Databricks responde "try again later" ou a conexão expira: nesses casos a consulta é
+# repetida com conexão nova, por até cerca de 45 segundos. Outros erros não são repetidos.
+_SINAIS_DE_PARTIDA = ("try again later", "timed out", "timeout", "temporarily unavailable", "is starting")
+_ESPERAS_PARTIDA = (5, 10, 15, 15)
+
+
+def _is_partida_err(msg: str) -> bool:
+    m = msg.lower()
+    return any(sinal in m for sinal in _SINAIS_DE_PARTIDA) and not _is_limit_err(msg)
+
+
+def _executar(sql_str):
     cur = None
     try:
-        conn = get_conn()
-        cur  = conn.cursor()
+        cur = get_conn().cursor()
         cur.execute(sql_str)
         cols = [d[0] for d in cur.description]
-        rows = cur.fetchall()
-        return pd.DataFrame(rows, columns=cols), None
-    except Exception as e:
-        return pd.DataFrame(), str(e)
+        return pd.DataFrame(cur.fetchall(), columns=cols)
     finally:
         if cur is not None:
             try: cur.close()
             except: pass
+
+
+@st.cache_data(ttl=300, show_spinner="Conectando ao Databricks...")
+def _qry_cache(sql_str):
+    for espera in (*_ESPERAS_PARTIDA, None):
+        try:
+            return _executar(sql_str), None
+        except Exception as e:
+            err = str(e)
+            if espera is None or not _is_partida_err(err):
+                return pd.DataFrame(), err
+            try: get_conn.clear()
+            except: pass
+            time.sleep(espera)
 
 
 def qry(sql_str):
@@ -1253,8 +1275,7 @@ if pagina == "🏠 Início":
         <div class="gv-card gv-kpi" title="{nota}">
             {icon(ic, 30)}
             <div class="gv-kpi-val">{val}</div>
-            <div class="gv-kpi-lbl">{lbl}</div>
-            {'<div class="gv-kpi-note">Indisponível no momento</div>' if _db_fail and val == "—" else ""}
+            <div class="gv-kpi-lbl">{lbl}</div>{'<div class="gv-kpi-note">Indisponível no momento</div>' if _db_fail and val == "—" else ""}
         </div>""" for ic, val, lbl, nota in _kpis_home)
 
     st.markdown(f"""
