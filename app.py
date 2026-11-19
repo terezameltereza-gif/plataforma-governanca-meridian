@@ -667,7 +667,7 @@ MENU_BASE = {
     "INÍCIO":         ["🏠 Início"],
     "CONHECIMENTO":   ["📖 Glossário", "🏛️ Domínios"],
     "DADOS":          ["📋 Catálogo", "🔗 Linhagem", "📦 Produtos"],
-    "CONFIABILIDADE": ["🛡️ Scorecard", "🏆 Qualidade", "🥇 Certificação"],
+    "CONFIABILIDADE": ["🏆 Qualidade", "🥇 Certificação"],
 }
 MENU_OP = {
     "GESTÃO":         ["📊 Indicadores"],
@@ -808,6 +808,17 @@ def avatar(nome, cor="#C9A227", size=36):
         background:{cor}22;border:2px solid {cor}44;flex-shrink:0;
         display:inline-flex;align-items:center;justify-content:center;
         color:{cor};font-weight:800;font-size:{size//3}px;">{iniciais}</div>"""
+
+def explicacao(titulo, texto, itens=(), rodape=""):
+    """Bloco explicativo padrão das abas: o que a tela mostra, o que é avaliado e como ler."""
+    lis = "".join(f'<li style="margin:4px 0;"><strong style="color:#000;">{html.escape(a)}</strong> — {html.escape(b)}</li>' for a, b in itens)
+    st.markdown(f"""
+    <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-left:3px solid #C9A227;border-radius:10px;padding:14px 18px;margin:6px 0 16px;">
+        <div style="font-size:0.72rem;font-weight:650;letter-spacing:1.2px;text-transform:uppercase;color:#8C6F12;margin-bottom:6px;">{html.escape(titulo)}</div>
+        <div style="font-size:0.86rem;color:#1A1A1A;line-height:1.6;">{html.escape(texto)}</div>
+        {f'<ul style="margin:8px 0 0;padding-left:18px;font-size:0.84rem;color:#1A1A1A;line-height:1.5;">{lis}</ul>' if lis else ''}
+        {f'<div style="font-size:0.8rem;color:#5C5C5C;margin-top:8px;line-height:1.5;">{html.escape(rodape)}</div>' if rodape else ''}
+    </div>""", unsafe_allow_html=True)
 
 def estado_vazio(icone, titulo, descricao):
     st.markdown(f"""
@@ -1029,8 +1040,7 @@ with st.sidebar:
     NAV_ITEMS = [
         (":material/home:",            "Início",                "🏠 Início"),
         (":material/database:",        "Catálogo de Dados",     "📋 Catálogo"),
-        (":material/verified_user:",   "Qualidade de Dados",    "🏆 Qualidade"),
-        (":material/star:",            "Maturidade dos Ativos", "⭐ Maturidade"),
+        (":material/verified_user:",   "Confiabilidade dos Dados", "🏆 Qualidade"),
         (":material/menu_book:",       "Glossário de Negócio",  "📖 Glossário"),
         (":material/hub:",             "Linhagem de Dados",     "🔗 Linhagem"),
         (":material/search:",          "Busca Global",          "🔍 Busca Global"),
@@ -1040,7 +1050,6 @@ with st.sidebar:
     NAV_OP = [
         (":material/layers:",          "Domínios",     "🏛️ Domínios"),
         (":material/deployed_code:",   "Produtos",     "📦 Produtos"),
-        (":material/fact_check:",      "Scorecard",    "🛡️ Scorecard"),
         (":material/workspace_premium:", "Certificação", "🥇 Certificação"),
         (":material/edit_note:",       "Curadoria",    "✏️ Curadoria"),
         (":material/history:",         "Auditoria",    "🕐 Auditoria"),
@@ -1220,6 +1229,9 @@ if _qp_nav in _NAV_JORNADAS:
     st.rerun()
 
 pagina       = st.session_state.get("pagina","🏠 Início")
+# Scorecard e Maturidade foram consolidados em Confiabilidade dos Dados
+if pagina in ("🛡️ Scorecard", "⭐ Maturidade"):
+    pagina = st.session_state["pagina"] = "🏆 Qualidade"
 usuario      = st.session_state["usuario"]
 u            = USUARIOS[usuario]
 perfil       = u["perfil"]
@@ -1391,7 +1403,7 @@ if pagina == "🏠 Início":
                 ("database", "Catálogo de Dados",       "Inventário de ativos e metadados", "📋 Catálogo"),
                 ("book",     "Glossário de Negócio",    "Conceitos, regras e responsáveis", "📖 Glossário"),
                 ("network",  "Linhagem de Dados",       "Origem e fluxo entre camadas",     "🔗 Linhagem"),
-                ("shield",   "Regras de Qualidade",     "Dimensões e scores de qualidade",  "🏆 Qualidade"),
+                ("shield",   "Confiabilidade dos Dados", "Estrelas, pendências e qualidade", "🏆 Qualidade"),
                 ("chart",    "Relatórios e Dashboards", "Indicadores de governança",        "📊 Indicadores"),
             ]
             qa_cols = st.columns(5, gap="small")
@@ -1970,6 +1982,13 @@ elif pagina == "📋 Catálogo":
 # ════════════════════════════════════════════════════════════════════
 elif pagina == "🏛️ Domínios":
     page_header("🏛️", "Domínios de Negócio", "Responsabilidades, ativos e conceitos organizados por área de negócio.")
+    explicacao("O que esta tela mostra",
+        "Os domínios de negócio e, para cada um, os ativos de dados, os responsáveis e os conceitos do glossário. "
+        "O domínio é a área que responde pelo significado do dado, e não o sistema de origem.",
+        [("Origem do domínio", "campo Domínio de cada ativo no Catálogo, preenchido na Curadoria."),
+         ("Regra aplicada", "M3: ativo sem domínio não ganha a 1ª estrela em Confiabilidade dos Dados."),
+         ("Completude", "percentual médio de metadados preenchidos nos ativos do domínio (descrição, domínio, Owner e Steward).")],
+        "Como ler: um domínio com poucos ativos ou com completude baixa indica onde a documentação precisa avançar.")
 
     df_dom = load_meta()
     df_glos = load_glossario()
@@ -2085,209 +2104,14 @@ elif pagina == "🏛️ Domínios":
 
     copyright_footer()
 
-# ════════════════════════════════════════════════════════════════════
-# 🛡️ SCORECARD — Confiabilidade dos Dados
-# ════════════════════════════════════════════════════════════════════
-elif pagina == "🛡️ Scorecard":
-    page_header("🛡️","Scorecard de Governança",
-                "Visão consolidada de documentação, responsabilidade, relacionamentos, completude de metadados e certificação.")
-
-    st.markdown("""
-    <div style="background:#FFFFFF99;border:1px solid #E5E5E5;border-radius:8px;
-                padding:10px 14px;margin-bottom:16px;">
-        <div style="color:#5C5C5C;font-size:0.78rem;line-height:1.6;">
-            O Scorecard resume cinco medidas operacionais com pesos iguais.
-            O resultado é um índice indicativo de governança, não uma certificação nem uma avaliação formal de maturidade.
-            Selecione um pilar para entender sua definição e como melhorar o resultado.
-        </div>
-    </div>""", unsafe_allow_html=True)
-
-    df_sc    = load_meta()
-    df_links = load_links()
-
-    if df_sc.empty:
-        if bool(st.session_state.get("_db_err")):
-            estado_vazio("⚠️","Scorecard indisponível","Não foi possível conectar ao banco de dados. O scorecard será exibido quando a conexão for restabelecida.")
-        else:
-            estado_vazio("📊","Nenhum dado disponível","Registre ativos no catálogo para que o scorecard seja calculado.")
-    else:
-        dominios_sc = ["Todos"]+sorted([str(d) for d in df_sc["dominio"].dropna().unique() if str(d).strip() and str(d) != "nan"])
-        f_dom_sc = st.selectbox("Filtrar por Domínio", dominios_sc, key="sc_dom")
-        df_sc_f  = df_sc if f_dom_sc=="Todos" else df_sc[df_sc["dominio"]==f_dom_sc]
-
-        doc  = df_sc_f["descricao"].apply(bool).mean()*100
-        own  = df_sc_f["data_owner"].apply(bool).mean()*100
-        rel  = (df_sc_f["table_name"].isin(df_links["table_name"]).sum()/max(len(df_sc_f),1))*100 if not df_links.empty else 0
-        qual = df_sc_f["score_completude"].mean()
-        df_cert_sc = load_cert()
-        if not df_cert_sc.empty:
-            cert_tabs = df_cert_sc[df_cert_sc["status_cert"]=="certificado"]["table_name"].tolist()
-            cert = (df_sc_f["table_name"].isin(cert_tabs).sum() / max(len(df_sc_f),1)) * 100
-        else:
-            cert = 0
-        ger  = (doc+own+rel+qual+cert)/5
-        cor_g="#1E7F4F" if ger>=80 else "#B26A00" if ger>=60 else "#C62828"
-
-        st.markdown(f"""
-        <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:16px;
-                    padding:20px;text-align:center;margin-bottom:20px;">
-            <div style="font-size:0.7rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">
-                Índice Indicativo de Governança</div>
-            <div style="font-size:3.5rem;font-weight:800;color:{cor_g};line-height:1;">{ger:.0f}%</div>
-            <div style="color:#5C5C5C;font-size:0.75rem;margin-top:4px;">
-                Média simples dos cinco pilares, com peso igual. Não representa qualidade efetiva dos dados nem maturidade formal.</div>
-            <div style="color:#5C5C5C;font-size:0.7rem;margin-top:6px;">
-                Documentação · Responsabilidade · Relacionamentos · Completude de Metadados · Certificação</div>
-        </div>""", unsafe_allow_html=True)
-
-        PILARES_INFO = {
-            "Documentação":  {
-                "icone":"📝","cor":"#1A1A1A","val":doc,
-                "conceito":"Mede se os ativos possuem descrição de negócio preenchida. Uma boa documentação permite que qualquer usuário entenda o propósito do dado sem precisar consultar o time técnico.",
-                "como_melhorar":"Acesse Curadoria → Tabela Individual e preencha a descrição de cada ativo. O botão 'Sugerir com IA' acelera esse processo."
-            },
-            "Responsabilidade": {
-                "icone":"👤","cor":"#000000","val":own,
-                "conceito":"Avalia se cada ativo possui um Responsável pelo Dado (Data Owner) formalmente definido. O Owner responde pelas decisões sobre qualidade e uso correto do dado.",
-                "como_melhorar":"Acesse Curadoria → Tabela Individual ou Edição em Lote e atribua um Responsável para os ativos sem dono definido."
-            },
-            "Relacionamentos":{
-                "icone":"🔗","cor":"#3D3D3D","val":rel,
-                "conceito":"Verifica se os ativos técnicos estão conectados a conceitos de negócio do Glossário. Ativos conectados são mais fáceis de descobrir e entender pelas áreas de negócio.",
-                "como_melhorar":"Acesse o Glossário → Relacionamentos e vincule cada conceito às tabelas correspondentes."
-            },
-            "Completude de Metadados":     {
-                "icone":"⭐","cor":"#1E7F4F","val":qual,
-                "conceito":"Percentual médio de preenchimento dos metadados obrigatórios. Este indicador mede completude documental; não representa, por si só, a qualidade efetiva dos dados.",
-                "como_melhorar":"Preencha todos os campos obrigatórios na Curadoria. Cada campo preenchido adiciona 20 pontos ao score do ativo."
-            },
-            "Certificação":  {
-                "icone":"🏆","cor":"#C62828","val":cert,
-                "conceito":"Percentual de ativos com status formal de certificação registrado no campo selo. O preenchimento de metadados, isoladamente, não equivale à certificação.",
-                "como_melhorar":"Siga o fluxo formal de certificação e confirme o atendimento aos critérios definidos antes de conceder o selo."
-            },
-        }
-
-        if "sc_pilar" not in st.session_state:
-            st.session_state["sc_pilar"] = None
-
-        cols_p = st.columns(5)
-        for col,(nome,info) in zip(cols_p,PILARES_INFO.items()):
-            cor_p="#1E7F4F" if info["val"]>=80 else "#B26A00" if info["val"]>=60 else "#C62828"
-            is_sel = st.session_state["sc_pilar"] == nome
-            with col:
-                st.markdown(f"""
-                <div style="background:{'#C9A22714' if is_sel else '#FFFFFF'};
-                            border:1px solid {'#C9A227' if is_sel else '#E5E5E5'};
-                            border-radius:12px;padding:16px;text-align:center;margin-bottom:2px;">
-                    <div style="font-size:1.3rem;margin-bottom:5px;">{info['icone']}</div>
-                    <div style="font-size:1.8rem;font-weight:800;color:{cor_p};">{info['val']:.0f}%</div>
-                    <div style="color:#5C5C5C;font-size:0.72rem;margin-bottom:8px;">{nome}</div>
-                    <div style="background:#E5E5E5;border-radius:4px;height:4px;">
-                        <div style="background:{cor_p};border-radius:4px;height:4px;width:{min(info['val'],100):.0f}%;"></div>
-                    </div>
-                </div>""", unsafe_allow_html=True)
-        # Um único controle de navegação para os cinco pilares evita repetir
-        # cinco botões "Entender" e reduz o ruído visual.
-        opcoes_pilar = ["Selecione um pilar"] + list(PILARES_INFO.keys())
-        selecao_atual = st.session_state.get("sc_pilar")
-        if selecao_atual not in PILARES_INFO:
-            selecao_atual = "Selecione um pilar"
-        escolha_pilar = st.selectbox(
-            "Consultar definição do pilar",
-            options=opcoes_pilar,
-            index=opcoes_pilar.index(selecao_atual),
-            key="sc_pilar_select",
-        )
-        pilar_sel = escolha_pilar if escolha_pilar in PILARES_INFO else None
-        st.session_state["sc_pilar"] = pilar_sel
-        if pilar_sel and pilar_sel in PILARES_INFO:
-            info  = PILARES_INFO[pilar_sel]
-            cor_p2 = "#1E7F4F" if info["val"]>=80 else "#B26A00" if info["val"]>=60 else "#C62828"
-            st.markdown(f"""
-            <div style="background:#FFFFFF;border:1px solid {cor_p2}44;border-radius:12px;padding:18px;margin:8px 0 16px;">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                    <span style="font-size:1.5rem;">{info['icone']}</span>
-                    <div>
-                        <div style="color:#000000;font-size:1rem;font-weight:800;">{pilar_sel}</div>
-                        <div style="color:{cor_p2};font-size:1.3rem;font-weight:800;">{info['val']:.0f}%</div>
-                    </div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                    <div style="background:#F5F5F5;border-radius:8px;padding:12px;">
-                        <div style="color:#5C5C5C;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">💡 O QUE SIGNIFICA</div>
-                        <div style="color:#000000;font-size:0.8rem;line-height:1.5;">{info['conceito']}</div>
-                    </div>
-                    <div style="background:#F5F5F5;border-radius:8px;padding:12px;">
-                        <div style="color:#5C5C5C;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🚀 COMO MELHORAR</div>
-                        <div style="color:#000000;font-size:0.8rem;line-height:1.5;">{info['como_melhorar']}</div>
-                    </div>
-                </div>
-            </div>""", unsafe_allow_html=True)
-
-            if pilar_sel == "Documentação":
-                df_pilar = df_sc_f.sort_values("descricao",ascending=True,key=lambda x: x.apply(bool))
-                label_col = "descricao"
-            elif pilar_sel == "Responsabilidade":
-                df_pilar = df_sc_f.sort_values("data_owner",ascending=True,key=lambda x: x.apply(bool))
-                label_col = "data_owner"
-            else:
-                df_pilar = df_sc_f.sort_values("score_completude",ascending=False)
-                label_col = "score_completude"
-
-            st.markdown(f'<div style="color:#000000;font-weight:700;font-size:0.82rem;margin-bottom:8px;">📋 Ativos — {pilar_sel}</div>', unsafe_allow_html=True)
-            for _,row_p in df_pilar.head(10).iterrows():
-                val_campo = row_p.get(label_col,"")
-                tem = bool(val_campo)
-                cor_t="#1E7F4F" if tem else "#C62828"
-                display = str(val_campo)[:30] if tem and label_col != "score_completude" else f"{val_campo}%" if label_col == "score_completude" else "—"
-                st.markdown(f"""
-                <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:6px;
-                            padding:7px 12px;margin-bottom:4px;
-                            display:flex;justify-content:space-between;align-items:center;">
-                    <div>
-                        <span style="color:#000000;font-size:0.78rem;font-weight:600;">{row_p['table_name']}</span>
-                        <span style="background:#58A6FF22;color:#1A1A1A;border-radius:3px;padding:1px 5px;font-size:0.62rem;margin-left:5px;">{row_p['schema_name']}</span>
-                    </div>
-                    <span style="color:{cor_t};font-size:0.75rem;font-weight:600;">
-                        {'✅ ' if tem else '❌ '}{display}
-                    </span>
-                </div>""", unsafe_allow_html=True)
-
-        section_divider("RANKING POR DOMÍNIO")
-        dom_sc = df_sc_f[df_sc_f["dominio"].apply(bool)]\
-                    .groupby("dominio")["score_completude"].mean()\
-                    .reset_index().sort_values("score_completude",ascending=False)\
-                    .reset_index(drop=True)
-        if dom_sc.empty:
-            estado_vazio("📊","Nenhum dado disponível","Atribua domínios aos ativos na Curadoria para ver o ranking.")
-        else:
-            for i,(_,row) in enumerate(dom_sc.iterrows()):
-                cor_o="#1E7F4F" if row["score_completude"]>=80 else "#B26A00" if row["score_completude"]>=60 else "#C62828"
-                medalha = ["🥇","🥈","🥉"][i] if i<3 else f"#{i+1}"
-                st.markdown(f"""
-                <div style="display:flex;justify-content:space-between;align-items:center;
-                            background:#FFFFFF;border:1px solid #E5E5E5;border-radius:8px;
-                            padding:10px 14px;margin-bottom:5px;">
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <span style="font-size:1.1rem;width:28px;text-align:center;">{medalha}</span>
-                        <span style="color:#000000;font-size:0.85rem;font-weight:600;">{row['dominio']}</span>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:12px;">
-                        <div style="background:#E5E5E5;border-radius:4px;height:6px;width:120px;">
-                            <div style="background:{cor_o};border-radius:4px;height:6px;width:{min(row['score_completude'],100):.0f}%;"></div>
-                        </div>
-                        <span style="color:{cor_o};font-weight:800;font-size:0.88rem;width:40px;text-align:right;">{row['score_completude']:.0f}%</span>
-                    </div>
-                </div>""", unsafe_allow_html=True)
-
-    copyright_footer()
-
-# ════════════════════════════════════════════════════════════════════
-# ⚡ MEU ESPAÇO — Área operacional por perfil
-# ════════════════════════════════════════════════════════════════════
 elif pagina == "⚡ Meu Espaço":
     page_header("⚡",f"Olá, {u['nome']} 👋","Suas pendências, responsabilidades e solicitações.")
+    explicacao("O que esta tela mostra",
+        "Tudo o que depende de você na plataforma: suas solicitações e o andamento delas, as aprovações que aguardam sua decisão "
+        "e as pendências de governança dos ativos sob sua responsabilidade.",
+        [("Solicitações", "pedidos de acesso, reportes de qualidade e sugestões de conceitos e regras, com a etapa atual de cada um."),
+         ("Pendências de governança", "regras reprovadas em ativos em que você é Data Owner ou Data Steward. A pendência fecha sozinha quando a regra volta a ser aprovada.")],
+        "As regras e os critérios estão explicados em Confiabilidade dos Dados.")
 
     df_meta  = load_meta()
     df_gloss = load_glossario()
@@ -2528,6 +2352,13 @@ elif pagina == "✏️ Curadoria":
         estado_vazio("🔒","Acesso restrito","Esta área é destinada a Curadores e Aprovadores. Entre em contato com a equipe de Governança se precisar de acesso.")
     else:
         page_header("✏️","Curadoria de Conhecimento","Enriqueça o entendimento — documente, classifique e atribua responsáveis.")
+        explicacao("O que esta tela faz",
+            "Aqui o curador documenta os ativos: descrição, domínio, Data Owner e Data Steward. Cada alteração fica registrada "
+            "na Trilha de Auditoria, com quem alterou, quando e o valor anterior.",
+            [("Impacto nas estrelas", "Owner e domínio (M1, M3) dão a 1ª estrela; Steward e descrição com 40 caracteres ou mais (M2, M4) contam para a 2ª."),
+             ("Score de documentação", "percentual dos quatro campos preenchidos, 25% cada. Mede preenchimento, não a qualidade do texto."),
+             ("Edição em lote", "aplica a mesma alteração a vários ativos de uma vez.")],
+            "As mudanças valem para todos os usuários assim que salvas.")
 
         df_cur = load_meta()
         if not df_cur.empty:
@@ -2704,6 +2535,12 @@ elif pagina == "🕐 Auditoria":
         estado_vazio("🔒","Acesso restrito","Esta área é destinada a Curadores e Aprovadores.")
     else:
         page_header("🕐","Trilha de Auditoria","Rastreabilidade — quem alterou, quando e por quê.")
+        explicacao("O que esta tela mostra",
+            "O histórico de alterações nos metadados dos ativos: cada linha registra o ativo, o campo alterado, o valor anterior, "
+            "o novo valor, a origem da alteração (manual ou sugerida por IA) e quem a fez.",
+            [("Para que serve", "comprovar quem decidiu cada mudança e permitir reverter um erro."),
+             ("Origem dos dados", "tabela de auditoria de metadados, gravada automaticamente a cada edição na Curadoria.")],
+            "O registro é somente de leitura: nada pode ser alterado nesta tela.")
 
         df_aud,err = qry("SELECT timestamp_op, schema_name, table_name, tipo_objeto, campo_alterado, valor_anterior, valor_novo, origem, alterado_por FROM meridian_governanca.metadata_audit ORDER BY timestamp_op DESC LIMIT 500")
 
@@ -2866,96 +2703,125 @@ elif pagina == "📊 Indicadores":
 # ════════════════════════════════════════════════════════════════════
 # 🏆 QUALIDADE — Score por Dimensão
 # ════════════════════════════════════════════════════════════════════
-elif pagina == "⭐ Maturidade":
-    page_header("⭐", "Maturidade dos Ativos",
-                "Cada estrela é conquistada passando em regras objetivas, e perdida quando uma delas reprova.")
-    avals = avaliar_ativos()
-    if not avals:
-        if st.session_state.get("_db_err"):
-            estado_vazio("⚠️", "Dados indisponíveis", "Não foi possível ler o catálogo agora. Nenhuma informação foi alterada.")
-        else:
-            estado_vazio("⭐", "Nenhum ativo catalogado", "As estrelas aparecem quando houver ativos no catálogo.")
-    else:
-        dominios = sorted({a.dominio for a in avals if a.dominio})
-        f_dom = st.selectbox("Domínio", ["Todos"] + dominios, key="mat_dom")
-        sel = [a for a in avals if f_dom == "Todos" or a.dominio == f_dom]
-        pend = RG.pendencias(sel)
-        conf = sum(a.estrelas >= 3 for a in sel)
-        k1, k2, k3, k4 = st.columns(4)
-        with k1: st.markdown(kpi(f"{conf} de {len(sel)}", "Ativos confiáveis (3★+)", tooltip="Passam em identificação, documentação e qualidade crítica."), unsafe_allow_html=True)
-        with k2: st.markdown(kpi(sum(a.estrelas == 0 for a in sel), "Ativos sem estrela", tooltip="Sem Data Owner ou sem domínio."), unsafe_allow_html=True)
-        with k3: st.markdown(kpi(len(pend), "Regras reprovadas", tooltip="Cada reprovação é uma pendência com responsável."), unsafe_allow_html=True)
-        with k4: st.markdown(kpi(int((pend["severidade"] == "critica").sum()) if not pend.empty else 0, "Reprovações críticas", tooltip="Chave duplicada, campo crítico vazio ou carga atrasada."), unsafe_allow_html=True)
-
-        section_divider("DISTRIBUIÇÃO POR ESTRELAS")
-        total = len(sel)
-        barras = "".join(
-            f'<div style="display:grid;grid-template-columns:120px 1fr 160px;gap:12px;align-items:center;margin:6px 0;">'
-            f'<span style="font-size:0.85rem;color:#000;"><span style="color:#C9A227;letter-spacing:1px;">{RG.estrelas_txt(n)}</span></span>'
-            f'<div style="background:#F2F2F2;border-radius:6px;height:10px;"><div style="background:#C9A227;border-radius:6px;height:10px;width:{(100 * q / total):.0f}%;"></div></div>'
-            f'<span style="font-size:0.82rem;color:#000;text-align:right;white-space:nowrap;">{q} · {RG.NOME_NIVEL[n]}</span></div>'
-            for n in range(5, -1, -1) for q in [sum(a.estrelas == n for a in sel)])
-        st.markdown(f'<div class="gv-card" style="padding:16px 20px;">{barras}</div>', unsafe_allow_html=True)
-
-        section_divider("ATIVOS E PRÓXIMO PASSO")
-        st.dataframe(pd.DataFrame([{
-            "Ativo": a.ativo, "Domínio": a.dominio or "—", "Estrelas": RG.estrelas_txt(a.estrelas),
-            "Nível": RG.NOME_NIVEL[a.estrelas],
-            "Para a próxima estrela": "; ".join(f"{c} {RG.REGRAS[c].nome}" for c in a.faltam_proxima()) or "—",
-            "Responsável": "; ".join(sorted({a.responsavel(c) for c in a.faltam_proxima()})) or "—",
-        } for a in sorted(sel, key=lambda x: (x.estrelas, x.ativo))]), hide_index=True, use_container_width=True)
-
-        section_divider("PENDÊNCIAS POR RESPONSÁVEL")
-        if pend.empty:
-            st.success("Nenhuma regra reprovada no filtro selecionado.")
-        else:
-            st.dataframe(pend.rename(columns={"ativo": "Ativo", "dominio": "Domínio", "regra": "Regra", "nome": "Descrição",
-                                              "observado": "Observado", "acao": "Ação", "responsavel": "Responsável",
-                                              "severidade": "Severidade", "estrelas": "Estrelas"}),
-                         hide_index=True, use_container_width=True)
-
-        with st.expander("Critérios de cada estrela e regras aplicadas"):
-            st.markdown("\n".join(
-                f"**{RG.estrelas_txt(n)} {nome}** — " + "; ".join(f"{c} {RG.REGRAS[c].nome} ({RG.REGRAS[c].criterio})" for c in codigos)
-                for n, nome, codigos in RG.NIVEIS))
-            st.caption("Os níveis são cumulativos. As regras de qualidade usam as medições registradas na avaliação de "
-                       "qualidade de cada ativo. A regra R7 (reconciliação de totais) depende de um total de controle "
-                       "definido com a área de negócio; até lá, nenhum ativo chega a 5 estrelas.")
-    copyright_footer()
-
 elif pagina == "🏆 Qualidade":
-    page_header("🏆","Score de Qualidade de Dados","Avaliação multidimensional — Completude · Unicidade · Validade · Atualidade · Consistência.")
-    st.markdown("""<div style="background:#FFFFFF99;border:1px solid #E5E5E5;border-radius:8px;padding:10px 14px;margin-bottom:16px;"><div style="color:#5C5C5C;font-size:0.78rem;line-height:1.6;">A qualidade dos dados é avaliada em <strong style="color:#000000;">5 dimensões independentes</strong>. O Score Final é a média simples das 5 dimensões.</div></div>""",unsafe_allow_html=True)
-    DIMENSOES={"completude_pct":{"nome":"Completude","icone":"📋","cor":"#1A1A1A","conceito":"% de campos obrigatórios preenchidos."},"unicidade_pct":{"nome":"Unicidade","icone":"🔑","cor":"#000000","conceito":"% de registros únicos na chave primária."},"validade_pct":{"nome":"Validade","icone":"✅","cor":"#1E7F4F","conceito":"% de valores no formato e domínio esperados."},"atualidade_pct":{"nome":"Atualidade","icone":"🕐","cor":"#3D3D3D","conceito":"% de registros dentro da janela de tempo esperada."},"consistencia_pct":{"nome":"Consistência","icone":"🔗","cor":"#C62828","conceito":"% de registros consistentes com tabelas relacionadas."}}
-    df_qual=load_quality_dimensions()
-    if df_qual.empty:
-        if st.session_state.get("_db_err"):
-            estado_vazio("⚠️","Qualidade indisponível","Não foi possível conectar ao banco de dados. Os scores serão exibidos quando a conexão for restabelecida.")
+    page_header("🛡️", "Confiabilidade dos Dados",
+                "Posso confiar neste dado? As estrelas respondem; as pendências dizem o que fazer; a qualidade medida mostra por quê.")
+    avals = avaliar_ativos()
+    dominios = sorted({a.dominio for a in avals if a.dominio})
+    f_dom = st.selectbox("Domínio", ["Todos"] + dominios, key="mat_dom") if avals else "Todos"
+    sel = [a for a in avals if f_dom == "Todos" or a.dominio == f_dom]
+    pend = RG.pendencias(sel)
+    aba_visao, aba_pend, aba_qual = st.tabs(["Visão geral", "Pendências", "Qualidade medida"])
+
+    with aba_visao:
+        explicacao(
+            "O que esta aba mostra",
+            "O nível de confiança de cada ativo de dados, em estrelas de 1 a 5. Cada estrela é conquistada quando o ativo "
+            "passa em todas as regras daquele nível, e é perdida automaticamente quando uma delas reprova. "
+            "Não há média: basta uma regra reprovada para o ativo parar no nível anterior.",
+            [("★ Identificado", "o ativo tem Data Owner (M1) e domínio (M3)."),
+             ("★★ Documentado", "tem Data Steward (M2), descrição útil com 40 caracteres ou mais (M4) e classificação de sensibilidade (M5)."),
+             ("★★★ Confiável", "chave sem duplicidade (R1: unicidade 100%), campos preenchidos (R2: completude ≥ 98%) e carga em dia (R4: atualidade ≥ 95%)."),
+             ("★★★★ Conectado", "vinculado a termo do glossário (M7), documentação revisada há até 180 dias (M8) e origem registrada na linhagem (M9)."),
+             ("★★★★★ Certificado", "valores válidos (R3 ≥ 98%), consistência entre tabelas (R6 ≥ 98%), reconciliação com o total de controle (R7) e certificação formal do Data Owner.")],
+            "Como ler: comece pelos ativos com menos estrelas. A coluna \"Para a próxima estrela\" diz exatamente o que falta e quem deve agir. "
+            "A regra R7 depende de um total de controle definido com a área de negócio; até ele existir, nenhum ativo chega a 5 estrelas.")
+        if not avals:
+            if st.session_state.get("_db_err"):
+                estado_vazio("⚠️", "Dados indisponíveis", "Não foi possível ler o catálogo agora. Nenhuma informação foi alterada.")
+            else:
+                estado_vazio("⭐", "Nenhum ativo catalogado", "As estrelas aparecem quando houver ativos no catálogo.")
         else:
-            estado_vazio("🏆","Nenhum dado de qualidade","Execute a avaliação de qualidade na Curadoria.")
-    else:
-        media_geral=df_qual["score_final"].mean(); cor_mg="#1E7F4F" if media_geral>=80 else "#B26A00" if media_geral>=60 else "#C62828"
-        st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:16px;padding:20px;text-align:center;margin-bottom:20px;"><div style="font-size:0.7rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">{len(df_qual)} ativos avaliados</div><div style="font-size:3.5rem;font-weight:800;color:{cor_mg};line-height:1;">{media_geral:.1f}%</div><div style="color:#5C5C5C;font-size:0.75rem;margin-top:6px;">Alta (≥80%): {len(df_qual[df_qual["nivel"]=="Alta"])} · Média (40–79%): {len(df_qual[df_qual["nivel"]=="Media"])} · Baixa (&lt;40%): {len(df_qual[df_qual["nivel"]=="Baixa"])}</div></div>',unsafe_allow_html=True)
-        section_divider("MÉDIA POR DIMENSÃO")
-        cols_dim=st.columns(5)
-        for col,(campo,info) in zip(cols_dim,DIMENSOES.items()):
-            media_dim=df_qual[campo].mean(); cor_d="#1E7F4F" if media_dim>=80 else "#B26A00" if media_dim>=60 else "#C62828"
-            with col: st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:14px;text-align:center;" title="{info["conceito"]}"><div style="font-size:1.2rem;margin-bottom:4px;">{info["icone"]}</div><div style="font-size:1.6rem;font-weight:800;color:{cor_d};">{media_dim:.1f}%</div><div style="color:#5C5C5C;font-size:0.68rem;margin-bottom:8px;">{info["nome"]}</div><div style="background:#E5E5E5;border-radius:4px;height:3px;"><div style="background:{cor_d};border-radius:4px;height:3px;width:{min(media_dim,100):.0f}%;"></div></div><div style="color:#5C5C5C;font-size:0.6rem;margin-top:6px;line-height:1.3;">{info["conceito"]}</div></div>',unsafe_allow_html=True)
-        section_divider("AVALIAÇÃO POR ATIVO")
-        f1q,f2q,f3q=st.columns(3)
-        with f1q: fq_dom=st.selectbox("Domínio",["Todos"]+sorted([str(d) for d in df_qual["dominio"].dropna().unique() if str(d).strip() and str(d) != "nan"]),key="q_dom")
-        with f2q: fq_cam=st.selectbox("Camada",["Todas"]+sorted(df_qual["schema_name"].unique().tolist()),key="q_cam")
-        with f3q: fq_niv=st.selectbox("Nível",["Todos","Alta","Media","Baixa"],key="q_niv")
-        df_qf=df_qual.copy()
-        if fq_dom!="Todos": df_qf=df_qf[df_qf["dominio"]==fq_dom]
-        if fq_cam!="Todas": df_qf=df_qf[df_qf["schema_name"]==fq_cam]
-        if fq_niv!="Todos": df_qf=df_qf[df_qf["nivel"]==fq_niv]
-        df_qf=df_qf.sort_values("score_final",ascending=False)
-        for _,row in df_qf.iterrows():
-            cor_q="#1E7F4F" if row["score_final"]>=80 else "#B26A00" if row["score_final"]>=40 else "#C62828"
-            nivel_badge={"Alta":"#1E7F4F","Media":"#000000","Baixa":"#C62828"}.get(row["nivel"],"#5C5C5C")
-            dims_html="".join([f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#5C5C5C;margin-bottom:2px;">{info["icone"]} {info["nome"][:4]}.</div><div style="font-size:0.75rem;font-weight:700;color:{"#1E7F4F" if row[campo]>=80 else "#C9A227" if row[campo]>=40 else "#C62828"};">{row[campo]:.0f}%</div></div>' for campo,info in DIMENSOES.items()])
-            st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:12px 16px;margin-bottom:6px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div><span style="color:#000000;font-weight:700;font-size:0.85rem;">{row["table_name"]}</span><span style="background:#58A6FF22;color:#1A1A1A;border-radius:3px;padding:1px 6px;font-size:0.62rem;margin-left:6px;">{row["schema_name"]}</span><span style="background:{nivel_badge}22;color:{nivel_badge};border-radius:3px;padding:1px 6px;font-size:0.62rem;margin-left:4px;">{row["nivel"]}</span></div><span style="color:{cor_q};font-size:1.1rem;font-weight:800;">{row["score_final"]:.1f}%</span></div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">{dims_html}</div></div>',unsafe_allow_html=True)
+            conf = sum(a.estrelas >= 3 for a in sel)
+            k1, k2, k3, k4 = st.columns(4)
+            with k1: st.markdown(kpi(f"{conf} de {len(sel)}", "Ativos confiáveis (3★+)", tooltip="Passam em identificação, documentação e qualidade crítica."), unsafe_allow_html=True)
+            with k2: st.markdown(kpi(sum(a.estrelas == 0 for a in sel), "Ativos sem estrela", tooltip="Sem Data Owner ou sem domínio."), unsafe_allow_html=True)
+            with k3: st.markdown(kpi(len(pend), "Regras reprovadas", tooltip="Cada reprovação é uma pendência com responsável."), unsafe_allow_html=True)
+            with k4: st.markdown(kpi(int((pend["severidade"] == "critica").sum()) if not pend.empty else 0, "Reprovações críticas", tooltip="Chave duplicada, campo crítico vazio ou carga atrasada."), unsafe_allow_html=True)
+
+            section_divider("DISTRIBUIÇÃO POR ESTRELAS")
+            total = len(sel)
+            barras = "".join(
+                f'<div style="display:grid;grid-template-columns:120px 1fr 160px;gap:12px;align-items:center;margin:6px 0;">'
+                f'<span style="font-size:0.85rem;color:#000;"><span style="color:#C9A227;letter-spacing:1px;">{RG.estrelas_txt(n)}</span></span>'
+                f'<div style="background:#F2F2F2;border-radius:6px;height:10px;"><div style="background:#C9A227;border-radius:6px;height:10px;width:{(100 * q / total):.0f}%;"></div></div>'
+                f'<span style="font-size:0.82rem;color:#000;text-align:right;white-space:nowrap;">{q} · {RG.NOME_NIVEL[n]}</span></div>'
+                for n in range(5, -1, -1) for q in [sum(a.estrelas == n for a in sel)])
+            st.markdown(f'<div class="gv-card" style="padding:16px 20px;">{barras}</div>', unsafe_allow_html=True)
+
+            section_divider("ATIVOS E PRÓXIMO PASSO")
+            st.dataframe(pd.DataFrame([{
+                "Ativo": a.ativo, "Domínio": a.dominio or "—", "Estrelas": RG.estrelas_txt(a.estrelas),
+                "Nível": RG.NOME_NIVEL[a.estrelas],
+                "Para a próxima estrela": "; ".join(f"{c} {RG.REGRAS[c].nome}" for c in a.faltam_proxima()) or "—",
+                "Responsável": "; ".join(sorted({a.responsavel(c) for c in a.faltam_proxima()})) or "—",
+            } for a in sorted(sel, key=lambda x: (x.estrelas, x.ativo))]), hide_index=True, use_container_width=True)
+
+
+    with aba_pend:
+        explicacao(
+            "O que esta aba mostra",
+            "Cada linha é uma regra reprovada em um ativo, com a ação esperada e o responsável. É a lista de trabalho da governança: "
+            "a pendência fecha sozinha quando a regra volta a ser aprovada.",
+            [("Severidade crítica", "chave duplicada, campo crítico vazio ou carga atrasada: o dado pode estar errado hoje."),
+             ("Severidade alta", "falta de Owner, Steward ou classificação, valores inválidos ou registros sem correspondência."),
+             ("Severidade média", "documentação, domínio, glossário, linhagem e revisão periódica."),
+             ("Responsável", "regras de qualidade e documentação vão para o Data Steward; Owner e classificação, para o Data Owner; sem responsável cadastrado, para o líder do domínio.")],
+            "Os dados vêm do catálogo e das medições de qualidade já registradas. Nada é alterado nesta tela: a correção é feita no Catálogo ou na origem do dado.")
+        if avals:
+            if pend.empty:
+                st.success("Nenhuma regra reprovada no filtro selecionado.")
+            else:
+                st.dataframe(pend.rename(columns={"ativo": "Ativo", "dominio": "Domínio", "regra": "Regra", "nome": "Descrição",
+                                                  "observado": "Observado", "acao": "Ação", "responsavel": "Responsável",
+                                                  "severidade": "Severidade", "estrelas": "Estrelas"}),
+                             hide_index=True, use_container_width=True)
+
+
+    with aba_qual:
+        explicacao(
+            "O que esta aba mostra",
+            "As medições de qualidade de cada ativo, em cinco dimensões. São a evidência usada pelas regras de qualidade das estrelas: "
+            "aqui você vê por que um ativo passou ou não.",
+            [("Completude (R2)", "percentual de campos obrigatórios preenchidos. Limite: 98%."),
+             ("Unicidade (R1)", "percentual de registros com chave única. Limite: 100%."),
+             ("Validade (R3)", "percentual de valores no formato e na lista esperados. Limite: 98%."),
+             ("Atualidade (R4)", "percentual de registros dentro da janela de atualização esperada. Limite: 95%."),
+             ("Consistência (R6)", "percentual de registros coerentes com as tabelas relacionadas. Limite: 98%.")],
+            "A nota geral de cada ativo é a média das cinco dimensões e serve só como referência: é o limite de cada regra que decide a estrela. "
+            "Os limites são os padrões propostos e podem ser ajustados pelo Data Owner conforme o uso do dado.")
+        _LIM = {col: lim for col, lim in RG.MEDICAO_QUALIDADE.values()}
+        DIMENSOES={"completude_pct":{"nome":"Completude","icone":"📋","cor":"#1A1A1A","conceito":"% de campos obrigatórios preenchidos."},"unicidade_pct":{"nome":"Unicidade","icone":"🔑","cor":"#000000","conceito":"% de registros únicos na chave primária."},"validade_pct":{"nome":"Validade","icone":"✅","cor":"#1E7F4F","conceito":"% de valores no formato e domínio esperados."},"atualidade_pct":{"nome":"Atualidade","icone":"🕐","cor":"#3D3D3D","conceito":"% de registros dentro da janela de tempo esperada."},"consistencia_pct":{"nome":"Consistência","icone":"🔗","cor":"#C62828","conceito":"% de registros consistentes com tabelas relacionadas."}}
+        df_qual=load_quality_dimensions()
+        if df_qual.empty:
+            if st.session_state.get("_db_err"):
+                estado_vazio("⚠️","Qualidade indisponível","Não foi possível conectar ao banco de dados. Os scores serão exibidos quando a conexão for restabelecida.")
+            else:
+                estado_vazio("🏆","Nenhum dado de qualidade","Execute a avaliação de qualidade na Curadoria.")
+        else:
+            media_geral=df_qual["score_final"].mean(); cor_mg="#1E7F4F" if media_geral>=80 else "#B26A00" if media_geral>=60 else "#C62828"
+            st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:16px;padding:20px;text-align:center;margin-bottom:20px;"><div style="font-size:0.7rem;color:#5C5C5C;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">{len(df_qual)} ativos avaliados</div><div style="font-size:3.5rem;font-weight:800;color:{cor_mg};line-height:1;">{media_geral:.1f}%</div><div style="color:#5C5C5C;font-size:0.75rem;margin-top:6px;">Alta (≥80%): {len(df_qual[df_qual["nivel"]=="Alta"])} · Média (40–79%): {len(df_qual[df_qual["nivel"]=="Media"])} · Baixa (&lt;40%): {len(df_qual[df_qual["nivel"]=="Baixa"])}</div></div>',unsafe_allow_html=True)
+            section_divider("MÉDIA POR DIMENSÃO")
+            cols_dim=st.columns(5)
+            for col,(campo,info) in zip(cols_dim,DIMENSOES.items()):
+                media_dim=df_qual[campo].mean(); cor_d="#1E7F4F" if media_dim>=_LIM.get(campo, 0) else "#C62828"
+                with col: st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:14px;text-align:center;" title="{info["conceito"]}"><div style="font-size:1.2rem;margin-bottom:4px;">{info["icone"]}</div><div style="font-size:1.6rem;font-weight:800;color:{cor_d};">{media_dim:.1f}%</div><div style="color:#5C5C5C;font-size:0.68rem;margin-bottom:8px;">{info["nome"]}</div><div style="background:#E5E5E5;border-radius:4px;height:3px;"><div style="background:{cor_d};border-radius:4px;height:3px;width:{min(media_dim,100):.0f}%;"></div></div><div style="color:#5C5C5C;font-size:0.6rem;margin-top:6px;line-height:1.3;">{info["conceito"]}</div></div>',unsafe_allow_html=True)
+            section_divider("AVALIAÇÃO POR ATIVO")
+            f2q,f3q=st.columns(2)
+            fq_dom=f_dom   # filtro de domínio do topo da página
+            with f2q: fq_cam=st.selectbox("Camada",["Todas"]+sorted(df_qual["schema_name"].unique().tolist()),key="q_cam")
+            with f3q: fq_niv=st.selectbox("Nível",["Todos","Alta","Media","Baixa"],key="q_niv")
+            df_qf=df_qual.copy()
+            if fq_dom!="Todos": df_qf=df_qf[df_qf["dominio"]==fq_dom]
+            if fq_cam!="Todas": df_qf=df_qf[df_qf["schema_name"]==fq_cam]
+            if fq_niv!="Todos": df_qf=df_qf[df_qf["nivel"]==fq_niv]
+            df_qf=df_qf.sort_values("score_final",ascending=False)
+            for _,row in df_qf.iterrows():
+                cor_q="#1E7F4F" if row["score_final"]>=80 else "#B26A00" if row["score_final"]>=40 else "#C62828"
+                nivel_badge={"Alta":"#1E7F4F","Media":"#000000","Baixa":"#C62828"}.get(row["nivel"],"#5C5C5C")
+                dims_html="".join([f'<div style="text-align:center;"><div style="font-size:0.6rem;color:#5C5C5C;margin-bottom:2px;">{info["icone"]} {info["nome"][:4]}.</div><div style="font-size:0.75rem;font-weight:700;color:{"#1E7F4F" if row[campo]>=_LIM.get(campo, 0) else "#C62828"};">{row[campo]:.0f}%</div></div>' for campo,info in DIMENSOES.items()])
+                st.markdown(f'<div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:12px 16px;margin-bottom:6px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div><span style="color:#000000;font-weight:700;font-size:0.85rem;">{row["table_name"]}</span><span style="background:#58A6FF22;color:#1A1A1A;border-radius:3px;padding:1px 6px;font-size:0.62rem;margin-left:6px;">{row["schema_name"]}</span><span style="background:{nivel_badge}22;color:{nivel_badge};border-radius:3px;padding:1px 6px;font-size:0.62rem;margin-left:4px;">{row["nivel"]}</span></div><span style="color:{cor_q};font-size:1.1rem;font-weight:800;">{row["score_final"]:.1f}%</span></div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">{dims_html}</div></div>',unsafe_allow_html=True)
+
     copyright_footer()
 
 # ════════════════════════════════════════════════════════════════════
